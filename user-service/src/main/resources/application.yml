@@ -5,6 +5,11 @@ spring:
     password: gitgle_1024
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  redis:
+    host: 8.137.36.93
+    password: gitgle_1024
+    port: 6379
+
 mybatis:
   mapper-locations: classpath:/mapper/*.xml   # ?? MyBatis ? Mapper XML ?????
   type-aliases-package:  # ???????
