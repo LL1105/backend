@@ -2,6 +2,7 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
       <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
@@ -14,6 +15,7 @@
         <module name="talentrank-service-client" />
         <module name="api-service" />
         <module name="common" />
+        <module name="talentrank-service-server" />
         <module name="gateway-service" />
         <module name="domain-service-client" />
         <module name="data-service-server" />
@@ -23,5 +25,22 @@
     <bytecodeTargetLevel>
       <module name="talentrank-client" target="1.8" />
     </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="api-service" options="-parameters" />
+      <module name="common" options="-parameters" />
+      <module name="data-servcie-client" options="-parameters" />
+      <module name="data-service-server" options="-parameters" />
+      <module name="domain-service-client" options="-parameters" />
+      <module name="domain-service-server" options="-parameters" />
+      <module name="gateway-service" options="-parameters" />
+      <module name="nation-service-client" options="-parameters" />
+      <module name="nation-service-server" options="-parameters" />
+      <module name="talentrank-service-client" options="-parameters" />
+      <module name="talentrank-service-server" options="-parameters" />
+      <module name="user-service-client" options="-parameters" />
+      <module name="user-service-server" options="-parameters" />
+    </option>
   </component>
 </project>

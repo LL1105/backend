@@ -6,9 +6,8 @@
 
     <parent>
         <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-parent</artifactId>
+        <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.4.2</version>
-        <relativePath/>
     </parent>
 
     <groupId>com.gitgle</groupId>
@@ -25,8 +24,6 @@
         <module>nation-service</module>
         <module>date-service</module>
         <module>domain-service</module>
-        <module>user-service/user-service-client</module>
-        <module>user-service/user-service-server</module>
     </modules>
 
 

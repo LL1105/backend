@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: jdbc:mysql://121.36.79.38:3306/gitgle?useSSL=false&serverTimezone=UTC
+    username: root
+    password: gitgle_1024
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  redis:
+    host: 8.137.36.93
+    password: gitgle_1024
+    port: 6379
+
+mybatis:
+  mapper-locations: classpath:/mapper/*.xml
+  type-aliases-package:
+
+dubbo:
+  registry:
+    address: nacos://121.36.79.38:8848?username=nacos&password=nacos
+    # This will enable application-level service discovery only (the recommended service discovery method for Dubbo3).
+    # For users upgrading from Dubbo2.x, please set the value to 'all' for smooth migration.
+    register-mode: instance
+  protocol:
+    name: tri
+    port: 50051
+  application:
+    name: user-service
+    logger: slf4j
+  config-center:
+    address: nacos://121.36.79.38:8848?username=nacos&password=nacos
+
