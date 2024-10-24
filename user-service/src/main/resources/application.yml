@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:mysql://121.36.79.38:3306/gitgle?useSSL=false&serverTimezone=UTC
+    username: root
+    password: gitgle_1024
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis:
+  mapper-locations: classpath:/mapper/*.xml   # ?? MyBatis ? Mapper XML ?????
+  type-aliases-package:  # ???????
