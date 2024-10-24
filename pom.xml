@@ -23,6 +23,7 @@
         <module>talentrank-sevice</module>
         <module>nation-service</module>
         <module>date-service</module>
+        <module>domain-service</module>
     </modules>
 
 

@@ -7,11 +7,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="api-service" />
-        <module name="nation-service" />
-        <module name="user-service" />
-        <module name="talentrank-sevice" />
         <module name="common" />
         <module name="gateway-service" />
+        <module name="nation-service" />
+        <module name="date-service" />
+        <module name="user-service" />
+        <module name="talentrank-sevice" />
       </profile>
     </annotationProcessing>
   </component>
