@@ -5,16 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.gitgle</groupId>
-        <artifactId>gitgle</artifactId>
+        <artifactId>nation-service</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>date-service</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
-    <modules>
-        <module>data-servcie-client</module>
-        <module>data-service-server</module>
-    </modules>
+    <artifactId>nation-service-server</artifactId>
 
 </project>
