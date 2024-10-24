@@ -5,18 +5,34 @@
     <file url="file://$PROJECT_DIR$/api-service/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/common/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/date-service/data-servcie-client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/date-service/data-servcie-client/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/date-service/data-service-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/date-service/data-service-server/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/date-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/date-service/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/domain-service/domain-service-client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/domain-service/domain-service-client/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/domain-service/domain-service-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/domain-service/domain-service-server/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/domain-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/domain-service/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/gateway-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/gateway-service/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/nation-service/nation-service-client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/nation-service/nation-service-client/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/nation-service/nation-service-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/nation-service/nation-service-server/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/nation-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/nation-service/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/talentrank-sevice/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/talentrank-sevice/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/talentrank-sevice/talentrank-client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/talentrank-sevice/talentrank-client/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/talentrank-sevice/talentrank-service-client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/talentrank-sevice/talentrank-service-client/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/user-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/user-service/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/user-service/user-service-client/src/main/java" charset="UTF-8" />

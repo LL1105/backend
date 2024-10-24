@@ -10,6 +10,11 @@
     </parent>
 
     <artifactId>nation-service</artifactId>
-    <packaging>jar</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <modules>
+        <module>nation-service-client</module>
+        <module>nation-service-server</module>
+    </modules>
 
 </project>

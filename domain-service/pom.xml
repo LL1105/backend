@@ -10,6 +10,12 @@
     </parent>
 
     <artifactId>domain-service</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <modules>
+        <module>domain-service-client</module>
+        <module>domain-service-server</module>
+    </modules>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

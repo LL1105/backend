@@ -6,16 +6,22 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="nation-service-client" />
+        <module name="data-servcie-client" />
+        <module name="user-service-client" />
+        <module name="user-service-server" />
+        <module name="domain-service-server" />
+        <module name="talentrank-service-client" />
         <module name="api-service" />
-        <module name="domain-service" />
         <module name="common" />
         <module name="gateway-service" />
-        <module name="user-service-client" />
-        <module name="nation-service" />
-        <module name="date-service" />
-        <module name="talentrank-sevice" />
-        <module name="user-service-server" />
+        <module name="domain-service-client" />
+        <module name="data-service-server" />
+        <module name="nation-service-server" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="talentrank-client" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>
