@@ -25,6 +25,8 @@
         <module>nation-service</module>
         <module>date-service</module>
         <module>domain-service</module>
+        <module>user-service/user-service-client</module>
+        <module>user-service/user-service-server</module>
     </modules>
 
 

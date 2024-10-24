@@ -10,10 +10,11 @@
         <module name="domain-service" />
         <module name="common" />
         <module name="gateway-service" />
+        <module name="user-service-client" />
         <module name="nation-service" />
         <module name="date-service" />
-        <module name="user-service" />
         <module name="talentrank-sevice" />
+        <module name="user-service-server" />
       </profile>
     </annotationProcessing>
   </component>
