@@ -1,0 +1,17 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      routes:
+        - id: service-route
+          uri: http://localhost:8081
+          predicates:
+            - Path=/service/**
+          filters:
+            - name: Auth
+              args:
+                config:
