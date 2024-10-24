@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="api-service" />
+        <module name="domain-service" />
         <module name="common" />
         <module name="gateway-service" />
         <module name="nation-service" />

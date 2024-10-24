@@ -11,7 +11,7 @@ spring:
           uri: http://localhost:8081
           predicates:
             - Path=/service/**
-          filters:
-            - name: Auth
-              args:
-                config:
+#          filters:
+#            - name: Auth
+#              args:
+#                config:
