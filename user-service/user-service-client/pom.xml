@@ -11,4 +11,12 @@
 
     <artifactId>user-service-client</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.gitgle</groupId>
+            <artifactId>common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
 </project>
