@@ -23,7 +23,6 @@ public class GithubSearchUsers implements com.gitgle.service.GithubSearchUsers {
 
     @Override
     public String search() {
-        log.info("user: " + user);
         try {
             Response response = githubApiRequestUtils.searchUsers(new HashMap<>());
             log.info("response: " + response);
