@@ -20,11 +20,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @DubboService
@@ -35,10 +38,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     @Resource
     UserMapper userMapper;
 
-//    @Autowired
-//    JavaMailSender mailSender;
+    @Resource
+    JavaMailSender mailSender;
 
-    @Value("xxxx.com")
+    @Value("${spring.mail.username}")
     String from;
 
     @Resource
@@ -53,15 +56,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     public R sendMimeMail(String email) {
         if(StringUtils.isEmpty(email)) return R.Failed("邮箱地址不能为空");
         try {
-//            SimpleMailMessage mailMessage = new SimpleMailMessage();
-//            mailMessage.setSubject("欢迎来到gitgle，您的验证码是：");
+            SimpleMailMessage mailMessage = new SimpleMailMessage();
+            mailMessage.setSubject("欢迎来到gitgle，您的验证码是：");
             String code = randomCode();
             logger.info("邮箱验证码: {}", code);
-//            stringRedisTemplate.opsForValue().set(RedisConstant.REGISTER_CODE_PREFIX + email, code,3, TimeUnit.MINUTES);
-//            mailMessage.setText("您收到的验证码是：" + code);
-//            mailMessage.setTo(email);
-//            mailMessage.setFrom(from);
-//            mailSender.send(mailMessage);
+            stringRedisTemplate.opsForValue().set(RedisConstant.REGISTER_CODE_PREFIX + email, code,3, TimeUnit.MINUTES);
+            mailMessage.setText("您收到的验证码是：" + code);
+            mailMessage.setTo(email);
+            mailMessage.setFrom(from);
+            mailSender.send(mailMessage);
             return R.Success();
         } catch (Exception e) {
             logger.error("发送邮件时发生异常", e);
