@@ -12,6 +12,18 @@ spring:
     password: gitgle_1024
     port: 6379
 
+  mail:
+    # 编码格式
+    default-encoding: UTF-8
+    host: smtp.126.com
+    username: gitgle@126.com #自己的邮箱
+    password: NJ3zAsQWnBagKLdp #授权码，并不是qq密码
+    properties:
+      mail:
+        smtp:
+          ssl:
+            enable: true
+
 mybatis:
   mapper-locations: classpath:/mapper/*.xml
   type-aliases-package:
