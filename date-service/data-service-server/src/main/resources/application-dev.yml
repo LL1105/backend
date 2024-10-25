@@ -4,7 +4,7 @@ spring:
 
 dubbo:
   registry:
-    address: nacos://localhost:8848?username=nacos&password=nacos
+    address: nacos://localhost:8848
   protocol:
     name: dubbo
     port: 50060

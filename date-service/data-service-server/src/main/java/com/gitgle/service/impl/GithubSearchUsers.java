@@ -18,9 +18,6 @@ import java.util.HashMap;
 @DubboService
 public class GithubSearchUsers implements com.gitgle.service.GithubSearchUsers {
 
-    @Value("${user.age}")
-    private String user;
-
     @Resource
     private GithubApiRequestUtils githubApiRequestUtils;
 
