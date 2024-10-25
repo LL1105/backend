@@ -10,9 +10,9 @@
         <module name="nation-service-client" />
         <module name="data-servcie-client" />
         <module name="user-service-client" />
-        <module name="user-service-server" />
         <module name="domain-service-server" />
         <module name="talentrank-service-client" />
+        <module name="user-service-server" />
         <module name="api-service" />
         <module name="common" />
         <module name="talentrank-service-server" />
