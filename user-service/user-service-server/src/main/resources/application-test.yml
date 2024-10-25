@@ -6,6 +6,11 @@ spring:
     username: root
     password: gitgle_1024
     driver-class-name: com.mysql.cj.jdbc.Driver
+  cloud:
+    nacos:
+      discovery:
+        register-enabled: true
+        server-addr: 121.36.79.38:8848
 
   redis:
     host: 8.137.36.93
