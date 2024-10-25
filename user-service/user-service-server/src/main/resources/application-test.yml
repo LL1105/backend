@@ -18,7 +18,7 @@ mybatis:
 
 dubbo:
   registry:
-    address: nacos://121.36.79.38:8848?username=nacos&password=nacos
+    address: nacos://121.36.79.38:8848
   protocol:
     name: dubbo
     port: 50061
