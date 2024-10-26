@@ -4,6 +4,7 @@ package com.gitgle.service.impl;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gitgle.VO.UserVoToUser;
@@ -48,6 +49,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     @Resource
     StringRedisTemplate stringRedisTemplate;
 
+
+    @Override
+    public String getRank(Integer userId) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", userId);
+        User user = userMapper.selectOne(queryWrapper);
+        return user.getTalentRank();
+    }
 
     @Override
     public R getUserInfo() {

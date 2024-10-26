@@ -7,6 +7,8 @@ import com.gitgle.service.VO.UserVo;
 
 public interface UserService {
 
+    String getRank(Integer userId);
+
     R getUserInfo();
 
     //发送验证码邮件给指定邮箱

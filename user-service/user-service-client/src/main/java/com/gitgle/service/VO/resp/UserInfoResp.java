@@ -18,4 +18,6 @@ public class UserInfoResp implements Serializable {
     private String email;
 
     private String githubId;
+
+    private String talentRank;
 }

@@ -30,4 +30,9 @@ public class User implements Serializable {
 
     @TableField("github_id")
     private String githubId;
+
+    @TableField("talent_rank")
+    private String talentRank;
+
+
 }

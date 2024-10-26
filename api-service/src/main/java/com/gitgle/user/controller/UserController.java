@@ -3,6 +3,7 @@ package com.gitgle.user.controller;
 
 import cn.dev33.satoken.util.SaResult;
 import com.gitgle.result.R;
+import com.gitgle.service.TalentRankService;
 import com.gitgle.service.UserService;
 import com.gitgle.service.VO.req.LoginReq;
 import com.gitgle.service.VO.UserVo;
@@ -18,6 +19,9 @@ public class UserController {
 
     @DubboReference
     private UserService userService;
+
+    @DubboReference
+    private TalentRankService talentRankService;
 
 
     @GetMapping("/sendEmail")
@@ -48,6 +52,11 @@ public class UserController {
     @PostMapping("/getUserInfo")
     public R getUserInfo() {
         return userService.getUserInfo();
+    }
+
+    @PostMapping("/getRank")
+    public R getTanlentRank(Integer userId) {
+        return R.Success(talentRankService.getTalentrankByUserId(userId));
     }
 
 }
