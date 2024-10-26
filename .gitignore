@@ -5,3 +5,10 @@
 /date-service/data-service-server/target/
 /date-service/data-servcie-client/target/
 .idea/
+/nation-service/nation-service-server/target/
+/nation-service/nation-service-client/target/
+/gateway-service/target/
+/domain-service/domain-service-server/target/
+/domain-service/domain-service-client/target/
+/common/target/
+/api-service/target/
