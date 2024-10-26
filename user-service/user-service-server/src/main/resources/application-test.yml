@@ -6,6 +6,11 @@ spring:
     username: gitgle
     password: gitgle_1024
     driver-class-name: com.mysql.cj.jdbc.Driver
+  cloud:
+    nacos:
+      discovery:
+        register-enabled: true
+        server-addr: 121.36.79.38:8848
 
   redis:
     host: 49.232.232.203
@@ -35,9 +40,10 @@ mybatis:
 dubbo:
   registry:
     address: nacos://121.36.79.38:8848
+    register-mode: all
   protocol:
     name: dubbo
-    port: 50061
+    port: -1
   application:
     name: ${spring.application.name}
     logger: slf4j

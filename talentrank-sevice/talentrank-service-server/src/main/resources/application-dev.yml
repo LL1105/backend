@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: talentrank-service
+
+dubbo:
+  registry:
+    address: nacos://localhost:8848
+  protocol:
+    name: dubbo
+    port: 50060
+  application:
+    name: ${spring.application.name}
+    logger: slf4j
+
+
