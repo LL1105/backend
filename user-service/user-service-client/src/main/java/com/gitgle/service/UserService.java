@@ -7,7 +7,7 @@ import com.gitgle.service.VO.UserVo;
 
 public interface UserService {
 
-    String getUserName();
+    R getUserInfo();
 
     //发送验证码邮件给指定邮箱
     R sendMimeMail(String email);
@@ -16,7 +16,7 @@ public interface UserService {
     R register(UserVo userVo);
 
     //登录
-    SaResult login(String email, String password) throws Exception;
+    R login(String email, String password) throws Exception;
 
     //登出
     SaResult logout();

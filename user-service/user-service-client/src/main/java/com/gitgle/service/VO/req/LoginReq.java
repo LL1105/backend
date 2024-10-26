@@ -1,11 +1,11 @@
-package com.gitgle.service.VO;
+package com.gitgle.service.VO.req;
 
 import lombok.Data;
 
 import java.io.Serializable;
 
 @Data
-public class LoginVO implements Serializable {
+public class LoginReq implements Serializable {
 
     private String email;
 
