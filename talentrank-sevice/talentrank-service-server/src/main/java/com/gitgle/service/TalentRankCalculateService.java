@@ -1,6 +1,6 @@
 package com.gitgle.service;
 
-public interface TalentrankCalculateService {
+public interface TalentRankCalculateService {
 
     /**
      * 计算项目重要性

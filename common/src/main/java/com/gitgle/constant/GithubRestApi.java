@@ -5,7 +5,8 @@ package com.gitgle.constant;
  */
 public enum GithubRestApi {
 
-    SEARCH_USERS("https://api.github.com/search/users", "GET");
+    SEARCH_USERS("https://api.github.com/search/users", "GET"),
+    SEARCH_REPOS("https://api.github.com/search/repositories", "GET");
 
     private final String address;
 
