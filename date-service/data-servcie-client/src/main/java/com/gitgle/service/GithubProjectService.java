@@ -1,8 +1,8 @@
 package com.gitgle.service;
 
-import com.gitgle.response.GithubProjectResponse;
+import com.gitgle.response.GithubReposResponse;
 
 public interface GithubProjectService {
 
-    GithubProjectResponse getProjectByDeveloperId(String developerId);
+    GithubReposResponse getProjectByDeveloperId(String developerId);
 }

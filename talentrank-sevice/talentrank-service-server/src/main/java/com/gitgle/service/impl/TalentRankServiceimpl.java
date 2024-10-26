@@ -1,10 +1,10 @@
 package com.gitgle.service.impl;
 
-import com.gitgle.service.TalentrankService;
+import com.gitgle.service.TalentRankService;
 import org.apache.dubbo.config.annotation.DubboService;
 
 @DubboService
-public class TalentrankServiceimpl implements TalentrankService {
+public class TalentRankServiceimpl implements TalentRankService {
 
     @Override
     public String getTalentrankByUserId(Integer userId) {

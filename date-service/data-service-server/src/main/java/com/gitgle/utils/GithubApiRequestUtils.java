@@ -5,6 +5,7 @@ import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -17,6 +18,19 @@ import java.util.Map;
 @Component
 public class GithubApiRequestUtils {
 
+    @Value("${github.auth-token}")
+    private String authToken;
+
+    private static final String AUTHORIZATION = "Authorization";
+
+    private static final String ACCEPT = "Accept";
+
+    private static final String APPLICATION_VND_GITHUB_JSON = "application/vnd.github+json";
+
+    private static final String X_GITHUB_API_VERSION_KEY = "X-GitHub-Api-Version";
+
+    private static final String X_GITHUB_API_VERSION = "2022-11-28";
+
     @Resource
     private OkHttpClient httpClient;
 
@@ -27,9 +41,25 @@ public class GithubApiRequestUtils {
         }
         String url = urlBuilder.build().toString();
         Request request = new Request.Builder()
-                .header("accept","application/vnd.github+json")
-                .header("Authorization","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")
-                .header("X-GitHub-Api-Version","2022-11-28")
+                .header(ACCEPT,APPLICATION_VND_GITHUB_JSON)
+                .header(AUTHORIZATION,authToken)
+                .header(X_GITHUB_API_VERSION_KEY, X_GITHUB_API_VERSION)
+                .url(url)
+                .build();
+        Response response = httpClient.newCall(request).execute();
+        return response;
+    }
+
+    public Response searchRepos(Map<String, String> queryParams) throws IOException {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.SEARCH_REPOS.getAddress()).newBuilder();
+        for(Map.Entry<String, String> entry : queryParams.entrySet()){
+            urlBuilder.addQueryParameter(entry.getKey(), entry.getValue());
+        }
+        String url = urlBuilder.build().toString();
+        Request request = new Request.Builder()
+                .header(ACCEPT,APPLICATION_VND_GITHUB_JSON)
+                .header(AUTHORIZATION,authToken)
+                .header(X_GITHUB_API_VERSION_KEY, X_GITHUB_API_VERSION)
                 .url(url)
                 .build();
         Response response = httpClient.newCall(request).execute();
