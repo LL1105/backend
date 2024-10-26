@@ -1,0 +1,7 @@
+/user-service/user-service-server/target/
+/user-service/user-service-client/target/
+/talentrank-sevice/talentrank-service-server/target/
+/talentrank-sevice/talentrank-service-client/target/
+/date-service/data-service-server/target/
+/date-service/data-servcie-client/target/
+.idea/
