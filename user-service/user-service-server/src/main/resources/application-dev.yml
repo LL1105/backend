@@ -8,7 +8,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   redis:
-    host: 8.137.36.93
+    host: 49.232.232.203
     password: gitgle_1024
     port: 6379
 

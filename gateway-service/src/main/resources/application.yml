@@ -38,7 +38,7 @@ spring:
           predicates:
             - Path=/sourceApi/**
   redis:
-    host: 8.137.36.93
+    host: 49.232.232.203
     port: 6379
     timeout: 10s
     #    password: 123456
@@ -71,7 +71,7 @@ sa-token:
     # Redis数据库索引（默认为0）
     database: 0
     # Redis服务器地址
-    host: 8.137.36.93
+    host: 49.232.232.203
     # Redis服务器连接端口
     port: 6379
     password: gitgle_1024
