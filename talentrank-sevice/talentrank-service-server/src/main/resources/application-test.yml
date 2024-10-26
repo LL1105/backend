@@ -1,6 +1,6 @@
 spring:
   application:
-    name: data-service
+    name: talentrank-service
   datasource:
     url: jdbc:mysql://gitgle.mysql.polardb.rds.aliyuncs.com:3306/gitgle
     username: gitgle
@@ -11,18 +11,12 @@ spring:
       discovery:
         server-addr: 121.36.79.38:8848
 
-  datasource:
-    url: jdbc:mysql://bj-cynosdbmysql-grp-pro0nh5i.sql.tencentcdb.com:25363/gitgle?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&useSSL=false&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
-    username: gitgle
-    password: gitgle_1024
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
 dubbo:
   registry:
     address: nacos://121.36.79.38:8848
   protocol:
     name: dubbo
-    port: 50060
+    port: 50070
   application:
     name: ${spring.application.name}
     logger: slf4j
