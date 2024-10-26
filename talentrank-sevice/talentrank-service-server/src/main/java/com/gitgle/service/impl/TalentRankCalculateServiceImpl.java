@@ -1,9 +1,9 @@
 package com.gitgle.service.impl;
 
-import com.gitgle.response.GithubProject;
-import com.gitgle.response.GithubProjectResponse;
+import com.gitgle.response.GithubRepos;
+import com.gitgle.response.GithubReposResponse;
 import com.gitgle.service.GithubProjectService;
-import com.gitgle.service.TalentrankCalculateService;
+import com.gitgle.service.TalentRankCalculateService;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Service
-public class TalentrankCalculateServiceImpl implements TalentrankCalculateService {
+public class TalentRankCalculateServiceImpl implements TalentRankCalculateService {
 
     @DubboReference
     private GithubProjectService githubProjectService;
@@ -24,11 +24,11 @@ public class TalentrankCalculateServiceImpl implements TalentrankCalculateServic
     @Override
     public String calculateTalentRank(String developerId) {
         BigDecimal talentRank = new BigDecimal(0);
-        GithubProjectResponse githubProjectResponse = githubProjectService.getProjectByDeveloperId(developerId);
-        List<GithubProject> githubProjectList = githubProjectResponse.getGithubProjectList();
-        for(GithubProject githubProject: githubProjectList){
-            String projectImportance = calculateProjectImportance(githubProject.getProjectId());
-            String contribution = calculateContribution(githubProject.getProjectId(), developerId);
+        GithubReposResponse githubReposResponse = githubProjectService.getProjectByDeveloperId(developerId);
+        List<GithubRepos> githubProjectList = githubReposResponse.getGithubProjectList();
+        for(GithubRepos githubRepos : githubProjectList){
+            String projectImportance = calculateProjectImportance(githubRepos.getProjectId());
+            String contribution = calculateContribution(githubRepos.getProjectId(), developerId);
             BigDecimal tmp = new BigDecimal(contribution);
             BigDecimal tmp2 = new BigDecimal(projectImportance);
             talentRank.add(tmp.multiply(tmp2));

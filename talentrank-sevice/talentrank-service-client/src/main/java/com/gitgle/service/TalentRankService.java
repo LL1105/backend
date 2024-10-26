@@ -1,6 +1,6 @@
 package com.gitgle.service;
 
-public interface TalentrankService {
+public interface TalentRankService {
 
     /**
      * 根据用户id获取TalentRank
