@@ -9,13 +9,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.Date;
 
 
 @TableName("user")
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class User implements Serializable {
     @TableId(value = "id",type = IdType.AUTO)
     private Integer id;
@@ -31,4 +30,9 @@ public class User implements Serializable {
 
     @TableField("github_id")
     private String githubId;
+
+    @TableField("talent_rank")
+    private String talentRank;
+
+
 }

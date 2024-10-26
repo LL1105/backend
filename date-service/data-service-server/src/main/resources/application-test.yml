@@ -1,3 +1,6 @@
+server:
+  port: 8081
+
 spring:
   application:
     name: data-service
@@ -23,5 +26,4 @@ dubbo:
   application:
     name: ${spring.application.name}
     logger: slf4j
-
 

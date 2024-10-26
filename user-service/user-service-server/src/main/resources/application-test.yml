@@ -29,9 +29,6 @@ spring:
           ssl:
             enable: true
 
-  cloud:
-    nacos:
-      server-addr: nacos://121.36.79.38:8848
 
 mybatis:
   mapper-locations: classpath:/mapper/*.xml

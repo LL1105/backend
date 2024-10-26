@@ -3,8 +3,9 @@ package com.gitgle.user.controller;
 
 import cn.dev33.satoken.util.SaResult;
 import com.gitgle.result.R;
+import com.gitgle.service.TalentRankService;
 import com.gitgle.service.UserService;
-import com.gitgle.service.VO.LoginVO;
+import com.gitgle.service.VO.req.LoginReq;
 import com.gitgle.service.VO.UserVo;
 import org.apache.dubbo.config.annotation.DubboReference;
 
@@ -19,6 +20,9 @@ public class UserController {
     @DubboReference
     private UserService userService;
 
+    @DubboReference
+    private TalentRankService talentRankService;
+
 
     @GetMapping("/sendEmail")
     public R sendEmail(@RequestParam("email") String email) {
@@ -31,8 +35,8 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public SaResult login(@RequestBody LoginVO loginVO) throws Exception {
-        return userService.login(loginVO.getEmail(), loginVO.getPassword());
+    public R login(@RequestBody LoginReq loginReq) throws Exception {
+        return userService.login(loginReq.getEmail(), loginReq.getPassword());
     }
 
     @PostMapping("/logout")
@@ -43,6 +47,16 @@ public class UserController {
     @PostMapping("/auth")
     public R auth() {
         return R.Success("auth success");
+    }
+
+    @PostMapping("/getUserInfo")
+    public R getUserInfo() {
+        return userService.getUserInfo();
+    }
+
+    @PostMapping("/getRank")
+    public R getTanlentRank(Integer userId) {
+        return R.Success(talentRankService.getTalentrankByUserId(userId));
     }
 
 }

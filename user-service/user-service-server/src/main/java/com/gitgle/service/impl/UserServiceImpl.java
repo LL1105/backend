@@ -4,6 +4,7 @@ package com.gitgle.service.impl;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gitgle.VO.UserVoToUser;
@@ -11,12 +12,15 @@ import com.gitgle.constant.RedisConstant;
 import com.gitgle.mapper.UserMapper;
 import com.gitgle.result.R;
 import com.gitgle.entity.User;
+import com.gitgle.service.VO.resp.LoginResp;
 import com.gitgle.service.VO.UserVo;
+import com.gitgle.service.VO.resp.UserInfoResp;
 import com.gitgle.utils.Md5Util;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
@@ -45,9 +49,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     @Resource
     StringRedisTemplate stringRedisTemplate;
 
+
     @Override
-    public String getUserName() {
-        return "";
+    public String getRank(Integer userId) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", userId);
+        User user = userMapper.selectOne(queryWrapper);
+        return user.getTalentRank();
+    }
+
+    @Override
+    public R getUserInfo() {
+        Object loginId = StpUtil.getLoginId();
+        User user = userMapper.selectById(loginId.toString());
+        if(user != null) {
+            UserInfoResp resp = new UserInfoResp();
+            BeanUtils.copyProperties(user, resp);
+            return R.Success(resp);
+        }
+        return R.Failed("用户不存在");
     }
 
     @Override
@@ -101,28 +121,31 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     }
 
     @Override
-    public SaResult login(String email, String password)  {
+    public R login(String email, String password)  {
         User user = this.getOne(Wrappers.lambdaQuery(User.class).eq(User::getEmail, email));
-        if(user == null) return SaResult.error("账号或密码错误");
+        if(user == null) return R.Failed("账号或密码错误");
 
         boolean result = Md5Util.passwordVerify(password, user.getPassword(), Md5Util.md5Key);
 
         if(result) {
             StpUtil.login(user.getId());
             SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
-            return SaResult.data(tokenInfo.tokenValue);
+            LoginResp resp = new LoginResp();
+            resp.setUserId(user.getId());
+            resp.setUserName(user.getUsername());
+            resp.setToken(tokenInfo.getTokenValue());
+            return R.Success(resp);
         }
 
-        return SaResult.error("账号或密码错误");
+        return R.Failed("账号或密码错误");
     }
 
     @Override
     public SaResult logout() {
         StpUtil.logout();
         SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
-        return SaResult.ok(tokenInfo.toString());
-//        Boolean isLogin = tokenInfo.isLogin;
-//        if(!isLogin) return SaResult.ok();
-//        return SaResult.error("退出失败");
+        Boolean isLogin = tokenInfo.isLogin;
+        if(!isLogin) return SaResult.ok();
+        return SaResult.error("退出失败");
     }
 }

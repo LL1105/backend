@@ -24,4 +24,8 @@ public class GithubRepos implements Serializable {
     private Boolean orPrivate;
 
     private String ownerLogin;
+
+    private String projectId;
+
+
 }
