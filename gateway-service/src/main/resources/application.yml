@@ -1,17 +1,79 @@
 server:
-  port: 8081
+  port: 10010
 
 spring:
   application:
     name: gateway
+
   cloud:
+    nacos:
+      server-addr: nacos://121.36.79.38:8848
+
     gateway:
       routes:
-        - id: service-route
-          uri: http://localhost:8081
+        - id: source_database
+          uri: lb://source_database #负载均衡
+          predicates: #路由断言，判断请求是否符合规则
+            - Path=/sourceDatabase/** #路径断言，判断路径是否是以/user开头，如果是符合
+        #          filters: #过滤器
+        #            - AddRequestHeader=Truth,Itcast is freaking aowsome!
+        - id: code
+          uri: lb://code
           predicates:
-            - Path=/service/**
-#          filters:
-#            - name: Auth
-#              args:
-#                config:
+            - Path=/code/**
+        - id: userService
+          uri: lb://api-service
+          predicates:
+            - Path=/user/**
+        - id: data_asset
+          uri: lb://data_asset
+          predicates:
+            - Path=/dataAsset/**
+        - id: data_standard
+          uri: lb://data_standard
+          predicates:
+            - Path=/order/**
+        - id: sourceApi
+          uri: lb://data_standard
+          predicates:
+            - Path=/sourceApi/**
+  redis:
+    host: 49.232.232.203
+    port: 6379
+    timeout: 10s
+    #    password: 123456
+    #    database: 0
+    lettuce:
+      pool:
+        max-active: 10
+        max-wait: -1
+        max-idle: 16
+        min-idle: 8
+    password: gitgle_1024
+# Sa-Token配置
+sa-token:
+  # token名称 (同时也是cookie名称)
+  token-name: Access-Token
+  # token有效期，单位s 默认30天, -1代表永不过期
+  timeout: 2592000
+  # token风格
+  token-style: random-32
+  # 是否尝试从 header 里读取 Token
+  is-read-header: true
+  # 是否开启自动续签
+  auto-renew: true
+  # 临时有效期，单位s，例如将其配置为 1800 (30分钟)，代表用户如果30分钟无操作，则此Token会立即过期
+  active-timeout: -1
+  # 是否允许同一账号并发登录 (为true时允许一起登录, 为false时同端互斥)
+  is-concurrent: true
+  # 配置 Sa-Token 单独使用的 Redis 连接
+  alone-redis:
+    # Redis数据库索引（默认为0）
+    database: 0
+    # Redis服务器地址
+    host: 49.232.232.203
+    # Redis服务器连接端口
+    port: 6379
+    password: gitgle_1024
+    # 连接超时时间
+    timeout: 10s
