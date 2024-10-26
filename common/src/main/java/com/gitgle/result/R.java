@@ -2,12 +2,14 @@ package com.gitgle.result;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * 通用接口返回格式，包括响应码，响应消息，响应数据
  * @param <T>
  */
 @Data
-public final class R<T> {
+public final class R<T> implements Serializable {
     private int code;//响应码
     private String msg;//响应消息
     private T data;
@@ -35,7 +37,7 @@ public final class R<T> {
     }
 
     public static R Success(Object data){
-        return new R(ResultCodeEnum.SUCCESS.getCode(),ResultCodeEnum.SUCCESS.getMessage(),data);
+        return new R(ResultCodeEnum.SUCCESS.getCode(), ResultCodeEnum.SUCCESS.getMessage(),data);
     }
 
     public static R Success(String message, Object data ){

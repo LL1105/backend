@@ -1,12 +1,13 @@
 package com.gitgle.user.controller;
 
 
+import cn.dev33.satoken.util.SaResult;
 import com.gitgle.result.R;
 import com.gitgle.service.UserService;
+import com.gitgle.service.VO.LoginVO;
 import com.gitgle.service.VO.UserVo;
 import org.apache.dubbo.config.annotation.DubboReference;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.javamail.JavaMailSender;
+
 import org.springframework.web.bind.annotation.*;
 
 
@@ -27,6 +28,21 @@ public class UserController {
     @PostMapping("/register")
     public R register(@RequestBody UserVo userVo) {
         return  userService.register(userVo);
+    }
+
+    @PostMapping("/login")
+    public SaResult login(@RequestBody LoginVO loginVO) throws Exception {
+        return userService.login(loginVO.getEmail(), loginVO.getPassword());
+    }
+
+    @PostMapping("/logout")
+    public SaResult logout() {
+        return userService.logout();
+    }
+
+    @PostMapping("/auth")
+    public R auth() {
+        return R.Success("auth success");
     }
 
 }

@@ -3,8 +3,8 @@ spring:
     name: data-service
 
   datasource:
-    url: jdbc:mysql://121.36.79.38:3306/gitgle?useSSL=false&serverTimezone=UTC
-    username: root
+    url: jdbc:mysql://bj-cynosdbmysql-grp-pro0nh5i.sql.tencentcdb.com:25363/gitgle?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&useSSL=false&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
+    username: gitgle
     password: gitgle_1024
     driver-class-name: com.mysql.cj.jdbc.Driver
 

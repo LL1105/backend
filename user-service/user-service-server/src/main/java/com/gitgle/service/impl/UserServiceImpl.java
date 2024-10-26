@@ -17,12 +17,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
@@ -78,7 +76,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         if(one != null) return R.Failed("邮箱已经存在");
 
         String code = stringRedisTemplate.opsForValue().get(RedisConstant.REGISTER_CODE_PREFIX + userVo.getEmail());
+
         if(StringUtils.isEmpty(code)) return R.Failed("验证码已过期，请重新发送");
+
+        if(!code.equals(userVo.getCode())) return R.Failed("验证码无效");
 
         String password = Md5Util.md5(userVo.getPassword(), Md5Util.md5Key);
         userVo.setPassword(password);
@@ -86,7 +87,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         User user = UserVoToUser.toUser(userVo);
         userMapper.insertUser(user);
 
-        return R.Success("注册成功");
+        user.setPassword("");
+        return R.Success(user);
     }
 
     public String randomCode() {
@@ -99,27 +101,28 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     }
 
     @Override
-    public SaResult login(String email, String password) throws Exception {
+    public SaResult login(String email, String password)  {
         User user = this.getOne(Wrappers.lambdaQuery(User.class).eq(User::getEmail, email));
-        if(user == null) return SaResult.error("用户不存在");
+        if(user == null) return SaResult.error("账号或密码错误");
 
         boolean result = Md5Util.passwordVerify(password, user.getPassword(), Md5Util.md5Key);
 
         if(result) {
             StpUtil.login(user.getId());
             SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
-            return SaResult.data(tokenInfo);
+            return SaResult.data(tokenInfo.tokenValue);
         }
 
-        return SaResult.error("密码错误");
+        return SaResult.error("账号或密码错误");
     }
 
     @Override
     public SaResult logout() {
         StpUtil.logout();
         SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
-        Boolean isLogin = tokenInfo.isLogin;
-        if(!isLogin) return SaResult.ok();
-        return SaResult.error("退出失败");
+        return SaResult.ok(tokenInfo.toString());
+//        Boolean isLogin = tokenInfo.isLogin;
+//        if(!isLogin) return SaResult.ok();
+//        return SaResult.error("退出失败");
     }
 }

@@ -1,31 +1,47 @@
-
 spring:
   application:
-    name: api-service
+    name: user-service
   datasource:
     url: jdbc:mysql://bj-cynosdbmysql-grp-pro0nh5i.sql.tencentcdb.com:25363/gitgle?useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&useSSL=false&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
     username: gitgle
     password: gitgle_1024
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+  redis:
+    host: 8.137.36.93
+    password: gitgle_1024
+    port: 6379
+
+  mail:
+    # 编码格式
+    default-encoding: UTF-8
+    host: smtp.126.com
+    username: gitgle@126.com #自己的邮箱
+    password: NJ3zAsQWnBagKLdp #授权码，并不是qq密码
+    properties:
+      mail:
+        smtp:
+          ssl:
+            enable: true
+
   cloud:
     nacos:
-      discovery:
-        server-addr: 121.36.79.38:8848
+      server-addr: nacos://121.36.79.38:8848
+
+mybatis:
+  mapper-locations: classpath:/mapper/*.xml
+  type-aliases-package:
 
 dubbo:
   registry:
     address: nacos://121.36.79.38:8848
+  protocol:
+    name: dubbo
+    port: 50061
   application:
-    qos-port: 2222
     name: ${spring.application.name}
-    enable-file-cache: false
-    # Serializable 接口检查模式，Dubbo 中默认配置为 `true` 开启检查
-    check-serializable: false
-    # 检查模式分为三个级别：STRICT 严格检查，WARN 告警，DISABLE 禁用
+    logger: slf4j
     serialize-check-status: DISABLE
-
-server:
-  port: 8083
 
 # Sa-Token配置
 sa-token:
@@ -54,5 +70,4 @@ sa-token:
     password: gitgle_1024
     # 连接超时时间
     timeout: 10s
-#  check-same-token: true
 

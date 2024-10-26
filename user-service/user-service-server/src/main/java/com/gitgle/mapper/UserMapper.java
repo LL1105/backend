@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Select;
 public interface UserMapper extends BaseMapper<User> {
 
     //插入用户数据
-    @Insert("insert into users (username, password, email) values (#{username}, #{password}, #{email})")
+    @Insert("insert into user (username, password, email) values (#{username}, #{password}, #{email})")
     int insertUser(User user);
 
 }
