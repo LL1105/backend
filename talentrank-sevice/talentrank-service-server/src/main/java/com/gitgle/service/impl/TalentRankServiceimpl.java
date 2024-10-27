@@ -15,7 +15,7 @@ public class TalentRankServiceimpl implements TalentRankService {
     private TalentRankCalculateService talentRankCalculateService;
 
     @Override
-    public String getTalentrankByUserId(String developerId) {
+    public String getTalentrankByDeveloperId(String developerId) {
         return talentRankCalculateService.calculateTalentRank(developerId);
     }
 }
