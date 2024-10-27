@@ -42,13 +42,6 @@ public class GithubApiRequestUtils {
     @Resource
     private OkHttpClient httpClient;
 
-    public LocalDateTime parseTime(String time){
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-        OffsetDateTime offsetDateTime = OffsetDateTime.parse(time, formatter);
-        LocalDateTime localDateTime = offsetDateTime.toLocalDateTime();
-        return localDateTime;
-    }
-
     private String loadBalanceAuthToken() {
         String token = githubAuthToken.getList().get(loadBalanceIndex);
         loadBalanceIndex = (loadBalanceIndex + 1) % githubAuthToken.getList().size();
@@ -103,7 +96,7 @@ public class GithubApiRequestUtils {
         return response;
     }
 
-    public Response getOneRepo(String repoName, String owner) throws IOException {
+    public Response getOneRepo(String owner, String repoName) throws IOException {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.GET_ONE_REPO.getAddress() + "/" + owner + "/" + repoName).newBuilder();
         String url = urlBuilder.build().toString();
         Request request = new Request.Builder()
