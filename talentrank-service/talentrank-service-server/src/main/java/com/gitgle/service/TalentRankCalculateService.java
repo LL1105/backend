@@ -18,5 +18,5 @@ public interface TalentRankCalculateService {
      * 计算开发者贡献度
      * @return 开发者对应仓库的贡献度
      */
-    String calculateContribution(String owner, String repoName);
+    String calculateContribution(String repoOwner, String repoName, String owner);
 }

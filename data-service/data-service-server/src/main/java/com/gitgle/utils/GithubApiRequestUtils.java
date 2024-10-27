@@ -42,13 +42,6 @@ public class GithubApiRequestUtils {
     @Resource
     private OkHttpClient httpClient;
 
-    public LocalDateTime parseTime(String time){
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-        OffsetDateTime offsetDateTime = OffsetDateTime.parse(time, formatter);
-        LocalDateTime localDateTime = offsetDateTime.toLocalDateTime();
-        return localDateTime;
-    }
-
     private String loadBalanceAuthToken() {
         String token = githubAuthToken.getList().get(loadBalanceIndex);
         loadBalanceIndex = (loadBalanceIndex + 1) % githubAuthToken.getList().size();
@@ -103,8 +96,24 @@ public class GithubApiRequestUtils {
         return response;
     }
 
-    public Response getOneRepo(String repoName, String owner) throws IOException {
+    public Response getOneRepo(String owner, String repoName) throws IOException {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.GET_ONE_REPO.getAddress() + "/" + owner + "/" + repoName).newBuilder();
+        String url = urlBuilder.build().toString();
+        Request request = new Request.Builder()
+                .header(ACCEPT,APPLICATION_VND_GITHUB_JSON)
+                .header(AUTHORIZATION,loadBalanceAuthToken())
+                .header(X_GITHUB_API_VERSION_KEY, X_GITHUB_API_VERSION)
+                .url(url)
+                .build();
+        Response response = httpClient.newCall(request).execute();
+        return response;
+    }
+
+    public Response listCommit(String owner, String repoName, Map<String, String> params) throws IOException {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.GET_ONE_REPO.getAddress() + "/" + owner + "/" + repoName + "/commits").newBuilder();
+        for(Map.Entry<String, String> entry : params.entrySet()){
+            urlBuilder.addQueryParameter(entry.getKey(), entry.getValue());
+        }
         String url = urlBuilder.build().toString();
         Request request = new Request.Builder()
                 .header(ACCEPT,APPLICATION_VND_GITHUB_JSON)

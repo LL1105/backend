@@ -6,6 +6,20 @@
 
 
     <select id="selectUsersCondition" resultType="com.gitgle.service.VO.resp.RankResp">
-
+        SELECT user.id, username, nation, domain, talent_rank, github_id
+        FROM user
+        INNER JOIN domain ON user.domain_id = domain.id
+        INNER JOIN nation ON user.nation_id = nation.id
+        <where>
+            <if test="req.domainId != null and req.domainId != ''">
+                AND user.domain_id = #{req.domainId}
+            </if>
+            <if test="req.nationId != null and req.nationId != ''" >
+                AND user.nation_id = #{req.nationId}
+            </if>
+        </where>
+        <if test="current != null and size != null and current !='' and size != ''">
+            LIMIT #{current}, #{size}
+        </if>
     </select>
 </mapper>

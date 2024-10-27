@@ -67,7 +67,7 @@
         <resources>
             <!--如果src/main/java目录下有xml文件，一同进行编译到classes目录下-->
             <resource>
-                <directory>src/main/java</directory>
+                <directory>src/main/resources</directory>
                 <includes>
                     <include>**/*.xml</include>
                 </includes>

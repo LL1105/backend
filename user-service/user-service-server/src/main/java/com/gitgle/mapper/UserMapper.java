@@ -2,7 +2,7 @@ package com.gitgle.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.gitgle.entity.User;
-import com.gitgle.service.VO.req.RankSeq;
+import com.gitgle.service.VO.req.RankReq;
 import com.gitgle.service.VO.resp.RankResp;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -16,6 +16,6 @@ public interface UserMapper extends BaseMapper<User> {
     @Insert("insert into user (username, password, email) values (#{username}, #{password}, #{email})")
     int insertUser(User user);
 
-    List<RankResp> selectUsersCondition(int current, int size, RankSeq seq);
+    List<RankResp> selectUsersCondition(int current, int size, RankReq req);
 
 }

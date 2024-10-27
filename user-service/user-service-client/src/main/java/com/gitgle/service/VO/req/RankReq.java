@@ -3,7 +3,7 @@ package com.gitgle.service.VO.req;
 import lombok.Data;
 
 @Data
-public class RankSeq {
+public class RankReq {
 
     private Integer nation_id;
 

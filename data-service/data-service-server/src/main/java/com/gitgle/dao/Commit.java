@@ -54,7 +54,7 @@ public class Commit implements Serializable {
     /**
      * 
      */
-    private LocalDateTime commitDateTime;
+    private String commitDateTime;
 
     /**
      * 
