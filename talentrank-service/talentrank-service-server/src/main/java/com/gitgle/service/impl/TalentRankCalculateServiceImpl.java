@@ -1,6 +1,8 @@
 package com.gitgle.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.gitgle.constant.RpcResultCode;
+import com.gitgle.request.GithubRequest;
 import com.gitgle.response.GithubCommit;
 import com.gitgle.response.GithubCommitResponse;
 import com.gitgle.response.GithubRepos;
@@ -15,9 +17,7 @@ import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -62,21 +62,32 @@ public class TalentRankCalculateServiceImpl implements TalentRankCalculateServic
         BigDecimal talentRank = new BigDecimal(0);
         GithubCommitResponse githubCommitResponse = githubCommitResponseRpcResult.getData();
         // 统计该开发者参121.36.79.38:8848与提交的所有项目
-        Set<String> githubRepoNameSet = new HashSet<>();
+        Map<String, String> githubRepoMap = new HashMap<>();
         for(GithubCommit githubCommit : githubCommitResponse.getGithubCommitList()){
-            githubRepoNameSet.add(githubCommit.getReposName());
+            githubRepoMap.put(githubCommit.getReposName(), githubCommit.getReposOwner());
         }
         // 计算每个仓库的重要度以及开发者在每个仓库的贡献度
-        for(String githubRepoName : githubRepoNameSet){
-            BigDecimal projectImportance = new BigDecimal(calculateProjectImportance(owner, githubRepoName));
-            BigDecimal contribution = new BigDecimal(calculateContribution(owner, githubRepoName));
+        for(Map.Entry<String, String> githubRepo : githubRepoMap.entrySet()){
+            BigDecimal projectImportance = new BigDecimal(calculateProjectImportance(owner, githubRepo.getKey()));
+            BigDecimal contribution = new BigDecimal(calculateContribution(githubRepo.getValue(), githubRepo.getKey(), owner));
             talentRank = talentRank.add(projectImportance.multiply(contribution));
         }
         return talentRank.toString();
     }
 
     @Override
-    public String calculateContribution(String owner, String repoName) {
-        return "9.99999";
+    public String calculateContribution(String repoOwner, String repoName, String author) {
+        if(StringUtils.isEmpty(repoOwner) || StringUtils.isEmpty(repoName) || StringUtils.isEmpty(author)){
+            return "1";
+        }
+        GithubRequest githubRequest = new GithubRequest();
+        githubRequest.setOwner(repoOwner);
+        githubRequest.setRepoName(repoName);
+        githubRequest.setAuthor(author);
+        RpcResult<GithubCommitResponse> githubCommitResponseRpcResultAuthor = githubCommitService.listCommitsByRepoAndAuthor(githubRequest);
+        if(!RpcResultCode.SUCCESS.equals(githubCommitResponseRpcResultAuthor.getCode())){
+            return "0";
+        }
+        return String.valueOf(githubCommitResponseRpcResultAuthor.getData().getGithubCommitList().size());
     }
 }
