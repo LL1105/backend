@@ -14,7 +14,7 @@ import com.gitgle.constant.RedisConstant;
 import com.gitgle.mapper.UserMapper;
 import com.gitgle.result.R;
 import com.gitgle.entity.User;
-import com.gitgle.service.VO.req.RankSeq;
+import com.gitgle.service.VO.req.RankReq;
 import com.gitgle.service.VO.resp.LoginResp;
 import com.gitgle.service.VO.UserVo;
 import com.gitgle.service.VO.resp.RankResp;
@@ -33,6 +33,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -110,7 +111,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         userVo.setPassword(password);
 
         User user = UserVoToUser.toUser(userVo);
-        userMapper.insertUser(user);
+        userMapper.insert(user);
         RegisterResp resp = new RegisterResp();
         BeanUtils.copyProperties(user, resp);
         return R.Success(resp);
@@ -156,15 +157,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
 
     @Override
     public R getUsersByNation(String nation) {
-        //TODO 待删
         return null;
     }
 
     @Override
-    public R conditionCheckRank(Integer size, Integer current, RankSeq req) {
-        Page<RankResp> page = new Page<>(current, size);
-        LambdaQueryWrapper<RankResp> queryWrapper = new LambdaQueryWrapper<>();
-        //TODO 返回条件查询
-        return null;
+    public R conditionCheckRank(Integer size, Integer current, RankReq req) {
+        List<RankResp> rankResps = userMapper.selectUsersCondition(current, size, req);
+        return R.Success(rankResps);
     }
 }
