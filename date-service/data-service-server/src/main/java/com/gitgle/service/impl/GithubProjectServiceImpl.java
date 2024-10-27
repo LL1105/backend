@@ -1,6 +1,7 @@
 package com.gitgle.service.impl;
 
 import com.gitgle.response.GithubReposResponse;
+import com.gitgle.result.RpcResult;
 import com.gitgle.service.GithubProjectService;
 import org.apache.dubbo.config.annotation.DubboService;
 
@@ -8,7 +9,7 @@ import org.apache.dubbo.config.annotation.DubboService;
 public class GithubProjectServiceImpl implements GithubProjectService {
 
     @Override
-    public GithubReposResponse getProjectByDeveloperId(String developerId) {
+    public RpcResult<GithubReposResponse> getProjectByDeveloperId(String developerId) {
         return null;
     }
 }
