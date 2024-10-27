@@ -9,12 +9,12 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>talentrank-sevice</artifactId>
+    <artifactId>data-service</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
-        <module>talentrank-service-client</module>
-        <module>talentrank-service-server</module>
+        <module>data-servcie-client</module>
+        <module>data-service-server</module>
     </modules>
 
     <dependencies>
