@@ -1,6 +1,5 @@
 package com.gitgle.service;
 
-import com.gitgle.constant.RpcResultCode;
 import com.gitgle.response.GithubUser;
 import com.gitgle.result.RpcResult;
 

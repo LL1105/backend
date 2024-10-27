@@ -1,18 +1,21 @@
 package com.gitgle.service.impl;
 
+import com.gitgle.service.TalentRankCalculateService;
 import com.gitgle.service.TalentRankService;
 import com.gitgle.service.UserService;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 
+import javax.annotation.Resource;
+
 @DubboService
 public class TalentRankServiceimpl implements TalentRankService {
 
-    @DubboReference
-    UserService userService;
+    @Resource
+    private TalentRankCalculateService talentRankCalculateService;
 
     @Override
-    public String getTalentrankByUserId(Integer userId) {
-        return userService.getRank(userId);
+    public String getTalentrankByUserId(String developerId) {
+        return talentRankCalculateService.calculateTalentRank(developerId);
     }
 }

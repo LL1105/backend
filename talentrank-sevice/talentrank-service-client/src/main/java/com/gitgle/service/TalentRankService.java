@@ -4,8 +4,8 @@ public interface TalentRankService {
 
     /**
      * 根据用户id获取TalentRank
-     * @param userId 用户id
+     * @param developerId 开发者login
      * @return TalentRank得分
      */
-    String getTalentrankByUserId(Integer userId);
+    String getTalentrankByUserId(String developerId);
 }

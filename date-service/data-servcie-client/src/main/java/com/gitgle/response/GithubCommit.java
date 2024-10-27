@@ -12,6 +12,8 @@ public class GithubCommit implements Serializable {
 
     private String reposId;
 
+    private String reposName;
+
     private String reposOwner;
 
     /**
