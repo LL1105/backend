@@ -65,4 +65,33 @@ public class GithubApiRequestUtils {
         Response response = httpClient.newCall(request).execute();
         return response;
     }
+
+    public Response searchCommits(Map<String, String> queryParams) throws IOException {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.SEARCH_COMMIT.getAddress()).newBuilder();
+        for(Map.Entry<String, String> entry : queryParams.entrySet()){
+            urlBuilder.addQueryParameter(entry.getKey(), entry.getValue());
+        }
+        String url = urlBuilder.build().toString();
+        Request request = new Request.Builder()
+                .header(ACCEPT,APPLICATION_VND_GITHUB_JSON)
+                .header(AUTHORIZATION,authToken)
+                .header(X_GITHUB_API_VERSION_KEY, X_GITHUB_API_VERSION)
+                .url(url)
+                .build();
+        Response response = httpClient.newCall(request).execute();
+        return response;
+    }
+
+    public Response getOneRepo(String repoName, String owner) throws IOException {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.GET_ONE_REPO.getAddress() + "/" + owner + "/" + repoName).newBuilder();
+        String url = urlBuilder.build().toString();
+        Request request = new Request.Builder()
+                .header(ACCEPT,APPLICATION_VND_GITHUB_JSON)
+                .header(AUTHORIZATION,authToken)
+                .header(X_GITHUB_API_VERSION_KEY, X_GITHUB_API_VERSION)
+                .url(url)
+                .build();
+        Response response = httpClient.newCall(request).execute();
+        return response;
+    }
 }
