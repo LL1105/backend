@@ -45,6 +45,7 @@ public class GithubCommitServiceImpl implements GithubCommitService {
                 githubCommit.setAuthorLogin(item.getJSONObject("author").getString("login"));
                 githubCommit.setReposId(item.getJSONObject("repository").getString("id"));
                 githubCommit.setCommitDataTime(item.getJSONObject("commit").getJSONObject("committer").getString("date"));
+                githubCommit.setReposOwner(item.getJSONObject("repository").getJSONObject("owner").getString("login"));
                 githubCommitList.add(githubCommit);
             }
             GithubCommitResponse githubCommitResponse = new GithubCommitResponse();

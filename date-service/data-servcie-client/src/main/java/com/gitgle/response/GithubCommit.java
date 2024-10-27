@@ -12,6 +12,8 @@ public class GithubCommit implements Serializable {
 
     private String reposId;
 
+    private String reposOwner;
+
     /**
      * 示例："2024-09-01T17:02:03.000+08:00"
      */
