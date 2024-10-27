@@ -56,7 +56,7 @@ public class UserController {
 
     @PostMapping("/getRank")
     public R getTanlentRank(Integer userId) {
-        return R.Success(talentRankService.getTalentrankByUserId(userId));
+        return R.Success(talentRankService.getTalentrankByUserId(String.valueOf(userId)));
     }
 
 }

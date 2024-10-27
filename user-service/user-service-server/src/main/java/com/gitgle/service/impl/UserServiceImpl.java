@@ -4,16 +4,21 @@ package com.gitgle.service.impl;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gitgle.VO.UserVoToUser;
 import com.gitgle.constant.RedisConstant;
 import com.gitgle.mapper.UserMapper;
 import com.gitgle.result.R;
 import com.gitgle.entity.User;
+import com.gitgle.service.VO.req.RankSeq;
 import com.gitgle.service.VO.resp.LoginResp;
 import com.gitgle.service.VO.UserVo;
+import com.gitgle.service.VO.resp.RankResp;
+import com.gitgle.service.VO.resp.RegisterResp;
 import com.gitgle.service.VO.resp.UserInfoResp;
 import com.gitgle.utils.Md5Util;
 import lombok.extern.slf4j.Slf4j;
@@ -106,9 +111,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
 
         User user = UserVoToUser.toUser(userVo);
         userMapper.insertUser(user);
-
-        user.setPassword("");
-        return R.Success(user);
+        RegisterResp resp = new RegisterResp();
+        BeanUtils.copyProperties(user, resp);
+        return R.Success(resp);
     }
 
     public String randomCode() {
@@ -147,5 +152,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         Boolean isLogin = tokenInfo.isLogin;
         if(!isLogin) return SaResult.ok();
         return SaResult.error("退出失败");
+    }
+
+    @Override
+    public R getUsersByNation(String nation) {
+        //TODO 待删
+        return null;
+    }
+
+    @Override
+    public R conditionCheckRank(Integer size, Integer current, RankSeq req) {
+        Page<RankResp> page = new Page<>(current, size);
+        LambdaQueryWrapper<RankResp> queryWrapper = new LambdaQueryWrapper<>();
+        //TODO 返回条件查询
+        return null;
     }
 }
