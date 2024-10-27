@@ -35,4 +35,6 @@ public class GithubRepos implements Serializable {
     private String createdAt;
 
     private String updateAt;
+
+    private String projectId;
 }

@@ -1,0 +1,29 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: data-service
+  datasource:
+    url: jdbc:mysql://gitgle.mysql.polardb.rds.aliyuncs.com:3306/gitgle
+    username: gitgle
+    password: gitgle_1024
+    driver-class-name: com.mysql.jdbc.Driver
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 121.36.79.38:8848
+
+github:
+  auth-token: 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
+
+dubbo:
+  registry:
+    address: nacos://121.36.79.38:8848
+  protocol:
+    name: dubbo
+    port: 50060
+  application:
+    name: ${spring.application.name}
+    logger: slf4j
+

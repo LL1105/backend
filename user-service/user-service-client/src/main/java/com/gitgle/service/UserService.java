@@ -3,6 +3,7 @@ package com.gitgle.service;
 import cn.dev33.satoken.util.SaResult;
 import com.gitgle.result.R;
 import com.gitgle.service.VO.UserVo;
+import com.gitgle.service.VO.req.RankSeq;
 
 
 public interface UserService {
@@ -22,4 +23,8 @@ public interface UserService {
 
     //登出
     SaResult logout();
+
+    R getUsersByNation(String nation);
+
+    R conditionCheckRank(Integer size, Integer current, RankSeq req);
 }
