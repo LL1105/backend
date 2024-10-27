@@ -111,7 +111,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         userVo.setPassword(password);
 
         User user = UserVoToUser.toUser(userVo);
-        userMapper.insertUser(user);
+        userMapper.insert(user);
         RegisterResp resp = new RegisterResp();
         BeanUtils.copyProperties(user, resp);
         return R.Success(resp);

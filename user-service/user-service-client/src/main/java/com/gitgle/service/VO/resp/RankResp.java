@@ -1,5 +1,6 @@
 package com.gitgle.service.VO.resp;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.io.Serializable;

@@ -2,12 +2,14 @@ package com.gitgle.service.VO.req;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
-public class RankReq {
+public class RankReq implements Serializable {
 
-    private Integer nation_id;
+    private Integer nationId;
 
-    private Integer domain_id;
+    private Integer domainId;
 
     private String username;
 
