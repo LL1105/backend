@@ -11,9 +11,6 @@ public class GithubRepos implements Serializable {
     @JsonProperty("id")
     private String id;
 
-    @JsonProperty("node_id")
-    private String nodeId;
-
     @JsonProperty("full_name")
     private String fullName;
 
@@ -24,4 +21,18 @@ public class GithubRepos implements Serializable {
     private Boolean orPrivate;
 
     private String ownerLogin;
+
+    private Integer starsCount;
+
+    private Integer forksCount;
+
+    private Integer issueCount;
+
+    private Integer watchersCount;
+
+    private String description;
+
+    private String createdAt;
+
+    private String updateAt;
 }
