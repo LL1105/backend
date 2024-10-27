@@ -9,6 +9,7 @@ import com.gitgle.result.RpcResult;
 import com.gitgle.service.GithubCommitService;
 import com.gitgle.service.GithubProjectService;
 import com.gitgle.service.TalentRankCalculateService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.stereotype.Service;
@@ -18,8 +19,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @Service
 public class TalentRankCalculateServiceImpl implements TalentRankCalculateService {
+
+    private String projectImportanceStarter = "1";
+
+    private String starWeight = "0.5";
+
+    private String forkWeight = "0.5";
 
     @DubboReference
     private GithubProjectService githubProjectService;
@@ -29,7 +37,19 @@ public class TalentRankCalculateServiceImpl implements TalentRankCalculateServic
 
     @Override
     public String calculateProjectImportance(String owner, String repoName) {
-        return "9.99999";
+        // 获取项目信息
+        RpcResult<GithubRepos> githubReposResponseRpcResult = githubProjectService.getRepoByOwnerAndRepoName(owner, repoName);
+        if(!RpcResultCode.SUCCESS.equals(githubReposResponseRpcResult.getCode())) {
+            return "0";
+        }
+        GithubRepos githubRepos = githubReposResponseRpcResult.getData();
+        // 根据star数和fork数计算项目重要度
+        BigDecimal projectImportance = new BigDecimal(projectImportanceStarter);
+        BigDecimal starsCount = new BigDecimal(githubRepos.getStarsCount());
+        BigDecimal forksCount = new BigDecimal(githubRepos.getForksCount());
+        projectImportance.add(starsCount.multiply(new BigDecimal(starWeight))).add(forksCount.multiply(new BigDecimal(forkWeight)));
+        log.debug("projectImportance:{}", projectImportance);
+        return projectImportance.toString();
     }
 
     @Override

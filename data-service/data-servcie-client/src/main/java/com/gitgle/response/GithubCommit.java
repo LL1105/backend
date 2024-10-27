@@ -10,6 +10,8 @@ public class GithubCommit implements Serializable {
 
     private String authorLogin;
 
+    private String sha;
+
     private String reposId;
 
     private String reposName;
