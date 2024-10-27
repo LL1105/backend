@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
  * Github Api 请求客户端配置
  */
 @Configuration
-public class GithubHttpClientConfig {
+public class HttpClientConfig {
 
     @Bean
     public OkHttpClient okHttpClient(){

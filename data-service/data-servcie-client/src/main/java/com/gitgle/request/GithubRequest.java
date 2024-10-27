@@ -12,4 +12,6 @@ public class GithubRequest implements Serializable {
     private String repoName;
 
     private String author;
+
+    private String path;
 }
