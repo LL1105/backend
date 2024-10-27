@@ -1,5 +1,6 @@
 package com.gitgle.service;
 
+import com.gitgle.request.GithubRequest;
 import com.gitgle.response.GithubCommit;
 import com.gitgle.response.GithubCommitResponse;
 import com.gitgle.result.RpcResult;
@@ -15,4 +16,11 @@ public interface GithubCommitService {
      * @return commit列表
      */
     RpcResult<GithubCommitResponse> searchCommitsByDeveloperId(String developerId);
+
+    /**
+     * 根据查询开发者在特定仓库的提交记录
+     * @param githubRequest 请求参数
+     * @return commit列表
+     */
+    RpcResult<GithubCommitResponse> listCommitsByRepoAndAuthor(GithubRequest githubRequest);
 }
