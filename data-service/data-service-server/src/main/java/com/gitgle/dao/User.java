@@ -10,11 +10,11 @@ import lombok.Data;
 
 /**
  * 
- * @TableName commit
+ * @TableName user
  */
-@TableName(value ="commit")
+@TableName(value ="user")
 @Data
-public class Commit implements Serializable {
+public class User implements Serializable {
     /**
      * 
      */
@@ -34,32 +34,7 @@ public class Commit implements Serializable {
     /**
      * 
      */
-    private String authorLogin;
-
-    /**
-     * 
-     */
-    private String reposId;
-
-    /**
-     * 
-     */
-    private String reposName;
-
-    /**
-     * 
-     */
-    private String reposOwner;
-
-    /**
-     * 
-     */
-    private String commitDateTime;
-
-    /**
-     * 
-     */
-    private String sha;
+    private String login;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

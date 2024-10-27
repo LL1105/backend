@@ -12,7 +12,7 @@
             <result property="reposId" column="repos_id" jdbcType="VARCHAR"/>
             <result property="reposName" column="repos_name" jdbcType="VARCHAR"/>
             <result property="reposOwner" column="repos_owner" jdbcType="VARCHAR"/>
-            <result property="commitDateTime" column="commit_date_time" jdbcType="TIMESTAMP"/>
+            <result property="commitDateTime" column="commit_date_time" jdbcType="VARCHAR"/>
             <result property="sha" column="sha" jdbcType="VARCHAR"/>
     </resultMap>
 

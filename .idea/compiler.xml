@@ -23,7 +23,9 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="date-service" target="1.8" />
       <module name="talentrank-client" target="1.8" />
+      <module name="talentrank-sevice" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">

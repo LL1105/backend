@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gitgle.mapper.ReposMapper">
+
+    <resultMap id="BaseResultMap" type="com.gitgle.dao.Repos">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="orPrivate" column="or_private" jdbcType="TINYINT"/>
+            <result property="ownerlogin" column="ownerLogin" jdbcType="VARCHAR"/>
+            <result property="starsCount" column="stars_count" jdbcType="INTEGER"/>
+            <result property="forksCount" column="forks_count" jdbcType="INTEGER"/>
+            <result property="issueCount" column="issue_count" jdbcType="INTEGER"/>
+            <result property="createAt" column="create_at" jdbcType="VARCHAR"/>
+            <result property="updateAt" column="update_at" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,create_time,update_time,
+        name,or_private,ownerLogin,
+        stars_count,forks_count,issue_count,
+        create_at,update_at
+    </sql>
+</mapper>

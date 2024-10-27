@@ -105,6 +105,9 @@ public class GithubCommitServiceImpl implements GithubCommitService {
 
     public List<GithubCommit> readGithubCommit(String authorLogin){
         List<Commit> commitList = commitMapper.selectList(Wrappers.lambdaQuery(Commit.class).eq(Commit::getAuthorLogin, authorLogin));
+        if(ObjectUtils.isEmpty(commitList)){
+            return null;
+        }
         return commitList.stream().map(commit -> {
             GithubCommit githubCommit = new GithubCommit();
             githubCommit.setSha(commit.getSha());
@@ -124,7 +127,7 @@ public class GithubCommitServiceImpl implements GithubCommitService {
         }
         // 如果没有则入库
         commit = new Commit();
-        commit.setCommitDateTime(githubApiRequestUtils.parseTime(githubCommit.getCommitDataTime()));
+        commit.setCommitDateTime(githubCommit.getCommitDataTime());
         commit.setAuthorLogin(githubCommit.getAuthorLogin());
         commit.setReposId(githubCommit.getReposId());
         commit.setReposName(githubCommit.getReposName());
