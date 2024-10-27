@@ -5,16 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.gitgle</groupId>
-        <artifactId>talentrank-sevice</artifactId>
+        <artifactId>data-service</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>talentrank-service-client</artifactId>
-
-    <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+    <artifactId>data-servcie-client</artifactId>
 
 </project>
