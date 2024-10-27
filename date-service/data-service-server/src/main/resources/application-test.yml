@@ -15,7 +15,11 @@ spring:
         server-addr: 121.36.79.38:8848
 
 github:
-  auth-token: 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
+  auth-token:
+    list:
+    - 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
+    - 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
+    - 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
 
 dubbo:
   registry:

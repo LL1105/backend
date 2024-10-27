@@ -1,15 +1,21 @@
 package com.gitgle.utils;
 
+import com.gitgle.config.GithubAuthToken;
 import com.gitgle.constant.GithubRestApi;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,8 +24,10 @@ import java.util.Map;
 @Component
 public class GithubApiRequestUtils {
 
-    @Value("${github.auth-token}")
-    private String authToken;
+    @Autowired
+    private GithubAuthToken githubAuthToken;
+
+    private static Integer loadBalanceIndex = 0;
 
     private static final String AUTHORIZATION = "Authorization";
 
@@ -34,6 +42,19 @@ public class GithubApiRequestUtils {
     @Resource
     private OkHttpClient httpClient;
 
+    public LocalDateTime parseTime(String time){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        OffsetDateTime offsetDateTime = OffsetDateTime.parse(time, formatter);
+        LocalDateTime localDateTime = offsetDateTime.toLocalDateTime();
+        return localDateTime;
+    }
+
+    private String loadBalanceAuthToken() {
+        String token = githubAuthToken.getList().get(loadBalanceIndex);
+        loadBalanceIndex = (loadBalanceIndex + 1) % githubAuthToken.getList().size();
+        return token;
+    }
+
     public Response searchUsers(Map<String, String> queryParams) throws IOException {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.SEARCH_USERS.getAddress()).newBuilder();
         for(Map.Entry<String, String> entry : queryParams.entrySet()){
@@ -42,7 +63,7 @@ public class GithubApiRequestUtils {
         String url = urlBuilder.build().toString();
         Request request = new Request.Builder()
                 .header(ACCEPT,APPLICATION_VND_GITHUB_JSON)
-                .header(AUTHORIZATION,authToken)
+                .header(AUTHORIZATION,loadBalanceAuthToken())
                 .header(X_GITHUB_API_VERSION_KEY, X_GITHUB_API_VERSION)
                 .url(url)
                 .build();
@@ -58,7 +79,7 @@ public class GithubApiRequestUtils {
         String url = urlBuilder.build().toString();
         Request request = new Request.Builder()
                 .header(ACCEPT,APPLICATION_VND_GITHUB_JSON)
-                .header(AUTHORIZATION,authToken)
+                .header(AUTHORIZATION,loadBalanceAuthToken())
                 .header(X_GITHUB_API_VERSION_KEY, X_GITHUB_API_VERSION)
                 .url(url)
                 .build();
@@ -74,7 +95,7 @@ public class GithubApiRequestUtils {
         String url = urlBuilder.build().toString();
         Request request = new Request.Builder()
                 .header(ACCEPT,APPLICATION_VND_GITHUB_JSON)
-                .header(AUTHORIZATION,authToken)
+                .header(AUTHORIZATION,loadBalanceAuthToken())
                 .header(X_GITHUB_API_VERSION_KEY, X_GITHUB_API_VERSION)
                 .url(url)
                 .build();
@@ -87,7 +108,7 @@ public class GithubApiRequestUtils {
         String url = urlBuilder.build().toString();
         Request request = new Request.Builder()
                 .header(ACCEPT,APPLICATION_VND_GITHUB_JSON)
-                .header(AUTHORIZATION,authToken)
+                .header(AUTHORIZATION,loadBalanceAuthToken())
                 .header(X_GITHUB_API_VERSION_KEY, X_GITHUB_API_VERSION)
                 .url(url)
                 .build();
