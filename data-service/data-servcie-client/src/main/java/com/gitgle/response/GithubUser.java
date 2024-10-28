@@ -26,4 +26,13 @@ public class GithubUser implements Serializable {
 
     @JsonProperty("html_url")
     private String htmlUrl;
+
+    @JsonProperty("location")
+    private String location;
+
+    @JsonProperty("bio")
+    private String bio;
+
+    @JsonProperty("company")
+    private String company;
 }

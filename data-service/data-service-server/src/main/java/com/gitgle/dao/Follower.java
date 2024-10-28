@@ -10,16 +10,26 @@ import lombok.Data;
 
 /**
  * 
- * @TableName user
+ * @TableName follower
  */
-@TableName(value ="user")
+@TableName(value ="follower")
 @Data
-public class User implements Serializable {
+public class Follower implements Serializable {
     /**
      * 
      */
     @TableId(type = IdType.AUTO)
     private Integer id;
+
+    /**
+     * 关注用户的用户名
+     */
+    private String login;
+
+    /**
+     * 用户的用户名（就是被关注的）
+     */
+    private String username;
 
     /**
      * 
@@ -30,31 +40,6 @@ public class User implements Serializable {
      * 
      */
     private LocalDateTime updateTime;
-
-    /**
-     * 
-     */
-    private String login;
-
-    /**
-     * 
-     */
-    private String avatarUrl;
-
-    /**
-     * 
-     */
-    private String locationn;
-
-    /**
-     * 
-     */
-    private String bio;
-
-    /**
-     * 
-     */
-    private String company;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
