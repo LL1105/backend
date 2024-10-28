@@ -124,4 +124,17 @@ public class GithubApiRequestUtils {
         Response response = httpClient.newCall(request).execute();
         return response;
     }
+
+    public Response getRepoContent(String owner, String repoName, String path) throws IOException {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.GET_ONE_REPO.getAddress() + "/" + owner + "/" + repoName + "/contents/" + path).newBuilder();
+        String url = urlBuilder.build().toString();
+        Request request = new Request.Builder()
+                .header(ACCEPT,APPLICATION_VND_GITHUB_JSON)
+                .header(AUTHORIZATION,loadBalanceAuthToken())
+                .header(X_GITHUB_API_VERSION_KEY, X_GITHUB_API_VERSION)
+                .url(url)
+                .build();
+        Response response = httpClient.newCall(request).execute();
+        return response;
+    }
 }

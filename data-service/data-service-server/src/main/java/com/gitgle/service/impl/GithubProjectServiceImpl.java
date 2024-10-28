@@ -7,15 +7,14 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.gitgle.constant.RpcResultCode;
 import com.gitgle.dao.Repos;
 import com.gitgle.mapper.ReposMapper;
-import com.gitgle.response.GithubCommit;
-import com.gitgle.response.GithubCommitResponse;
-import com.gitgle.response.GithubRepos;
-import com.gitgle.response.GithubReposResponse;
+import com.gitgle.request.GithubRequest;
+import com.gitgle.response.*;
 import com.gitgle.result.RpcResult;
 import com.gitgle.service.GithubProjectService;
 import com.gitgle.utils.GithubApiRequestUtils;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.dubbo.config.annotation.DubboService;
 
 import javax.annotation.Resource;
@@ -53,12 +52,12 @@ public class GithubProjectServiceImpl implements GithubProjectService {
                 return githubReposRpcResult;
             }
             Response response = githubApiRequestUtils.getOneRepo(developerId, repoName);
-            JSONObject responseBody = JSON.parseObject(response.body().string());
-            log.info("Github SearchUsers Response: {}", responseBody);
             if(!response.isSuccessful()){
                 githubReposRpcResult.setCode(RpcResultCode.Github_RESPONSE_FAILED);
                 return githubReposRpcResult;
             }
+            JSONObject responseBody = JSON.parseObject(response.body().string());
+            log.info("Github GetRepo Response: {}", responseBody);
             githubRepos = new GithubRepos();
             githubRepos.setId(responseBody.getString("id"));
             githubRepos.setName(responseBody.getString("name"));
@@ -83,9 +82,39 @@ public class GithubProjectServiceImpl implements GithubProjectService {
             githubReposRpcResult.setCode(RpcResultCode.SUCCESS);
             return githubReposRpcResult;
         } catch (IOException e) {
-            log.error("Github SearchUsers Exception: {}", e);
+            log.error("Github getRepo Exception: {}", e);
             githubReposRpcResult.setCode(RpcResultCode.FAILED);
             return githubReposRpcResult;
+        }
+    }
+
+    @Override
+    public RpcResult<GithubReposContent> getRepoContentByPath(GithubRequest githubRequest) {
+        RpcResult<GithubReposContent> githubReposContentRpcResult = new RpcResult<>();
+        GithubReposContent githubReposContent = new GithubReposContent();
+        try {
+            Response response = githubApiRequestUtils.getRepoContent(githubRequest.getOwner(), githubRequest.getRepoName(), githubRequest.getPath());
+            if(!response.isSuccessful()){
+                githubReposContentRpcResult.setCode(RpcResultCode.Github_RESPONSE_FAILED);
+                return githubReposContentRpcResult;
+            }
+            JSONObject responseBody = JSON.parseObject(response.body().string());
+            log.info("Github SearchUsers Response: {}", responseBody);
+            githubReposContent.setPath(responseBody.getString("path"));
+            githubReposContent.setName(responseBody.getString("name"));
+            githubReposContent.setSha(responseBody.getString("sha"));
+            githubReposContent.setType(responseBody.getString("type"));
+            githubReposContent.setEncoding(responseBody.getString("encoding"));
+            githubReposContent.setSize(responseBody.getInteger("size"));
+            byte[] decodedBytes = Base64.decodeBase64(responseBody.getString("content"));
+            githubReposContent.setContent(new String(decodedBytes));
+            githubReposContentRpcResult.setData(githubReposContent);
+            githubReposContentRpcResult.setCode(RpcResultCode.SUCCESS);
+            return githubReposContentRpcResult;
+        } catch (IOException e) {
+            log.error("Github GetRepoContent Exception: {}", e);
+            githubReposContentRpcResult.setCode(RpcResultCode.FAILED);
+            return githubReposContentRpcResult;
         }
     }
 

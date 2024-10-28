@@ -10,14 +10,14 @@ import java.util.concurrent.TimeUnit;
  * Github Api 请求客户端配置
  */
 @Configuration
-public class GithubHttpClientConfig {
+public class HttpClientConfig {
 
     @Bean
     public OkHttpClient okHttpClient(){
         return new OkHttpClient().newBuilder()
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .readTimeout(10, TimeUnit.SECONDS)
-                .writeTimeout(10, TimeUnit.SECONDS)
+                .connectTimeout(100, TimeUnit.SECONDS)
+                .readTimeout(100, TimeUnit.SECONDS)
+                .writeTimeout(100, TimeUnit.SECONDS)
                 .build();
     }
 
