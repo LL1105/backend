@@ -8,4 +8,9 @@ import java.io.Serializable;
 public class NationResponse implements Serializable {
 
     private String nation;
+
+    private String nationEnglish;
+
+    private String confidence;
+
 }
