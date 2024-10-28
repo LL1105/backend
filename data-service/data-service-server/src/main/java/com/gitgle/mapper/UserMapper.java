@@ -1,7 +1,7 @@
 package com.gitgle.mapper;
 
-import com.gitgle.dao.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.gitgle.dao.User;
 
 /**
 * @author maojunjun
