@@ -101,7 +101,7 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
                     }
                 }
                 JSONArray responseBody = JSON.parseArray(response.body().string());
-                log.info("Github List Commits Response: {}", responseBody);
+                log.info("Github List Follower Response: {}", responseBody);
                 for(int i=0; i<responseBody.size(); i++){
                     JSONObject item =responseBody.getJSONObject(i);
                     GithubFollowers githubFollowers = new GithubFollowers();
@@ -130,6 +130,61 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
             log.info("Github GetFollowers Exception: {}", e);
             githubFollowersRpcResult.setCode(RpcResultCode.FAILED);
             return githubFollowersRpcResult;
+        }
+    }
+
+    @Override
+    public RpcResult<GithubOrganizationResponse> getOrganizationByDeveloperId(String developerId) {
+        RpcResult<GithubOrganizationResponse> githubOrganizationResponseRpcResult = new RpcResult<>();
+        GithubOrganizationResponse githubOrganizationResponse = new GithubOrganizationResponse();
+        try {
+            HashMap<String, String> queryParams = new HashMap<>();
+            ArrayList<GithubCommit> githubCommitList= new ArrayList<>();
+            queryParams.put("per_page", "100");
+            Integer page = 1;
+            List<GithubOrganization> githubOrganizationList = new ArrayList<>();
+            while(true){
+                queryParams.put("page", page.toString());
+                Response response = githubApiRequestUtils.getUserFollowers(developerId, queryParams);
+                if(!response.isSuccessful()){
+                    if(page.equals(1)){
+                        githubOrganizationResponseRpcResult.setCode(RpcResultCode.Github_RESPONSE_FAILED);
+                        return githubOrganizationResponseRpcResult;
+                    }else{
+                        log.error("Github Api Failed In page:{}", page);
+                        break;
+                    }
+                }
+                JSONArray responseBody = JSON.parseArray(response.body().string());
+                log.info("Github List Organization Response: {}", responseBody);
+                for(int i=0; i<responseBody.size(); i++){
+                    JSONObject item =responseBody.getJSONObject(i);
+                    GithubOrganization githubOrganization = new GithubOrganization();
+                    githubOrganization.setId(item.getLong("id"));
+                    githubOrganization.setLogin(item.getString("login"));
+                    githubOrganization.setAvatarUrl(item.getString("avatar_url"));
+                    githubOrganizationList.add(githubOrganization);
+                    // 异步写库
+                    /*CompletableFuture.runAsync(()-> {
+                        followerService.writeGithubFollower2Follower(githubFollowers);
+                    }).exceptionally(ex -> {
+                        log.error("Github Follower Write Exception: {}", ex);
+                        return null;
+                    });*/
+                }
+                if(responseBody.size() < 100){
+                    break;
+                }
+                page++;
+            }
+            githubOrganizationResponse.setGithubOrganizationList(githubOrganizationList);
+            githubOrganizationResponseRpcResult.setCode(RpcResultCode.SUCCESS);
+            githubOrganizationResponseRpcResult.setData(githubOrganizationResponse);
+            return githubOrganizationResponseRpcResult;
+        } catch (IOException e) {
+            log.info("Github GetFollowers Exception: {}", e);
+            githubOrganizationResponseRpcResult.setCode(RpcResultCode.FAILED);
+            return githubOrganizationResponseRpcResult;
         }
     }
 }
