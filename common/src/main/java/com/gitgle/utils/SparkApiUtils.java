@@ -1,7 +1,6 @@
 package com.gitgle.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.gitgle.constant.SparkApi;
 import com.gitgle.utils.dto.SparkRequest;
 import com.gitgle.utils.dto.SparkRequestMessage;
@@ -21,6 +20,10 @@ public class SparkApiUtils {
     @Resource
     private OkHttpClient httpClient;
 
+    private static final String MODEL = "4.0Ultra";
+
+    private static final String APPID = "32bccb4c";
+
     private static final String CONTENT_TYPE_KEY = "Content-Type";
 
     private static final String CONTENT_TYPE = "application/json";
@@ -30,19 +33,16 @@ public class SparkApiUtils {
     private static final String AUTHORIZATION = "Bearer StCpnKKpegTzyzNfNMjX:BowKkiuifiyExMOSxkcG";
 
     public Response doRequest(String content) throws IOException {
-        log.info("请求内容: {}", content);
         SparkRequest sparkRequest = new SparkRequest();
-        sparkRequest.setModel("4.0Ultra");
-        sparkRequest.setUser("32bccb4c");
+        sparkRequest.setModel(MODEL);
+        sparkRequest.setUser(APPID);
         SparkRequestMessage sparkRequestMessage = new SparkRequestMessage();
         sparkRequestMessage.setRole("user");
         sparkRequestMessage.setContent(content);
         List<SparkRequestMessage> sparkRequestMessageList = new ArrayList<>();
         sparkRequestMessageList.add(sparkRequestMessage);
         sparkRequest.setMessages(sparkRequestMessageList);
-        // 将对象转换为JSON字符串
         String json = new ObjectMapper().writeValueAsString(sparkRequest);
-        log.info("JSON字符串: {}", json);
         HttpUrl.Builder urlBuilder = HttpUrl.parse(SparkApi.WEB_API.getUrl()).newBuilder();
         String url = urlBuilder.build().toString();
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), json);
