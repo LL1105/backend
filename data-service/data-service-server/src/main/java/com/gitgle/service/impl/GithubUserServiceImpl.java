@@ -134,6 +134,61 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
     }
 
     @Override
+    public RpcResult<GithubFollowersResponse> listUserFollowingByDeveloperId(String developerId) {
+        RpcResult<GithubFollowersResponse> githubFollowersRpcResult = new RpcResult<>();
+        GithubFollowersResponse githubFollowersResponse = new GithubFollowersResponse();
+        try {
+            HashMap<String, String> queryParams = new HashMap<>();
+            ArrayList<GithubCommit> githubCommitList= new ArrayList<>();
+            queryParams.put("per_page", "100");
+            Integer page = 1;
+            List<GithubFollowers> githubFollowersList = new ArrayList<>();
+            while(true){
+                queryParams.put("page", page.toString());
+                Response response = githubApiRequestUtils.listUserFollowing(developerId, queryParams);
+                if(!response.isSuccessful()){
+                    if(page.equals(1)){
+                        githubFollowersRpcResult.setCode(RpcResultCode.Github_RESPONSE_FAILED);
+                        return githubFollowersRpcResult;
+                    }else{
+                        log.error("Github Api Failed In page:{}", page);
+                        break;
+                    }
+                }
+                JSONArray responseBody = JSON.parseArray(response.body().string());
+                log.info("Github List Follower Response: {}", responseBody);
+                for(int i=0; i<responseBody.size(); i++){
+                    JSONObject item =responseBody.getJSONObject(i);
+                    GithubFollowers githubFollowers = new GithubFollowers();
+                    githubFollowers.setId(item.getLong("id"));
+                    githubFollowers.setLogin(item.getString("login"));
+                    githubFollowers.setAvatarUrl(item.getString("avatar_url"));
+                    githubFollowersList.add(githubFollowers);
+                    // 异步写库
+                    /*CompletableFuture.runAsync(()-> {
+                        followerService.writeGithubFollower2Follower(githubFollowers);
+                    }).exceptionally(ex -> {
+                        log.error("Github Follower Write Exception: {}", ex);
+                        return null;
+                    });*/
+                }
+                if(responseBody.size() < 100){
+                    break;
+                }
+                page++;
+            }
+            githubFollowersResponse.setGithubFollowersList(githubFollowersList);
+            githubFollowersRpcResult.setCode(RpcResultCode.SUCCESS);
+            githubFollowersRpcResult.setData(githubFollowersResponse);
+            return githubFollowersRpcResult;
+        } catch (IOException e) {
+            log.info("Github GetFollowers Exception: {}", e);
+            githubFollowersRpcResult.setCode(RpcResultCode.FAILED);
+            return githubFollowersRpcResult;
+        }
+    }
+
+    @Override
     public RpcResult<GithubOrganizationResponse> getOrganizationByDeveloperId(String developerId) {
         RpcResult<GithubOrganizationResponse> githubOrganizationResponseRpcResult = new RpcResult<>();
         GithubOrganizationResponse githubOrganizationResponse = new GithubOrganizationResponse();
