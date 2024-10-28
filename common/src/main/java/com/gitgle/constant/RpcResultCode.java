@@ -4,6 +4,7 @@ public enum RpcResultCode {
 
     SUCCESS(200, "SUCCESS"),
     Github_RESPONSE_FAILED(510, "Github Response Failed"),
+    REQUEST_SPARK_FAILED(511, "Request Spark Failed"),
     FAILED(500, "FAILED");
 
     private final int code;

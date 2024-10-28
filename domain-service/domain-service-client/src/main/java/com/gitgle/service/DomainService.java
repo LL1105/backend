@@ -1,6 +1,7 @@
 package com.gitgle.service;
 
 import com.gitgle.response.DomainResponse;
+import com.gitgle.result.RpcResult;
 
 public interface DomainService {
 
@@ -9,5 +10,5 @@ public interface DomainService {
      * @param owner 开发者login
      * @return 领域集合
      */
-    DomainResponse getDomainByDeveloperId(String owner);
+    RpcResult<DomainResponse> getDomainByDeveloperId(String owner);
 }

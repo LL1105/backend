@@ -52,12 +52,12 @@ public class GithubProjectServiceImpl implements GithubProjectService {
                 return githubReposRpcResult;
             }
             Response response = githubApiRequestUtils.getOneRepo(developerId, repoName);
-            JSONObject responseBody = JSON.parseObject(response.body().string());
-            log.info("Github GetRepo Response: {}", responseBody);
             if(!response.isSuccessful()){
                 githubReposRpcResult.setCode(RpcResultCode.Github_RESPONSE_FAILED);
                 return githubReposRpcResult;
             }
+            JSONObject responseBody = JSON.parseObject(response.body().string());
+            log.info("Github GetRepo Response: {}", responseBody);
             githubRepos = new GithubRepos();
             githubRepos.setId(responseBody.getString("id"));
             githubRepos.setName(responseBody.getString("name"));
