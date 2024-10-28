@@ -97,7 +97,6 @@ public class DomainServiceImpl implements DomainService {
                 return domainResponseRpcResult;
             }
             String content = responseBody.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content");
-            log.info("Spark Response: {}", responseBody);
             log.info("Spark Response Content: {}", content);
             List<UserDomainBase> userDomainBaseList = new ArrayList<>();
             String[] domainArray = content.split("\\|");
@@ -125,7 +124,7 @@ public class DomainServiceImpl implements DomainService {
             domainResponseRpcResult.setData(domainResponse);
             return domainResponseRpcResult;
         } catch (IOException e) {
-            log.error("获取domain失败");
+            log.error("推测开发者领域失败：{}", e);
             domainResponseRpcResult.setCode(RpcResultCode.Github_RESPONSE_FAILED);
             return domainResponseRpcResult;
         }

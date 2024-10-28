@@ -1,6 +1,7 @@
 package com.gitgle.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -8,9 +9,9 @@ import com.gitgle.constant.RpcResultCode;
 import com.gitgle.dao.Commit;
 import com.gitgle.dao.User;
 import com.gitgle.mapper.UserMapper;
-import com.gitgle.response.GithubCommit;
-import com.gitgle.response.GithubUser;
+import com.gitgle.response.*;
 import com.gitgle.result.RpcResult;
+import com.gitgle.service.FollowerService;
 import com.gitgle.utils.GithubApiRequestUtils;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
@@ -19,6 +20,7 @@ import org.apache.dubbo.config.annotation.DubboService;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -29,7 +31,10 @@ import java.util.stream.Collectors;
 public class GithubUserServiceImpl implements com.gitgle.service.GithubUserService {
 
     @Resource
-    private UserMapper userMapper;
+    private FollowerService followerService;
+
+    @Resource
+    private com.gitgle.service.UserService userService;
 
     @Resource
     private GithubApiRequestUtils githubApiRequestUtils;
@@ -39,7 +44,7 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
         RpcResult<GithubUser> githubUserRpcResult = new RpcResult<>();
         try {
             // 先查库，没有再github上搜索
-            GithubUser githubUser = readGithubUser(developerId);
+            GithubUser githubUser = userService.readGithubUser2GithubUser(developerId);
             if(ObjectUtils.isNotEmpty(githubUser)){
                 githubUserRpcResult.setData(githubUser);
                 githubUserRpcResult.setCode(RpcResultCode.SUCCESS);
@@ -58,7 +63,7 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
             // 异步写库
             final GithubUser finalGithubUser = githubUser;
             CompletableFuture.runAsync(()-> {
-                writeGithubUser(finalGithubUser);
+                userService.writeGithubUser2User(finalGithubUser);
             }).exceptionally(ex -> {
                 log.error("Github SearchUsers Exception: {}", ex);
                 return null;
@@ -73,27 +78,58 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
         }
     }
 
-    public GithubUser readGithubUser(String login){
-        User user = userMapper.selectOne(Wrappers.lambdaQuery(User.class).eq(User::getLogin, login));
-        if(ObjectUtils.isEmpty(user)){
-            return null;
+    @Override
+    public RpcResult<GithubFollowersResponse> getFollowersByDeveloperId(String developerId) {
+        RpcResult<GithubFollowersResponse> githubFollowersRpcResult = new RpcResult<>();
+        GithubFollowersResponse githubFollowersResponse = new GithubFollowersResponse();
+        try {
+            HashMap<String, String> queryParams = new HashMap<>();
+            ArrayList<GithubCommit> githubCommitList= new ArrayList<>();
+            queryParams.put("per_page", "100");
+            Integer page = 1;
+            List<GithubFollowers> githubFollowersList = new ArrayList<>();
+            while(true){
+                queryParams.put("page", page.toString());
+                Response response = githubApiRequestUtils.getUserFollowers(developerId, queryParams);
+                if(!response.isSuccessful()){
+                    if(page.equals(1)){
+                        githubFollowersRpcResult.setCode(RpcResultCode.Github_RESPONSE_FAILED);
+                        return githubFollowersRpcResult;
+                    }else{
+                        log.error("Github Api Failed In page:{}", page);
+                        break;
+                    }
+                }
+                JSONArray responseBody = JSON.parseArray(response.body().string());
+                log.info("Github List Commits Response: {}", responseBody);
+                for(int i=0; i<responseBody.size(); i++){
+                    JSONObject item =responseBody.getJSONObject(i);
+                    GithubFollowers githubFollowers = new GithubFollowers();
+                    githubFollowers.setId(item.getLong("id"));
+                    githubFollowers.setLogin(item.getString("login"));
+                    githubFollowers.setAvatarUrl(item.getString("avatar_url"));
+                    githubFollowersList.add(githubFollowers);
+                    // 异步写库
+                    /*CompletableFuture.runAsync(()-> {
+                        followerService.writeGithubFollower2Follower(githubFollowers);
+                    }).exceptionally(ex -> {
+                        log.error("Github Follower Write Exception: {}", ex);
+                        return null;
+                    });*/
+                }
+                if(responseBody.size() < 100){
+                    break;
+                }
+                page++;
+            }
+            githubFollowersResponse.setGithubFollowersList(githubFollowersList);
+            githubFollowersRpcResult.setCode(RpcResultCode.SUCCESS);
+            githubFollowersRpcResult.setData(githubFollowersResponse);
+            return githubFollowersRpcResult;
+        } catch (IOException e) {
+            log.info("Github GetFollowers Exception: {}", e);
+            githubFollowersRpcResult.setCode(RpcResultCode.FAILED);
+            return githubFollowersRpcResult;
         }
-        GithubUser githubUser = new GithubUser();
-        githubUser.setLogin(user.getLogin());
-        return githubUser;
-    }
-
-    public void writeGithubUser(GithubUser githubUser) {
-        // 先根据login查询数据库中是否存在
-        User user = userMapper.selectOne(Wrappers.lambdaQuery(User.class).eq(User::getLogin, githubUser.getLogin()));
-        if (ObjectUtils.isNotEmpty(user)) {
-            return;
-        }
-        // 如果没有则入库
-        user = new User();
-        user.setLogin(githubUser.getLogin());
-        user.setCreateTime(LocalDateTime.now());
-        user.setUpdateTime(LocalDateTime.now());
-        userMapper.insert(user);
     }
 }
