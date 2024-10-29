@@ -11,8 +11,6 @@ import com.gitgle.result.RpcResult;
  */
 public interface GithubProjectService {
 
-    RpcResult<GithubReposResponse> getProjectByDeveloperId(String developerId);
-
     /**
      * 根据仓库持有者和仓库名查询仓库信息
      * @param developId 开发者login

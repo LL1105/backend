@@ -56,8 +56,6 @@ public class UserServiceImpl implements UserService{
         githubUser.setCompany(user.getCompany());
         return githubUser;
     }
-
-
 }
 
 

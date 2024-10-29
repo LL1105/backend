@@ -4,6 +4,8 @@ import com.gitgle.dao.Organization;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.gitgle.response.GithubOrganization;
 
+import java.util.List;
+
 /**
 * @author maojunjun
 * @description 针对表【organization】的数据库操作Service
@@ -13,6 +15,7 @@ public interface OrganizationService{
 
     void writeGithubOrganization2Organization(GithubOrganization githubOrganization);
 
-    GithubOrganization readOrganization2GithubOrganization(String login);
+    List<GithubOrganization> readOrganization2GithubOrganization(String login);
+
 
 }

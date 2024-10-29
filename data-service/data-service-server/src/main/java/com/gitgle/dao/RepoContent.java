@@ -10,11 +10,11 @@ import lombok.Data;
 
 /**
  * 
- * @TableName follower
+ * @TableName repo_content
  */
-@TableName(value ="follower")
+@TableName(value ="repo_content")
 @Data
-public class Follower implements Serializable {
+public class RepoContent implements Serializable {
     /**
      * 
      */
@@ -22,14 +22,19 @@ public class Follower implements Serializable {
     private Integer id;
 
     /**
-     * 关注用户的用户名
+     * 
      */
-    private String login;
+    private String path;
 
     /**
-     * 用户的用户名（就是被关注的）
+     * 
      */
-    private String username;
+    private String sha;
+
+    /**
+     * 
+     */
+    private String content;
 
     /**
      * 
@@ -44,7 +49,12 @@ public class Follower implements Serializable {
     /**
      * 
      */
-    private String avatarUrl;
+    private String repoName;
+
+    /**
+     * 
+     */
+    private String repoOwner;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
