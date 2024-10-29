@@ -34,6 +34,8 @@ public class NationConsumer implements KafkaConsumer {
 
     private static final String USER_NATION_TOPIC = "UserNation";
 
+    private static final Integer NATION_RETRY_COUNT = 3;
+
     @Resource
     private KafkaProducer kafkaProducer;
 
@@ -75,7 +77,7 @@ public class NationConsumer implements KafkaConsumer {
             nationResponse.setNation(githubUser.getLocation());
             nationResponse.setConfidence(1.0);
             if(StringUtils.isEmpty(githubUser.getLocation())){
-                for(int i=0;i<3;i++){
+                for(int i=0;i<NATION_RETRY_COUNT;i++){
                     RpcResult<NationResponse> nationResponseRpcResult = nationService.getNationByDeveloperId(githubUser.getLogin());
                     if(RpcResultCode.SUCCESS.equals(nationResponseRpcResult.getCode())){
                         nationResponse = nationResponseRpcResult.getData();
