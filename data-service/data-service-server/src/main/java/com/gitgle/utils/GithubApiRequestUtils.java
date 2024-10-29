@@ -124,4 +124,65 @@ public class GithubApiRequestUtils {
         Response response = httpClient.newCall(request).execute();
         return response;
     }
+
+    public Response getRepoContent(String owner, String repoName, String path) throws IOException {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.GET_ONE_REPO.getAddress() + "/" + owner + "/" + repoName + "/contents/" + path).newBuilder();
+        String url = urlBuilder.build().toString();
+        Request request = new Request.Builder()
+                .header(ACCEPT,APPLICATION_VND_GITHUB_JSON)
+                .header(AUTHORIZATION,loadBalanceAuthToken())
+                .header(X_GITHUB_API_VERSION_KEY, X_GITHUB_API_VERSION)
+                .url(url)
+                .build();
+        Response response = httpClient.newCall(request).execute();
+        return response;
+    }
+
+    public Response getUserFollowers(String login, Map<String, String> params) throws IOException {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.GET_USERS.getAddress() + "/" + login + "/followers").newBuilder();
+        for(Map.Entry<String, String> entry : params.entrySet()){
+            urlBuilder.addQueryParameter(entry.getKey(), entry.getValue());
+        }
+        String url = urlBuilder.build().toString();
+        Request request = new Request.Builder()
+                .header(ACCEPT,APPLICATION_VND_GITHUB_JSON)
+                .header(AUTHORIZATION,loadBalanceAuthToken())
+                .header(X_GITHUB_API_VERSION_KEY, X_GITHUB_API_VERSION)
+                .url(url)
+                .build();
+        Response response = httpClient.newCall(request).execute();
+        return response;
+    }
+
+    public Response listOrganizationForUser(String username, Map<String, String> param) throws IOException {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.GET_USERS.getAddress() + "/" + username + "/orgs").newBuilder();
+        for (Map.Entry<String, String> entry : param.entrySet()) {
+            urlBuilder.addQueryParameter(entry.getKey(), entry.getValue());
+        }
+        String url = urlBuilder.build().toString();
+        Request request = new Request.Builder()
+                .header(ACCEPT,APPLICATION_VND_GITHUB_JSON)
+                .header(AUTHORIZATION,loadBalanceAuthToken())
+                .header(X_GITHUB_API_VERSION_KEY, X_GITHUB_API_VERSION)
+                .url(url)
+                .build();
+        Response response = httpClient.newCall(request).execute();
+        return response;
+    }
+
+    public Response listUserFollowing(String login, Map<String, String> params) throws IOException {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.GET_USERS.getAddress() + "/" + login + "/following").newBuilder();
+        for(Map.Entry<String, String> entry : params.entrySet()){
+            urlBuilder.addQueryParameter(entry.getKey(), entry.getValue());
+        }
+        String url = urlBuilder.build().toString();
+        Request request = new Request.Builder()
+                .header(ACCEPT,APPLICATION_VND_GITHUB_JSON)
+                .header(AUTHORIZATION,loadBalanceAuthToken())
+                .header(X_GITHUB_API_VERSION_KEY, X_GITHUB_API_VERSION)
+                .url(url)
+                .build();
+        Response response = httpClient.newCall(request).execute();
+        return response;
+    }
 }

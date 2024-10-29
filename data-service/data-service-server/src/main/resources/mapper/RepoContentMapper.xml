@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gitgle.mapper.RepoContentMapper">
+
+    <resultMap id="BaseResultMap" type="com.gitgle.dao.RepoContent">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="path" column="path" jdbcType="VARCHAR"/>
+            <result property="sha" column="sha" jdbcType="VARCHAR"/>
+            <result property="content" column="content" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="repoName" column="repo_Name" jdbcType="VARCHAR"/>
+            <result property="repoOwner" column="repo_owner" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,path,sha,
+        content,create_time,update_time,
+        repo_Name,repo_owner
+    </sql>
+</mapper>

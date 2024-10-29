@@ -9,10 +9,15 @@
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
             <result property="login" column="login" jdbcType="VARCHAR"/>
+            <result property="avatarUrl" column="avatar_url" jdbcType="VARCHAR"/>
+            <result property="locationn" column="locationn" jdbcType="VARCHAR"/>
+            <result property="bio" column="bio" jdbcType="VARCHAR"/>
+            <result property="company" column="company" jdbcType="VARCHAR"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,create_time,update_time,
-        login
+        login,avatar_url,locationn,
+        bio,company
     </sql>
 </mapper>

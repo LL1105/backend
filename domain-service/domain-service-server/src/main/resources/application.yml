@@ -1,0 +1,29 @@
+server:
+  port: 8091
+
+spring:
+  application:
+    name: domain-service
+  datasource:
+    url: jdbc:mysql://bj-cynosdbmysql-grp-pro0nh5i.sql.tencentcdb.com:25363/gitgle
+    username: gitgle
+    password: gitgle_1024
+    driver-class-name: com.mysql.jdbc.Driver
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 121.36.79.38:8848
+
+dubbo:
+  registry:
+    address: nacos://121.36.79.38:8848
+  protocol:
+    name: dubbo
+    port: 50090
+  application:
+    name: ${spring.application.name}
+    logger: slf4j
+
+kafka:
+  bootstrap-servers: ckafka-9jnjx2m9.ap-beijing.ckafka.tencentcloudmq.com:50002
+  sasl-jaas-config: /etc/ckafka_client_jaas.conf

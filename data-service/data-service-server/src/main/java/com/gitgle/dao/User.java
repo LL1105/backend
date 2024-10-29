@@ -36,6 +36,26 @@ public class User implements Serializable {
      */
     private String login;
 
+    /**
+     * 
+     */
+    private String avatarUrl;
+
+    /**
+     * 
+     */
+    private String locationn;
+
+    /**
+     * 
+     */
+    private String bio;
+
+    /**
+     * 
+     */
+    private String company;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }
