@@ -35,4 +35,11 @@ public interface GithubUserService {
      * @return 组织列表
      */
     RpcResult<GithubOrganizationResponse> getOrganizationByDeveloperId(String developerId);
+
+    /**
+     * 通过github用户id查询github用户信息
+     * @param login 用户login
+     * @return 用户信息
+     */
+    RpcResult<GithubUser> getUserByLogin(String login);
 }

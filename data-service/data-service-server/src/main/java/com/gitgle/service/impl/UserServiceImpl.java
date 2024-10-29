@@ -28,6 +28,20 @@ public class UserServiceImpl implements UserService{
         // 先根据login查询数据库中是否存在
         User user = userMapper.selectOne(Wrappers.lambdaQuery(User.class).eq(User::getLogin, githubUser.getLogin()));
         if (ObjectUtils.isNotEmpty(user)) {
+            // 更新
+            user.setUpdateTime(LocalDateTime.now());
+            user.setAvatarUrl(githubUser.getAvatarUrl());
+            user.setLocationn(githubUser.getLocation());
+            user.setBio(githubUser.getBio());
+            user.setCompany(githubUser.getCompany());
+            user.setAccountId(githubUser.getId());
+            user.setCreatedAt(githubUser.getCreatedAt());
+            user.setEmail(githubUser.getEmail());
+            user.setPublicRepos(githubUser.getPublicRepos());
+            user.setFollowers(githubUser.getFollowers());
+            user.setFollowing(githubUser.getFollowing());
+            user.setHtmlUrl(githubUser.getHtmlUrl());
+            userMapper.updateById(user);
             return;
         }
         // 如果没有则入库
@@ -39,6 +53,13 @@ public class UserServiceImpl implements UserService{
         user.setLocationn(githubUser.getLocation());
         user.setBio(githubUser.getBio());
         user.setCompany(githubUser.getCompany());
+        user.setAccountId(githubUser.getId());
+        user.setCreatedAt(githubUser.getCreatedAt());
+        user.setEmail(githubUser.getEmail());
+        user.setPublicRepos(githubUser.getPublicRepos());
+        user.setFollowers(githubUser.getFollowers());
+        user.setFollowing(githubUser.getFollowing());
+        user.setHtmlUrl(githubUser.getHtmlUrl());
         userMapper.insert(user);
     }
 
@@ -54,6 +75,13 @@ public class UserServiceImpl implements UserService{
         githubUser.setLocation(user.getLocationn());
         githubUser.setBio(user.getBio());
         githubUser.setCompany(user.getCompany());
+        githubUser.setId(user.getAccountId());
+        githubUser.setHtmlUrl(user.getHtmlUrl());
+        githubUser.setCreatedAt(user.getCreatedAt());
+        githubUser.setEmail(user.getEmail());
+        githubUser.setPublicRepos(user.getPublicRepos());
+        githubUser.setFollowers(user.getFollowers());
+        githubUser.setFollowing(user.getFollowing());
         return githubUser;
     }
 }

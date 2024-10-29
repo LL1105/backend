@@ -9,7 +9,7 @@ public class GithubFollowers implements Serializable {
 
     private String login;
 
-    private Long id;
+    private Integer id;
 
     private String avatarUrl;
 }

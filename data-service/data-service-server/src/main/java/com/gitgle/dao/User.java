@@ -56,6 +56,41 @@ public class User implements Serializable {
      */
     private String company;
 
+    /**
+     * 
+     */
+    private String htmlUrl;
+
+    /**
+     * 
+     */
+    private String createdAt;
+
+    /**
+     * 
+     */
+    private String email;
+
+    /**
+     * 
+     */
+    private Integer publicRepos;
+
+    /**
+     * 
+     */
+    private Integer accountId;
+
+    /**
+     * 
+     */
+    private Integer followers;
+
+    /**
+     * 
+     */
+    private Integer following;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

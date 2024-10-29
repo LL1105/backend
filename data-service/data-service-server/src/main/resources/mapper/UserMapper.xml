@@ -13,11 +13,20 @@
             <result property="locationn" column="locationn" jdbcType="VARCHAR"/>
             <result property="bio" column="bio" jdbcType="VARCHAR"/>
             <result property="company" column="company" jdbcType="VARCHAR"/>
+            <result property="htmlUrl" column="html_url" jdbcType="VARCHAR"/>
+            <result property="createdAt" column="created_at" jdbcType="VARCHAR"/>
+            <result property="email" column="email" jdbcType="VARCHAR"/>
+            <result property="publicRepos" column="public_repos" jdbcType="INTEGER"/>
+            <result property="accountId" column="account_id" jdbcType="INTEGER"/>
+            <result property="followers" column="followers" jdbcType="INTEGER"/>
+            <result property="following" column="following" jdbcType="INTEGER"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,create_time,update_time,
         login,avatar_url,locationn,
-        bio,company
+        bio,company,html_url,
+        created_at,email,public_repos,
+        account_id,followers,following
     </sql>
 </mapper>

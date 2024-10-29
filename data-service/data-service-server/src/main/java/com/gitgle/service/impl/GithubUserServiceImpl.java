@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.gitgle.constant.RpcResultCode;
 import com.gitgle.dao.Commit;
@@ -121,7 +122,7 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
                 for(int i=0; i<responseBody.size(); i++){
                     JSONObject item =responseBody.getJSONObject(i);
                     GithubFollowers githubFollowers = new GithubFollowers();
-                    githubFollowers.setId(item.getLong("id"));
+                    githubFollowers.setId(item.getInteger("id"));
                     githubFollowers.setLogin(item.getString("login"));
                     githubFollowers.setAvatarUrl(item.getString("avatar_url"));
                     githubFollowersList.add(githubFollowers);
@@ -183,7 +184,7 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
                 for(int i=0; i<responseBody.size(); i++){
                     JSONObject item =responseBody.getJSONObject(i);
                     GithubFollowers githubFollowers = new GithubFollowers();
-                    githubFollowers.setId(item.getLong("id"));
+                    githubFollowers.setId(item.getInteger("id"));
                     githubFollowers.setLogin(item.getString("login"));
                     githubFollowers.setAvatarUrl(item.getString("avatar_url"));
                     githubFollowersList.add(githubFollowers);
@@ -270,6 +271,43 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
             log.info("Github GetFollowers Exception: {}", e);
             githubOrganizationResponseRpcResult.setCode(RpcResultCode.FAILED);
             return githubOrganizationResponseRpcResult;
+        }
+    }
+
+    @Override
+    public RpcResult<GithubUser> getUserByLogin(String login) {
+        RpcResult<GithubUser> githubUserRpcResult = new RpcResult<>();
+        try {
+            // 先查库，如果用户信息不全，再从github上搜索
+            GithubUser githubUser = userService.readGithubUser2GithubUser(login);
+            if(ObjectUtils.isNotEmpty(githubUser) && StringUtils.isNotEmpty(githubUser.getLocation())){
+                githubUserRpcResult.setData(githubUser);
+                githubUserRpcResult.setCode(RpcResultCode.SUCCESS);
+                return githubUserRpcResult;
+            }
+            Response response = githubApiRequestUtils.getUserByUsername(login);
+            if(!response.isSuccessful()){
+                githubUserRpcResult.setCode(RpcResultCode.Github_RESPONSE_FAILED);
+                return githubUserRpcResult;
+            }
+            JSONObject responseBody = JSON.parseObject(response.body().string());
+            log.info("Github GetUserByAccountId Response: {}", responseBody);
+            githubUser = JSON.parseObject(responseBody.toString(), GithubUser.class);
+            final GithubUser finalGithubUser = githubUser;
+            // 异步更新库
+            CompletableFuture.runAsync(()->{
+                userService.writeGithubUser2User(finalGithubUser);
+            }).exceptionally(ex -> {
+                log.error("Github User Write Exception: {}", ex);
+                return null;
+            });
+            githubUserRpcResult.setData(githubUser);
+            githubUserRpcResult.setCode(RpcResultCode.SUCCESS);
+            return githubUserRpcResult;
+        }catch (IOException e){
+            log.error("Github GetUserByAccountId Exception: {}", e);
+            githubUserRpcResult.setCode(RpcResultCode.FAILED);
+            return githubUserRpcResult;
         }
     }
 }

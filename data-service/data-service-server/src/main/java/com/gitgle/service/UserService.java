@@ -14,4 +14,5 @@ public interface UserService{
     void writeGithubUser2User(GithubUser githubUser);
 
     GithubUser readGithubUser2GithubUser(String login);
+
 }
