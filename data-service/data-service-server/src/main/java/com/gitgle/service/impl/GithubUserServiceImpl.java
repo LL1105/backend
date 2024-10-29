@@ -50,7 +50,6 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
 
     @Override
     public RpcResult<GithubUser> searchByDeveloperId(String developerId) {
-        kafkaProducer.sendMessage("heelo", "test");
         RpcResult<GithubUser> githubUserRpcResult = new RpcResult<>();
         try {
             // 先查库，没有再github上搜索

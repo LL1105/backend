@@ -2,6 +2,7 @@ package com.gitgle.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.gitgle.constant.RpcResultCode;
 import com.gitgle.response.*;
 import com.gitgle.result.RpcResult;
@@ -16,6 +17,8 @@ import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.HashSet;
+import java.util.Set;
 
 @DubboService
 @Slf4j
@@ -35,27 +38,45 @@ public class NationServiceImpl implements NationService {
         RpcResult<NationResponse> nationResponseRpcResult = new RpcResult<>();
         NationResponse nationResponse = new NationResponse();
         try {
-//            RpcResult<GithubFollowersResponse> followersByDeveloperId = githubUserService.getFollowersByDeveloperId(login);
-//            if (!RpcResultCode.SUCCESS.equals(followersByDeveloperId.getCode())) {
-//                nationResponseRpcResult.setCode(followersByDeveloperId.getCode());
-//                return nationResponseRpcResult;
-//            }
-//            RpcResult<GithubOrganizationResponse> organizationByDeveloperId = githubUserService.getOrganizationByDeveloperId(login);
-//            if (!RpcResultCode.SUCCESS.equals(organizationByDeveloperId.getCode())) {
-//                nationResponseRpcResult.setCode(organizationByDeveloperId.getCode());
-//                return nationResponseRpcResult;
-//            }
-            RpcResult<GithubCommitResponse> githubCommitResponseRpcResult = githubCommitService.searchCommitsByDeveloperId(login);
-            if (!RpcResultCode.SUCCESS.equals(githubCommitResponseRpcResult.getCode())) {
-                nationResponseRpcResult.setCode(githubCommitResponseRpcResult.getCode());
+            Set<String> relationshipLocationSet = new HashSet<>();
+            // 获取开发者的粉丝列表
+            RpcResult<GithubFollowersResponse> followersByDeveloperId = githubUserService.getFollowersByDeveloperId(login);
+            if (!RpcResultCode.SUCCESS.equals(followersByDeveloperId.getCode())) {
+                nationResponseRpcResult.setCode(followersByDeveloperId.getCode());
                 return nationResponseRpcResult;
             }
-            StringBuilder stringBuilder = new StringBuilder();
-            for(GithubCommit githubCommit : githubCommitResponseRpcResult.getData().getGithubCommitList()){
-                stringBuilder.append(githubCommit.getCommitDataTime());
-                stringBuilder.append(" , ");
+            for(GithubFollowers githubFollowers : followersByDeveloperId.getData().getGithubFollowersList()){
+                // 获取粉丝的location
+                RpcResult<GithubUser> searchByDeveloperId = githubUserService.searchByDeveloperId(githubFollowers.getLogin());
+                if (!RpcResultCode.SUCCESS.equals(searchByDeveloperId.getCode())) {
+                    continue;
+                }
+                GithubUser githubUser = searchByDeveloperId.getData();
+                if (StringUtils.isNotEmpty(githubUser.getLocation())) {
+                    relationshipLocationSet.add(githubUser.getLocation());
+                }
             }
-            String question = "根据以上github开发者Commit的活跃时间，请你为我推测出这个开发者是哪个国家或者地区的，并给出置信度，你只需要给我返回你推测出的国家或地区中文名、英文名以及置信度，并用-分隔（例如：中国-China-0.55),请特别注意，不要返回我需要的信息以外的信息，这将导致重大错误，如果你推测不出来，给我 返回0即可";
+            // 获取开发者的关注列表
+            RpcResult<GithubFollowersResponse> followingByDeveloperId = githubUserService.listUserFollowingByDeveloperId(login);
+            if(!RpcResultCode.SUCCESS.equals(followingByDeveloperId.getCode())){
+                nationResponseRpcResult.setCode(followingByDeveloperId.getCode());
+                return nationResponseRpcResult;
+            }
+            for(GithubFollowers githubFollowers : followingByDeveloperId.getData().getGithubFollowersList()){
+                // 获取粉丝的location
+                RpcResult<GithubUser> searchByDeveloperId = githubUserService.searchByDeveloperId(githubFollowers.getLogin());
+                if (!RpcResultCode.SUCCESS.equals(searchByDeveloperId.getCode())) {
+                    continue;
+                }
+                GithubUser githubUser = searchByDeveloperId.getData();
+                if (StringUtils.isNotEmpty(githubUser.getLocation())) {
+                    relationshipLocationSet.add(githubUser.getLocation());
+                }
+            }
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append(relationshipLocationSet);
+            stringBuilder.append("\n");
+            String question = "根据上面[]中的github开发者的Follower和Following的地区信息，请你为我推测出这个开发所在的国家或者地区，并给出置信度，你只需要给我返回你推测出的国家或地区的中文名、英文名以及置信度，并用-分隔（例如：中国-China-0.55),请特别注意，不要返回我需要的信息以外的信息，这将导致重大错误";
             stringBuilder.append(question);
             Response response = sparkApiUtils.doRequest(stringBuilder.toString());
             if (!response.isSuccessful()) {

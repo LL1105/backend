@@ -42,7 +42,7 @@ kafka:
 xxl:
   job:
     admin:
-      addresses: http://127.0.0.1:2222/xxl-job-admin
+      addresses: http://49.232.232.203:2222/xxl-job-admin
     accessToken: dasj2nd81jf9asjdkl5jk234
     executor:
       logretentiondays: 7
