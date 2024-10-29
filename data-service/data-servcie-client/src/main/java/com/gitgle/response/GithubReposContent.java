@@ -20,4 +20,8 @@ public class GithubReposContent implements Serializable {
     private String content;
 
     private String sha;
+
+    private String repoName;
+
+    private String repoOwner;
 }

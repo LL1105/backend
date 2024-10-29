@@ -7,11 +7,13 @@ import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.gitgle.constant.RpcResultCode;
 import com.gitgle.dao.Commit;
+import com.gitgle.dao.Organization;
 import com.gitgle.dao.User;
 import com.gitgle.mapper.UserMapper;
 import com.gitgle.response.*;
 import com.gitgle.result.RpcResult;
 import com.gitgle.service.FollowerService;
+import com.gitgle.service.OrganizationService;
 import com.gitgle.utils.GithubApiRequestUtils;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
@@ -32,6 +34,9 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
 
     @Resource
     private FollowerService followerService;
+
+    @Resource
+    private OrganizationService organizationService;
 
     @Resource
     private com.gitgle.service.UserService userService;
@@ -83,11 +88,18 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
         RpcResult<GithubFollowersResponse> githubFollowersRpcResult = new RpcResult<>();
         GithubFollowersResponse githubFollowersResponse = new GithubFollowersResponse();
         try {
+            // 先查库，没有再github上搜索
+            List<GithubFollowers> githubFollowersList = followerService.readFollower2GithubFollowers(developerId);
+            if(ObjectUtils.isNotEmpty(githubFollowersList)){
+                githubFollowersResponse.setGithubFollowersList(githubFollowersList);
+                githubFollowersRpcResult.setCode(RpcResultCode.SUCCESS);
+                githubFollowersRpcResult.setData(githubFollowersResponse);
+                return githubFollowersRpcResult;
+            }
             HashMap<String, String> queryParams = new HashMap<>();
-            ArrayList<GithubCommit> githubCommitList= new ArrayList<>();
+            githubFollowersList = new ArrayList<>();
             queryParams.put("per_page", "100");
             Integer page = 1;
-            List<GithubFollowers> githubFollowersList = new ArrayList<>();
             while(true){
                 queryParams.put("page", page.toString());
                 Response response = githubApiRequestUtils.getUserFollowers(developerId, queryParams);
@@ -110,12 +122,12 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
                     githubFollowers.setAvatarUrl(item.getString("avatar_url"));
                     githubFollowersList.add(githubFollowers);
                     // 异步写库
-                    /*CompletableFuture.runAsync(()-> {
-                        followerService.writeGithubFollower2Follower(githubFollowers);
+                    CompletableFuture.runAsync(()-> {
+                        followerService.writeGithubFollower2Follower(githubFollowers, developerId);
                     }).exceptionally(ex -> {
                         log.error("Github Follower Write Exception: {}", ex);
                         return null;
-                    });*/
+                    });
                 }
                 if(responseBody.size() < 100){
                     break;
@@ -138,11 +150,18 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
         RpcResult<GithubFollowersResponse> githubFollowersRpcResult = new RpcResult<>();
         GithubFollowersResponse githubFollowersResponse = new GithubFollowersResponse();
         try {
+            // 先查库，没有再github上搜索
+            List<GithubFollowers> githubFollowersList = followerService.readFollowing2GithubFollowing(developerId);
+            if(ObjectUtils.isNotEmpty(githubFollowersList)){
+                githubFollowersResponse.setGithubFollowersList(githubFollowersList);
+                githubFollowersRpcResult.setCode(RpcResultCode.SUCCESS);
+                githubFollowersRpcResult.setData(githubFollowersResponse);
+                return githubFollowersRpcResult;
+            }
             HashMap<String, String> queryParams = new HashMap<>();
-            ArrayList<GithubCommit> githubCommitList= new ArrayList<>();
             queryParams.put("per_page", "100");
             Integer page = 1;
-            List<GithubFollowers> githubFollowersList = new ArrayList<>();
+            githubFollowersList = new ArrayList<>();
             while(true){
                 queryParams.put("page", page.toString());
                 Response response = githubApiRequestUtils.listUserFollowing(developerId, queryParams);
@@ -165,12 +184,12 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
                     githubFollowers.setAvatarUrl(item.getString("avatar_url"));
                     githubFollowersList.add(githubFollowers);
                     // 异步写库
-                    /*CompletableFuture.runAsync(()-> {
-                        followerService.writeGithubFollower2Follower(githubFollowers);
+                    CompletableFuture.runAsync(()-> {
+                        followerService.writeGithubFollower2Follower(githubFollowers,developerId);
                     }).exceptionally(ex -> {
                         log.error("Github Follower Write Exception: {}", ex);
                         return null;
-                    });*/
+                    });
                 }
                 if(responseBody.size() < 100){
                     break;
@@ -193,11 +212,18 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
         RpcResult<GithubOrganizationResponse> githubOrganizationResponseRpcResult = new RpcResult<>();
         GithubOrganizationResponse githubOrganizationResponse = new GithubOrganizationResponse();
         try {
+            // 先查库，没有再github上搜索
+            List<GithubOrganization> githubOrganizationList = organizationService.readOrganization2GithubOrganization(developerId);
+            if(ObjectUtils.isNotEmpty(githubOrganizationList)){
+                githubOrganizationResponse.setGithubOrganizationList(githubOrganizationList);
+                githubOrganizationResponseRpcResult.setCode(RpcResultCode.SUCCESS);
+                githubOrganizationResponseRpcResult.setData(githubOrganizationResponse);
+                return githubOrganizationResponseRpcResult;
+            }
             HashMap<String, String> queryParams = new HashMap<>();
-            ArrayList<GithubCommit> githubCommitList= new ArrayList<>();
             queryParams.put("per_page", "100");
             Integer page = 1;
-            List<GithubOrganization> githubOrganizationList = new ArrayList<>();
+            githubOrganizationList = new ArrayList<>();
             while(true){
                 queryParams.put("page", page.toString());
                 Response response = githubApiRequestUtils.getUserFollowers(developerId, queryParams);
@@ -220,12 +246,12 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
                     githubOrganization.setAvatarUrl(item.getString("avatar_url"));
                     githubOrganizationList.add(githubOrganization);
                     // 异步写库
-                    /*CompletableFuture.runAsync(()-> {
-                        followerService.writeGithubFollower2Follower(githubFollowers);
+                    CompletableFuture.runAsync(()-> {
+                        organizationService.writeGithubOrganization2Organization(githubOrganization);
                     }).exceptionally(ex -> {
                         log.error("Github Follower Write Exception: {}", ex);
                         return null;
-                    });*/
+                    });
                 }
                 if(responseBody.size() < 100){
                     break;

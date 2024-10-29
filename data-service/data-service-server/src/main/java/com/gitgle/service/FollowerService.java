@@ -15,6 +15,9 @@ public interface FollowerService{
 
     List<GithubFollowers> readFollower2GithubFollowers(String login);
 
-    void writeGithubFollower2Follower(GithubFollowers githubFollowers);
+    void writeGithubFollower2Follower(GithubFollowers githubFollowers, String login);
 
+    List<GithubFollowers> readFollowing2GithubFollowing(String login);
+
+    void writeGithubFollowing2Following(GithubFollowers githubFollowers, String login);
 }

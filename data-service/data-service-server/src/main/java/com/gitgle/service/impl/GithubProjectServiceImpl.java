@@ -3,14 +3,14 @@ package com.gitgle.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.gitgle.constant.RpcResultCode;
-import com.gitgle.dao.Repos;
-import com.gitgle.mapper.ReposMapper;
+import com.gitgle.dao.RepoContent;
 import com.gitgle.request.GithubRequest;
 import com.gitgle.response.*;
 import com.gitgle.result.RpcResult;
 import com.gitgle.service.GithubProjectService;
+import com.gitgle.service.RepoContentService;
+import com.gitgle.service.ReposService;
 import com.gitgle.utils.GithubApiRequestUtils;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
@@ -29,19 +29,17 @@ public class GithubProjectServiceImpl implements GithubProjectService {
     private GithubApiRequestUtils githubApiRequestUtils;
 
     @Resource
-    private ReposMapper reposMapper;
+    private ReposService reposService;
 
-    @Override
-    public RpcResult<GithubReposResponse> getProjectByDeveloperId(String developerId) {
-        return null;
-    }
+    @Resource
+    private RepoContentService repoContentService;
 
     @Override
     public RpcResult<GithubRepos> getRepoByOwnerAndRepoName(String developerId, String repoName) {
         RpcResult<GithubRepos> githubReposRpcResult = new RpcResult<>();
         try {
             // 先查库
-            GithubRepos githubRepos = readGithubRepos(developerId, repoName);
+            GithubRepos githubRepos = reposService.readRepos2GithubRepos(developerId, repoName);
             if(ObjectUtils.isNotEmpty(githubRepos)){
                 githubReposRpcResult.setCode(RpcResultCode.SUCCESS);
                 githubReposRpcResult.setData(githubRepos);
@@ -69,7 +67,7 @@ public class GithubProjectServiceImpl implements GithubProjectService {
             // 异步写库
             final GithubRepos finalGithubRepos = githubRepos;
             CompletableFuture.runAsync(()->{
-                writeGithubRepos(finalGithubRepos);
+                reposService.writeGithubRepos2Repos(finalGithubRepos);
             }).exceptionally(ex -> {
                 log.error("Github Write Exception: {}", ex);
                 return null;
@@ -87,8 +85,15 @@ public class GithubProjectServiceImpl implements GithubProjectService {
     @Override
     public RpcResult<GithubReposContent> getRepoContentByPath(GithubRequest githubRequest) {
         RpcResult<GithubReposContent> githubReposContentRpcResult = new RpcResult<>();
-        GithubReposContent githubReposContent = new GithubReposContent();
         try {
+            // 先查库，没有再github上搜索
+            GithubReposContent githubReposContent = repoContentService.readRepoContent2GithubReposContent(githubRequest.getPath(), githubRequest.getRepoName(), githubRequest.getOwner());
+            if(ObjectUtils.isNotEmpty(githubReposContent)){
+                githubReposContentRpcResult.setCode(RpcResultCode.SUCCESS);
+                githubReposContentRpcResult.setData(githubReposContent);
+                return githubReposContentRpcResult;
+            }
+            githubReposContent = new GithubReposContent();
             Response response = githubApiRequestUtils.getRepoContent(githubRequest.getOwner(), githubRequest.getRepoName(), githubRequest.getPath());
             if(!response.isSuccessful()){
                 githubReposContentRpcResult.setCode(RpcResultCode.Github_RESPONSE_FAILED);
@@ -103,7 +108,17 @@ public class GithubProjectServiceImpl implements GithubProjectService {
             githubReposContent.setEncoding(responseBody.getString("encoding"));
             githubReposContent.setSize(responseBody.getInteger("size"));
             byte[] decodedBytes = Base64.decodeBase64(responseBody.getString("content"));
+            githubReposContent.setRepoName(githubRequest.getRepoName());
+            githubReposContent.setRepoOwner(githubRequest.getOwner());
             githubReposContent.setContent(new String(decodedBytes));
+            final GithubReposContent finalGithubReposContent = githubReposContent;
+            // 异步入库
+            CompletableFuture.runAsync(()->{
+                repoContentService.writeGithubReposContent2RepoContent(finalGithubReposContent);
+            }).exceptionally(ex -> {
+                log.error("Github Write Exception: {}", ex);
+                return null;
+            });
             githubReposContentRpcResult.setData(githubReposContent);
             githubReposContentRpcResult.setCode(RpcResultCode.SUCCESS);
             return githubReposContentRpcResult;
@@ -112,36 +127,5 @@ public class GithubProjectServiceImpl implements GithubProjectService {
             githubReposContentRpcResult.setCode(RpcResultCode.FAILED);
             return githubReposContentRpcResult;
         }
-    }
-
-    public GithubRepos readGithubRepos(String developerId, String repoName){
-        Repos repo = reposMapper.selectOne(Wrappers.lambdaQuery(Repos.class).eq(Repos::getName, repoName).eq(Repos::getOwnerlogin, developerId));
-        if(ObjectUtils.isEmpty(repo)){
-            return null;
-        }
-        GithubRepos githubRepos = new GithubRepos();
-            githubRepos.setName(repo.getName());
-            githubRepos.setOrPrivate(repo.getOrPrivate());
-            githubRepos.setCreatedAt(repo.getCreateAt().toString());
-            githubRepos.setUpdateAt(repo.getUpdateAt().toString());
-            githubRepos.setStarsCount(repo.getStarsCount());
-            githubRepos.setForksCount(repo.getForksCount());
-            githubRepos.setIssueCount(repo.getIssueCount());
-            return githubRepos;
-    }
-
-    public void writeGithubRepos(GithubRepos githubRepos){
-        Repos repos = reposMapper.selectOne(Wrappers.lambdaQuery(Repos.class).eq(Repos::getName, githubRepos.getName()).eq(Repos::getOwnerlogin, githubRepos.getOwnerLogin()));
-        if(ObjectUtils.isNotEmpty(repos)){
-            return;
-        }
-        Repos repo = new Repos();
-        repo.setName(githubRepos.getName());
-        repo.setOrPrivate(githubRepos.getOrPrivate());
-        repo.setCreateAt(githubRepos.getCreatedAt());
-        repo.setUpdateAt(githubRepos.getUpdateAt());
-        repo.setStarsCount(githubRepos.getStarsCount());
-        repo.setForksCount(githubRepos.getForksCount());
-        reposMapper.insert(repo);
     }
 }
