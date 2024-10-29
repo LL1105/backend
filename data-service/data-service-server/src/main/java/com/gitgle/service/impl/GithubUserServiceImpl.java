@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.gitgle.constant.RpcResultCode;
 import com.gitgle.dao.Commit;
@@ -26,15 +27,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Slf4j
 @DubboService
 public class GithubUserServiceImpl implements com.gitgle.service.GithubUserService {
-
-    @Resource
-    private FollowerService followerService;
 
     @Resource
     private OrganizationService organizationService;
@@ -45,170 +44,34 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
     @Resource
     private GithubApiRequestUtils githubApiRequestUtils;
 
-    @Resource
-    private KafkaProducer kafkaProducer;
-
     @Override
-    public RpcResult<GithubUser> searchByDeveloperId(String developerId) {
-        kafkaProducer.sendMessage("heelo", "test");
-        RpcResult<GithubUser> githubUserRpcResult = new RpcResult<>();
+    public RpcResult<GithubUserResponse> searchByDeveloperId(Map<String, String> searchParams) {
+        RpcResult<GithubUserResponse> githubUserRpcResult = new RpcResult<>();
+        GithubUserResponse githubUserResponse = new GithubUserResponse();
         try {
-            // 先查库，没有再github上搜索
-            GithubUser githubUser = userService.readGithubUser2GithubUser(developerId);
-            if(ObjectUtils.isNotEmpty(githubUser)){
-                githubUserRpcResult.setData(githubUser);
-                githubUserRpcResult.setCode(RpcResultCode.SUCCESS);
-                return githubUserRpcResult;
-            }
-            HashMap<String, String> searchParams = new HashMap<>();
-            searchParams.put("q", "user:"+developerId);
             Response response = githubApiRequestUtils.searchUsers(searchParams);
-            JSONObject responseBody = JSON.parseObject(response.body().string());
-            log.info("Github SearchUsers Response: {}", responseBody);
             if(!response.isSuccessful()){
                 githubUserRpcResult.setCode(RpcResultCode.Github_RESPONSE_FAILED);
                 return githubUserRpcResult;
             }
-            githubUser = JSON.parseObject(responseBody.getJSONArray("items").get(0).toString(), GithubUser.class);
+            JSONObject responseBody = JSON.parseObject(response.body().string());
+            log.info("Github SearchUsers Response: {}", responseBody);
+            List<GithubUser> githubUserList = JSON.parseArray(responseBody.getJSONArray("items").toString(), GithubUser.class);
             // 异步写库
-            final GithubUser finalGithubUser = githubUser;
             CompletableFuture.runAsync(()-> {
-                userService.writeGithubUser2User(finalGithubUser);
+                userService.writeGithubUser2User(githubUserList);
             }).exceptionally(ex -> {
                 log.error("Github SearchUsers Exception: {}", ex);
                 return null;
             });
-            githubUserRpcResult.setData(githubUser);
+            githubUserResponse.setGithubUserList(githubUserList);
+            githubUserRpcResult.setData(githubUserResponse);
             githubUserRpcResult.setCode(RpcResultCode.SUCCESS);
             return githubUserRpcResult;
         } catch (IOException e) {
             log.error("Github SearchUsers Exception: {}", e);
             githubUserRpcResult.setCode(RpcResultCode.FAILED);
             return githubUserRpcResult;
-        }
-    }
-
-    @Override
-    public RpcResult<GithubFollowersResponse> getFollowersByDeveloperId(String developerId) {
-        RpcResult<GithubFollowersResponse> githubFollowersRpcResult = new RpcResult<>();
-        GithubFollowersResponse githubFollowersResponse = new GithubFollowersResponse();
-        try {
-            // 先查库，没有再github上搜索
-            List<GithubFollowers> githubFollowersList = followerService.readFollower2GithubFollowers(developerId);
-            if(ObjectUtils.isNotEmpty(githubFollowersList)){
-                githubFollowersResponse.setGithubFollowersList(githubFollowersList);
-                githubFollowersRpcResult.setCode(RpcResultCode.SUCCESS);
-                githubFollowersRpcResult.setData(githubFollowersResponse);
-                return githubFollowersRpcResult;
-            }
-            HashMap<String, String> queryParams = new HashMap<>();
-            githubFollowersList = new ArrayList<>();
-            queryParams.put("per_page", "100");
-            Integer page = 1;
-            while(true){
-                queryParams.put("page", page.toString());
-                Response response = githubApiRequestUtils.getUserFollowers(developerId, queryParams);
-                if(!response.isSuccessful()){
-                    if(page.equals(1)){
-                        githubFollowersRpcResult.setCode(RpcResultCode.Github_RESPONSE_FAILED);
-                        return githubFollowersRpcResult;
-                    }else{
-                        log.error("Github Api Failed In page:{}", page);
-                        break;
-                    }
-                }
-                JSONArray responseBody = JSON.parseArray(response.body().string());
-                log.info("Github List Follower Response: {}", responseBody);
-                for(int i=0; i<responseBody.size(); i++){
-                    JSONObject item =responseBody.getJSONObject(i);
-                    GithubFollowers githubFollowers = new GithubFollowers();
-                    githubFollowers.setId(item.getLong("id"));
-                    githubFollowers.setLogin(item.getString("login"));
-                    githubFollowers.setAvatarUrl(item.getString("avatar_url"));
-                    githubFollowersList.add(githubFollowers);
-                    // 异步写库
-                    CompletableFuture.runAsync(()-> {
-                        followerService.writeGithubFollower2Follower(githubFollowers, developerId);
-                    }).exceptionally(ex -> {
-                        log.error("Github Follower Write Exception: {}", ex);
-                        return null;
-                    });
-                }
-                if(responseBody.size() < 100){
-                    break;
-                }
-                page++;
-            }
-            githubFollowersResponse.setGithubFollowersList(githubFollowersList);
-            githubFollowersRpcResult.setCode(RpcResultCode.SUCCESS);
-            githubFollowersRpcResult.setData(githubFollowersResponse);
-            return githubFollowersRpcResult;
-        } catch (IOException e) {
-            log.info("Github GetFollowers Exception: {}", e);
-            githubFollowersRpcResult.setCode(RpcResultCode.FAILED);
-            return githubFollowersRpcResult;
-        }
-    }
-
-    @Override
-    public RpcResult<GithubFollowersResponse> listUserFollowingByDeveloperId(String developerId) {
-        RpcResult<GithubFollowersResponse> githubFollowersRpcResult = new RpcResult<>();
-        GithubFollowersResponse githubFollowersResponse = new GithubFollowersResponse();
-        try {
-            // 先查库，没有再github上搜索
-            List<GithubFollowers> githubFollowersList = followerService.readFollowing2GithubFollowing(developerId);
-            if(ObjectUtils.isNotEmpty(githubFollowersList)){
-                githubFollowersResponse.setGithubFollowersList(githubFollowersList);
-                githubFollowersRpcResult.setCode(RpcResultCode.SUCCESS);
-                githubFollowersRpcResult.setData(githubFollowersResponse);
-                return githubFollowersRpcResult;
-            }
-            HashMap<String, String> queryParams = new HashMap<>();
-            queryParams.put("per_page", "100");
-            Integer page = 1;
-            githubFollowersList = new ArrayList<>();
-            while(true){
-                queryParams.put("page", page.toString());
-                Response response = githubApiRequestUtils.listUserFollowing(developerId, queryParams);
-                if(!response.isSuccessful()){
-                    if(page.equals(1)){
-                        githubFollowersRpcResult.setCode(RpcResultCode.Github_RESPONSE_FAILED);
-                        return githubFollowersRpcResult;
-                    }else{
-                        log.error("Github Api Failed In page:{}", page);
-                        break;
-                    }
-                }
-                JSONArray responseBody = JSON.parseArray(response.body().string());
-                log.info("Github List Follower Response: {}", responseBody);
-                for(int i=0; i<responseBody.size(); i++){
-                    JSONObject item =responseBody.getJSONObject(i);
-                    GithubFollowers githubFollowers = new GithubFollowers();
-                    githubFollowers.setId(item.getLong("id"));
-                    githubFollowers.setLogin(item.getString("login"));
-                    githubFollowers.setAvatarUrl(item.getString("avatar_url"));
-                    githubFollowersList.add(githubFollowers);
-                    // 异步写库
-                    CompletableFuture.runAsync(()-> {
-                        followerService.writeGithubFollower2Follower(githubFollowers,developerId);
-                    }).exceptionally(ex -> {
-                        log.error("Github Follower Write Exception: {}", ex);
-                        return null;
-                    });
-                }
-                if(responseBody.size() < 100){
-                    break;
-                }
-                page++;
-            }
-            githubFollowersResponse.setGithubFollowersList(githubFollowersList);
-            githubFollowersRpcResult.setCode(RpcResultCode.SUCCESS);
-            githubFollowersRpcResult.setData(githubFollowersResponse);
-            return githubFollowersRpcResult;
-        } catch (IOException e) {
-            log.info("Github GetFollowers Exception: {}", e);
-            githubFollowersRpcResult.setCode(RpcResultCode.FAILED);
-            return githubFollowersRpcResult;
         }
     }
 
@@ -271,6 +134,44 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
             log.info("Github GetFollowers Exception: {}", e);
             githubOrganizationResponseRpcResult.setCode(RpcResultCode.FAILED);
             return githubOrganizationResponseRpcResult;
+        }
+    }
+
+    @Override
+    public RpcResult<GithubUser> getUserByLogin(String login) {
+        RpcResult<GithubUser> githubUserRpcResult = new RpcResult<>();
+        try {
+            // 先查库，如果用户信息不全，再从github上搜索
+            GithubUser githubUser = userService.readGithubUser2GithubUser(login);
+            if(ObjectUtils.isNotEmpty(githubUser) && StringUtils.isNotEmpty(githubUser.getLocation())){
+                githubUserRpcResult.setData(githubUser);
+                githubUserRpcResult.setCode(RpcResultCode.SUCCESS);
+                return githubUserRpcResult;
+            }
+            Response response = githubApiRequestUtils.getUserByUsername(login);
+            if(!response.isSuccessful()){
+                githubUserRpcResult.setCode(RpcResultCode.Github_RESPONSE_FAILED);
+                return githubUserRpcResult;
+            }
+            JSONObject responseBody = JSON.parseObject(response.body().string());
+            log.info("Github GetUserByAccountId Response: {}", responseBody);
+            githubUser = JSON.parseObject(responseBody.toString(), GithubUser.class);
+            ArrayList githubUserList = new ArrayList<>();
+            githubUserList.add(githubUser);
+            // 异步更新库
+            CompletableFuture.runAsync(()->{
+                userService.writeGithubUser2User(githubUserList);
+            }).exceptionally(ex -> {
+                log.error("Github User Write Exception: {}", ex);
+                return null;
+            });
+            githubUserRpcResult.setData(githubUser);
+            githubUserRpcResult.setCode(RpcResultCode.SUCCESS);
+            return githubUserRpcResult;
+        }catch (IOException e){
+            log.error("Github GetUserByAccountId Exception: {}", e);
+            githubUserRpcResult.setCode(RpcResultCode.FAILED);
+            return githubUserRpcResult;
         }
     }
 }

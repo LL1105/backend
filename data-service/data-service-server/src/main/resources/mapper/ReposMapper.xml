@@ -8,7 +8,7 @@
             <id property="id" column="id" jdbcType="INTEGER"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
-            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="repoName" column="repo_name" jdbcType="VARCHAR"/>
             <result property="orPrivate" column="or_private" jdbcType="TINYINT"/>
             <result property="ownerlogin" column="ownerLogin" jdbcType="VARCHAR"/>
             <result property="starsCount" column="stars_count" jdbcType="INTEGER"/>
@@ -16,12 +16,16 @@
             <result property="issueCount" column="issue_count" jdbcType="INTEGER"/>
             <result property="createAt" column="create_at" jdbcType="VARCHAR"/>
             <result property="updateAt" column="update_at" jdbcType="VARCHAR"/>
+            <result property="watchersCount" column="watchers_count" jdbcType="INTEGER"/>
+            <result property="repoId" column="repo_id" jdbcType="INTEGER"/>
+            <result property="description" column="description" jdbcType="VARCHAR"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,create_time,update_time,
-        name,or_private,ownerLogin,
+        repo_name,or_private,ownerLogin,
         stars_count,forks_count,issue_count,
-        create_at,update_at
+        create_at,update_at,watchers_count,
+        repo_id,description
     </sql>
 </mapper>

@@ -3,6 +3,7 @@ package com.gitgle.service;
 import com.gitgle.dao.Follower;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.gitgle.response.GithubFollowers;
+import com.gitgle.response.GithubFollowing;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public interface FollowerService{
 
     void writeGithubFollower2Follower(GithubFollowers githubFollowers, String login);
 
-    List<GithubFollowers> readFollowing2GithubFollowing(String login);
+    List<GithubFollowing> readFollowing2GithubFollowing(String login);
 
-    void writeGithubFollowing2Following(GithubFollowers githubFollowers, String login);
+    void writeGithubFollowing2Following(GithubFollowing githubFollowing, String login);
 }

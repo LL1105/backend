@@ -13,6 +13,10 @@ spring:
     nacos:
       discovery:
         server-addr: 121.36.79.38:8848
+  redis:
+    host: 49.232.232.203
+    password: gitgle_1024
+    port: 6379
 
 github:
   auth-token:
@@ -42,5 +46,6 @@ xxl:
     accessToken: dasj2nd81jf9asjdkl5jk234
     executor:
       logretentiondays: 7
-      port: ${server.port}
+      port: 9081
+      logpath: ./
       appname: ${spring.application.name}

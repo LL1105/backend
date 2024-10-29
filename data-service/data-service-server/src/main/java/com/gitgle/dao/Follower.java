@@ -24,12 +24,12 @@ public class Follower implements Serializable {
     /**
      * 关注用户的用户名
      */
-    private String login;
+    private String followerLogin;
 
     /**
      * 用户的用户名（就是被关注的）
      */
-    private String username;
+    private String followingLogin;
 
     /**
      * 
@@ -44,7 +44,22 @@ public class Follower implements Serializable {
     /**
      * 
      */
-    private String avatarUrl;
+    private Integer followerId;
+
+    /**
+     * 
+     */
+    private Integer followingId;
+
+    /**
+     * 
+     */
+    private String followerAvatarUrl;
+
+    /**
+     * 
+     */
+    private String followingAvatarUrl;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
