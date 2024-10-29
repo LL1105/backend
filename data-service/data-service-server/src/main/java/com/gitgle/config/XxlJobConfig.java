@@ -19,14 +19,14 @@ public class XxlJobConfig {
 //    @Value("${xxl.job.executor.ip}")
 //    private String ip;
 //
-//    @Value("${xxl.job.executor.port:9998}")
-//    private int port;
+    @Value("${xxl.job.executor.port:9998}")
+    private int port;
 
     @Value("${xxl.job.accessToken}")
     private String accessToken;
 
-//    @Value("${xxl.job.executor.logpath}")
-//    private String logPath;
+    @Value("${xxl.job.executor.logpath}")
+    private String logPath;
 
     @Value("${xxl.job.executor.logretentiondays}")
     private int logRetentionDays;
@@ -38,9 +38,9 @@ public class XxlJobConfig {
         xxlJobSpringExecutor.setAdminAddresses(adminAddresses);
         xxlJobSpringExecutor.setAppname(appname);
 //        xxlJobSpringExecutor.setIp(ip);
-//        xxlJobSpringExecutor.setPort(port);
+        xxlJobSpringExecutor.setPort(port);
         xxlJobSpringExecutor.setAccessToken(accessToken);
-//        xxlJobSpringExecutor.setLogPath(logPath);
+        xxlJobSpringExecutor.setLogPath(logPath);
         xxlJobSpringExecutor.setLogRetentionDays(logRetentionDays);
         return xxlJobSpringExecutor;
     }
