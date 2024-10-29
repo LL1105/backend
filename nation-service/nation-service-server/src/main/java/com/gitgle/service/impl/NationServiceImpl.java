@@ -14,11 +14,13 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 @DubboService
 @Slf4j
@@ -30,49 +32,55 @@ public class NationServiceImpl implements NationService {
     @DubboReference
     private GithubUserService githubUserService;
 
-    @DubboReference
-    private GithubCommitService githubCommitService;
-
     @Override
     public RpcResult<NationResponse> getNationByDeveloperId(String login) {
         RpcResult<NationResponse> nationResponseRpcResult = new RpcResult<>();
         NationResponse nationResponse = new NationResponse();
         try {
             Set<String> relationshipLocationSet = new HashSet<>();
-            // 获取开发者的粉丝列表
-            RpcResult<GithubFollowersResponse> followersByDeveloperId = githubUserService.getFollowersByDeveloperId(login);
-            if (!RpcResultCode.SUCCESS.equals(followersByDeveloperId.getCode())) {
-                nationResponseRpcResult.setCode(followersByDeveloperId.getCode());
-                return nationResponseRpcResult;
-            }
-            for(GithubFollowers githubFollowers : followersByDeveloperId.getData().getGithubFollowersList()){
-                // 获取粉丝的location
-                RpcResult<GithubUser> searchByDeveloperId = githubUserService.searchByDeveloperId(githubFollowers.getLogin());
-                if (!RpcResultCode.SUCCESS.equals(searchByDeveloperId.getCode())) {
-                    continue;
+            // 异步并行获取
+            CompletableFuture.runAsync(()->{
+                // 获取开发者的粉丝列表
+                RpcResult<GithubFollowersResponse> followersByDeveloperId = githubUserService.getFollowersByDeveloperId(login);
+                if (!RpcResultCode.SUCCESS.equals(followersByDeveloperId.getCode())) {
+                    throw new RuntimeException("获取开发者粉丝列表失败");
                 }
-                GithubUser githubUser = searchByDeveloperId.getData();
-                if (StringUtils.isNotEmpty(githubUser.getLocation())) {
-                    relationshipLocationSet.add(githubUser.getLocation());
+                for(GithubFollowers githubFollowers : followersByDeveloperId.getData().getGithubFollowersList()){
+                    // 获取粉丝的location
+                    RpcResult<GithubUser> searchByDeveloperId = githubUserService.getUserByLogin(githubFollowers.getLogin());
+                    if (!RpcResultCode.SUCCESS.equals(searchByDeveloperId.getCode())) {
+                        continue;
+                    }
+                    GithubUser githubUser = searchByDeveloperId.getData();
+                    if (StringUtils.isNotEmpty(githubUser.getLocation())) {
+                        relationshipLocationSet.add(githubUser.getLocation());
+                    }
                 }
-            }
-            // 获取开发者的关注列表
-            RpcResult<GithubFollowersResponse> followingByDeveloperId = githubUserService.listUserFollowingByDeveloperId(login);
-            if(!RpcResultCode.SUCCESS.equals(followingByDeveloperId.getCode())){
-                nationResponseRpcResult.setCode(followingByDeveloperId.getCode());
-                return nationResponseRpcResult;
-            }
-            for(GithubFollowers githubFollowers : followingByDeveloperId.getData().getGithubFollowersList()){
-                // 获取粉丝的location
-                RpcResult<GithubUser> searchByDeveloperId = githubUserService.searchByDeveloperId(githubFollowers.getLogin());
-                if (!RpcResultCode.SUCCESS.equals(searchByDeveloperId.getCode())) {
-                    continue;
+            }).exceptionally(ex->{
+                log.error("获取开发者粉丝列表失败: {}", ex);
+                return null;
+            });
+            CompletableFuture.runAsync(()->{
+                // 获取开发者的关注列表
+                RpcResult<GithubFollowersResponse> followingByDeveloperId = githubUserService.listUserFollowingByDeveloperId(login);
+                if(!RpcResultCode.SUCCESS.equals(followingByDeveloperId.getCode())){
+                    throw new RuntimeException("获取用户关注列表失败");
                 }
-                GithubUser githubUser = searchByDeveloperId.getData();
-                if (StringUtils.isNotEmpty(githubUser.getLocation())) {
-                    relationshipLocationSet.add(githubUser.getLocation());
+                for(GithubFollowers githubFollowers : followingByDeveloperId.getData().getGithubFollowersList()){
+                    // 获取粉丝的location
+                    RpcResult<GithubUser> searchByDeveloperId = githubUserService.getUserByLogin(githubFollowers.getLogin());
+                    if (!RpcResultCode.SUCCESS.equals(searchByDeveloperId.getCode())) {
+                        continue;
+                    }
+                    GithubUser githubUser = searchByDeveloperId.getData();
+                    if (StringUtils.isNotEmpty(githubUser.getLocation())) {
+                        relationshipLocationSet.add(githubUser.getLocation());
+                    }
                 }
-            }
+            }).exceptionally(ex->{
+                log.error("获取开发者关注列表失败: {}", ex);
+                return null;
+            });
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append(relationshipLocationSet);
             stringBuilder.append("\n");
