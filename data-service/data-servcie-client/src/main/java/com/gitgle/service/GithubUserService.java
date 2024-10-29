@@ -3,31 +3,19 @@ package com.gitgle.service;
 import com.gitgle.response.*;
 import com.gitgle.result.RpcResult;
 
+import java.util.Map;
+
 /**
  * Github Api 用户接口
  */
 public interface GithubUserService {
 
     /**
-     * 根据开发者id查询开发者信息
-     * @param developerId 开发者id
+     * 搜索开发者
+     * @param searchParams 查询参数
      * @return 开发者信息
      */
-    RpcResult<GithubUser> searchByDeveloperId(String developerId);
-
-    /**
-     * 根据开发者id查询关注用户的用户列表
-     * @param developerId 开发者login
-     * @return 关注列表
-     */
-    RpcResult<GithubFollowersResponse> getFollowersByDeveloperId(String developerId);
-
-    /**
-     * 根据开发者id查询被用户关注的用户列表
-     * @param developerId 开发者id
-     * @return 被关注列表
-     */
-    RpcResult<GithubFollowersResponse> listUserFollowingByDeveloperId(String developerId);
+    RpcResult<GithubUserResponse> searchByDeveloperId(Map<String, String> searchParams);
 
     /**
      * 根据开发者id查询组织列表

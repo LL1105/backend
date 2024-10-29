@@ -5,20 +5,20 @@ import lombok.Data;
 import java.io.Serializable;
 
 @Data
-public class GithubFollowers implements Serializable {
+public class GithubFollowing implements Serializable {
 
     /**
-     * 关注者login
+     * 被关注者login
      */
     private String login;
 
     /**
-     * 关注者id
+     * 被关注者id
      */
     private Integer id;
 
     /**
-     * 关注者头像url
+     * 被关注者头像url
      */
     private String avatarUrl;
 }

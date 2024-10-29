@@ -7,6 +7,7 @@ import com.gitgle.constant.RpcResultCode;
 import com.gitgle.response.*;
 import com.gitgle.result.RpcResult;
 import com.gitgle.service.GithubCommitService;
+import com.gitgle.service.GithubFollowingService;
 import com.gitgle.service.GithubUserService;
 import com.gitgle.service.NationService;
 import com.gitgle.utils.SparkApiUtils;
@@ -32,6 +33,9 @@ public class NationServiceImpl implements NationService {
     @DubboReference
     private GithubUserService githubUserService;
 
+    @DubboReference
+    private GithubFollowingService githubFollowingService;
+
     @Override
     public RpcResult<NationResponse> getNationByDeveloperId(String login) {
         RpcResult<NationResponse> nationResponseRpcResult = new RpcResult<>();
@@ -41,7 +45,7 @@ public class NationServiceImpl implements NationService {
             // 异步并行获取
             CompletableFuture.runAsync(()->{
                 // 获取开发者的粉丝列表
-                RpcResult<GithubFollowersResponse> followersByDeveloperId = githubUserService.getFollowersByDeveloperId(login);
+                RpcResult<GithubFollowersResponse> followersByDeveloperId = githubFollowingService.getFollowersByDeveloperId(login);
                 if (!RpcResultCode.SUCCESS.equals(followersByDeveloperId.getCode())) {
                     throw new RuntimeException("获取开发者粉丝列表失败");
                 }
@@ -62,13 +66,13 @@ public class NationServiceImpl implements NationService {
             });
             CompletableFuture.runAsync(()->{
                 // 获取开发者的关注列表
-                RpcResult<GithubFollowersResponse> followingByDeveloperId = githubUserService.listUserFollowingByDeveloperId(login);
+                RpcResult<GithubFollowingResponse> followingByDeveloperId = githubFollowingService.listUserFollowingByDeveloperId(login);
                 if(!RpcResultCode.SUCCESS.equals(followingByDeveloperId.getCode())){
                     throw new RuntimeException("获取用户关注列表失败");
                 }
-                for(GithubFollowers githubFollowers : followingByDeveloperId.getData().getGithubFollowersList()){
+                for(GithubFollowing githubFollowing : followingByDeveloperId.getData().getGithubFollowingList()){
                     // 获取粉丝的location
-                    RpcResult<GithubUser> searchByDeveloperId = githubUserService.getUserByLogin(githubFollowers.getLogin());
+                    RpcResult<GithubUser> searchByDeveloperId = githubUserService.getUserByLogin(githubFollowing.getLogin());
                     if (!RpcResultCode.SUCCESS.equals(searchByDeveloperId.getCode())) {
                         continue;
                     }
@@ -106,7 +110,7 @@ public class NationServiceImpl implements NationService {
             String[] nationArray = content.split("-");
             nationResponse.setNation(nationArray[0]);
             nationResponse.setNationEnglish(nationArray[1]);
-            nationResponse.setConfidence(nationArray[2]);
+            nationResponse.setConfidence(Double.valueOf(nationArray[2]));
             nationResponseRpcResult.setData(nationResponse);
             nationResponseRpcResult.setCode(RpcResultCode.SUCCESS);
             return nationResponseRpcResult;

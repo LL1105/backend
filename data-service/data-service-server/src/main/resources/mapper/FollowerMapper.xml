@@ -6,15 +6,19 @@
 
     <resultMap id="BaseResultMap" type="com.gitgle.dao.Follower">
             <id property="id" column="id" jdbcType="INTEGER"/>
-            <result property="login" column="login" jdbcType="VARCHAR"/>
-            <result property="username" column="username" jdbcType="VARCHAR"/>
+            <result property="followerLogin" column="follower_login" jdbcType="VARCHAR"/>
+            <result property="followingLogin" column="following_login" jdbcType="VARCHAR"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
-            <result property="avatarUrl" column="avatar_url" jdbcType="VARCHAR"/>
+            <result property="followerId" column="follower_id" jdbcType="INTEGER"/>
+            <result property="followingId" column="following_id" jdbcType="INTEGER"/>
+            <result property="followerAvatarUrl" column="follower_avatar_url" jdbcType="VARCHAR"/>
+            <result property="followingAvatarUrl" column="following_avatar_url" jdbcType="VARCHAR"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,login,username,
-        create_time,update_time,avatar_url
+        id,follower_login,following_login,
+        create_time,update_time,follower_id,
+        following_id,follower_avatar_url,following_avatar_url
     </sql>
 </mapper>

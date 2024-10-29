@@ -34,7 +34,7 @@ public class Repos implements Serializable {
     /**
      * 
      */
-    private String name;
+    private String repoName;
 
     /**
      * 
@@ -70,6 +70,21 @@ public class Repos implements Serializable {
      * 
      */
     private String updateAt;
+
+    /**
+     * 
+     */
+    private Integer watchersCount;
+
+    /**
+     * 
+     */
+    private Integer repoId;
+
+    /**
+     * 
+     */
+    private String description;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
