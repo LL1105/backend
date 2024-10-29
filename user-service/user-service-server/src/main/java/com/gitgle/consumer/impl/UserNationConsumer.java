@@ -1,15 +1,12 @@
 package com.gitgle.consumer.impl;
 
 import com.gitgle.consumer.KafkaConsumer;
-import com.gitgle.produce.KafkaProducer;
-import com.gitgle.service.RpcDomainService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,19 +14,11 @@ import java.util.Properties;
 
 @Component
 @Slf4j
-public class TalentRankConsumer implements KafkaConsumer {
+public class UserNationConsumer implements KafkaConsumer {
 
     private static final String TOPIC = "Domain";
 
     private static final String GROUP_ID = "Domain";
-
-    private static final String USER_DOMAIN_TOPIC = "UserDomain";
-
-    @Resource
-    private KafkaProducer kafkaProducer;
-
-    @Resource
-    private RpcDomainService rpcDomainService;
 
     @Override
     public void consumer(Properties props) {
