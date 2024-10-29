@@ -10,6 +10,7 @@ import com.gitgle.dao.Commit;
 import com.gitgle.dao.Organization;
 import com.gitgle.dao.User;
 import com.gitgle.mapper.UserMapper;
+import com.gitgle.produce.KafkaProducer;
 import com.gitgle.response.*;
 import com.gitgle.result.RpcResult;
 import com.gitgle.service.FollowerService;
@@ -44,8 +45,12 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
     @Resource
     private GithubApiRequestUtils githubApiRequestUtils;
 
+    @Resource
+    private KafkaProducer kafkaProducer;
+
     @Override
     public RpcResult<GithubUser> searchByDeveloperId(String developerId) {
+        kafkaProducer.sendMessage("heelo", "test");
         RpcResult<GithubUser> githubUserRpcResult = new RpcResult<>();
         try {
             // 先查库，没有再github上搜索
