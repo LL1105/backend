@@ -1,4 +1,4 @@
-package com.gitgle.service.VO.req;
+package com.gitgle.service.vo.req;
 
 import lombok.Data;
 

@@ -2,12 +2,9 @@ package com.gitgle.service;
 
 import cn.dev33.satoken.util.SaResult;
 import com.gitgle.result.R;
-import com.gitgle.service.VO.UserVo;
-import com.gitgle.service.VO.req.RankReq;
-import com.gitgle.service.VO.req.SearchReq;
-import com.gitgle.service.VO.resp.SearchResp;
-
-import java.util.List;
+import com.gitgle.service.vo.UserVo;
+import com.gitgle.service.vo.req.RankReq;
+import com.gitgle.service.vo.req.SearchReq;
 
 
 public interface UserService {

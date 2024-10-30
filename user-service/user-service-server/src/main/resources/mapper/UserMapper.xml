@@ -5,7 +5,7 @@
 <mapper namespace="com.gitgle.mapper.UserMapper">
 
 
-    <select id="selectUsersCondition" resultType="com.gitgle.service.VO.resp.RankResp">
+    <select id="selectUsersCondition" resultType="com.gitgle.service.vo.resp.RankResp">
         SELECT user.id as userId, username, nation, domain, talent_rank, github_id
         FROM user
         INNER JOIN domain ON user.domain_id = domain.id

@@ -1,6 +1,7 @@
 package com.gitgle.service;
 
 import com.gitgle.response.DomainResponse;
+import com.gitgle.response.HotDomainResponse;
 import com.gitgle.result.RpcResult;
 
 public interface RpcDomainService {
@@ -11,4 +12,9 @@ public interface RpcDomainService {
      * @return 领域集合
      */
     RpcResult<DomainResponse> getDomainByDeveloperId(String owner);
+
+    /**
+     * 获取热门领域u
+     */
+    RpcResult<HotDomainResponse> getHotDomain();
 }

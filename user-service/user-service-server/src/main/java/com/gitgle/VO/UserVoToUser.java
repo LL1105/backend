@@ -2,7 +2,7 @@ package com.gitgle.VO;
 
 
 import com.gitgle.entity.User;
-import com.gitgle.service.VO.UserVo;
+import com.gitgle.service.vo.UserVo;
 
 public class UserVoToUser {
 
