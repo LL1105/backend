@@ -114,4 +114,35 @@ public class GithubRepoServiceImpl implements GithubRepoService {
             return githubReposResponseRpcResult;
         }
     }
+
+    @Override
+    public RpcResult<GithubContributorResponse> listRepoContributors(String owner, String repoName) {
+        RpcResult<GithubContributorResponse> githubContributorResponseRpcResult = new RpcResult<>();
+        try{
+            Map<String,String> params = new HashMap<>();
+            GithubContributorResponse githubContributorResponse = githubApiRequestUtils.listRepoContributors(owner, repoName, params);
+            githubContributorResponseRpcResult.setData(githubContributorResponse);
+            githubContributorResponseRpcResult.setCode(RpcResultCode.SUCCESS);
+            return githubContributorResponseRpcResult;
+        }catch (IOException e){
+            log.error("Github ListRepoContributors Exception: {}", e.getMessage());
+            githubContributorResponseRpcResult.setCode(RpcResultCode.FAILED);
+            return githubContributorResponseRpcResult;
+        }
+    }
+
+    @Override
+    public RpcResult<GithubLanguagesResponse> getRepoLanguages(String owner, String repoName) {
+        RpcResult<GithubLanguagesResponse> githubLanguagesResponseRpcResult = new RpcResult<>();
+        try {
+            GithubLanguagesResponse githubLanguagesResponse = githubApiRequestUtils.listRepoLanguages(owner, repoName);
+            githubLanguagesResponseRpcResult.setData(githubLanguagesResponse);
+            githubLanguagesResponseRpcResult.setCode(RpcResultCode.SUCCESS);
+            return githubLanguagesResponseRpcResult;
+        } catch (IOException e) {
+            log.error("Github GetRepoLanguages Exception: {}", e.getMessage());
+            githubLanguagesResponseRpcResult.setCode(RpcResultCode.FAILED);
+            return githubLanguagesResponseRpcResult;
+        }
+    }
 }

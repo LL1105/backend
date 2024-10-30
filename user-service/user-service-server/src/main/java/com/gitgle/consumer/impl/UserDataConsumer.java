@@ -1,8 +1,6 @@
 package com.gitgle.consumer.impl;
 
 import com.gitgle.consumer.KafkaConsumer;
-import com.gitgle.produce.KafkaProducer;
-import com.gitgle.service.RpcDomainService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -10,7 +8,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,19 +16,11 @@ import java.util.Properties;
 
 @Component
 @Slf4j
-public class TalentRankConsumer implements KafkaConsumer {
+public class UserDataConsumer implements KafkaConsumer {
 
-    private static final String TOPIC = "Domain";
+    private static final String TOPIC = "UserData";
 
-    private static final String GROUP_ID = "Domain";
-
-    private static final String USER_DOMAIN_TOPIC = "UserDomain";
-
-    @Resource
-    private KafkaProducer kafkaProducer;
-
-    @Resource
-    private RpcDomainService rpcDomainService;
+    private static final String GROUP_ID = "UserData";
 
     @Override
     public void consumer(Properties props) {
@@ -74,6 +63,7 @@ public class TalentRankConsumer implements KafkaConsumer {
         } catch (Exception e) {
             log.error("Failed to create or close consumer: {}", e);
         }
+
     }
 
     public void processMessage(String message){

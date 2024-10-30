@@ -5,8 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.gitgle.config.GithubAuthToken;
 import com.gitgle.constant.GithubRestApi;
-import com.gitgle.constant.RpcResultCode;
-import com.gitgle.convert.GithubRepoContentConvert;
+import com.gitgle.convert.GithubContributorConvert;
 import com.gitgle.convert.GithubRepoConvert;
 import com.gitgle.response.*;
 import lombok.extern.slf4j.Slf4j;
@@ -14,18 +13,15 @@ import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Github Api 请求工具类
@@ -58,7 +54,7 @@ public class GithubApiRequestUtils {
     private String loadBalanceAuthToken() {
         String token = githubAuthToken.getList().get(loadBalanceIndex);
         loadBalanceIndex = (loadBalanceIndex + 1) % githubAuthToken.getList().size();
-        return "Bearer " +token;
+        return "Bearer " + token;
     }
 
     /**
@@ -66,11 +62,11 @@ public class GithubApiRequestUtils {
      */
     public GithubUserResponse searchUsers(Map<String, String> queryParams) throws IOException {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.SEARCH_USERS.getAddress()).newBuilder();
-       buildQueryParams(queryParams, urlBuilder);
+        buildQueryParams(queryParams, urlBuilder);
         String url = urlBuilder.build().toString();
         Response response = httpClient.newCall(buildRequest(url)).execute();
         GithubUserResponse githubUserResponse = new GithubUserResponse();
-        if(!response.isSuccessful()){
+        if (!response.isSuccessful()) {
             throw new IOException("Github SearchUsers Exception: " + response.body().string());
         }
         JSONObject responseBody = JSON.parseObject(response.body().string());
@@ -107,7 +103,7 @@ public class GithubApiRequestUtils {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.GET_ONE_REPO.getAddress() + "/" + owner + "/" + repoName).newBuilder();
         String url = urlBuilder.build().toString();
         Response response = httpClient.newCall(buildRequest(url)).execute();
-        if(!response.isSuccessful()){
+        if (!response.isSuccessful()) {
             throw new IOException("Github GetOneRepo Exception: " + response.body().string());
         }
         JSONObject responseBody = JSON.parseObject(response.body().string());
@@ -132,7 +128,7 @@ public class GithubApiRequestUtils {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.GET_ONE_REPO.getAddress() + "/" + owner + "/" + repoName + "/contents/" + path).newBuilder();
         String url = urlBuilder.build().toString();
         Response response = httpClient.newCall(buildRequest(url)).execute();
-        if(!response.isSuccessful()){
+        if (!response.isSuccessful()) {
             throw new IOException("Github GetRepoContent Exception: " + response.body().string());
         }
         JSONObject responseBody = JSON.parseObject(response.body().string());
@@ -177,7 +173,7 @@ public class GithubApiRequestUtils {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.GET_USERS.getAddress() + "/" + username).newBuilder();
         String url = urlBuilder.build().toString();
         Response response = httpClient.newCall(buildRequest(url)).execute();
-        if(!response.isSuccessful()){
+        if (!response.isSuccessful()) {
             throw new IOException("Github GetUserByLogin Response: " + response.body().string());
         }
         JSONObject responseBody = JSON.parseObject(response.body().string());
@@ -192,7 +188,7 @@ public class GithubApiRequestUtils {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.GET_USER.getAddress() + "/" + accountId).newBuilder();
         String url = urlBuilder.build().toString();
         Response response = httpClient.newCall(buildRequest(url)).execute();
-        if(!response.isSuccessful()){
+        if (!response.isSuccessful()) {
             throw new IOException("Github GetUserByAccountId Response: " + response.body().string());
         }
         JSONObject responseBody = JSON.parseObject(response.body().string());
@@ -207,24 +203,24 @@ public class GithubApiRequestUtils {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.GET_USERS.getAddress() + "/" + owner + "/repos").newBuilder();
         GithubReposResponse githubReposResponse = new GithubReposResponse();
         List<GithubRepos> githubProjectList = new ArrayList<>();
-        params.put("per_page","100");
+        params.put("per_page", "100");
         Integer page = 1;
-        while(true){
+        while (true) {
             params.put("page", String.valueOf(page));
             buildQueryParams(params, urlBuilder);
             String url = urlBuilder.build().toString();
             Response response = httpClient.newCall(buildRequest(url)).execute();
-            if(!response.isSuccessful()){
+            if (!response.isSuccessful()) {
                 throw new IOException("Github GetUserRepos Response: " + response.body().string());
             }
             JSONArray responseBody = JSON.parseArray(response.body().string());
             log.info("Github GetUserRepos Response: {}", responseBody);
-            for(int i=0; i<responseBody.size(); i++){
-                JSONObject item =responseBody.getJSONObject(i);
+            for (int i = 0; i < responseBody.size(); i++) {
+                JSONObject item = responseBody.getJSONObject(i);
                 GithubRepos githubRepos = GithubRepoConvert.convert(item);
                 githubProjectList.add(githubRepos);
             }
-            if(responseBody.size()<100){
+            if (responseBody.size() < 100) {
                 break;
             }
         }
@@ -232,16 +228,71 @@ public class GithubApiRequestUtils {
         return githubReposResponse;
     }
 
-    private void buildQueryParams(Map<String, String> params, HttpUrl.Builder urlBuilder){
-        for(Map.Entry<String, String> entry : params.entrySet()){
+    /**
+     * 获取仓库贡献者
+     */
+    public GithubContributorResponse listRepoContributors(String owner, String repoName, Map<String, String> params) throws IOException {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.GET_ONE_REPO.getAddress() + "/" + owner + "/" + repoName + "/contributors").newBuilder();
+        GithubContributorResponse githubContributorResponse = new GithubContributorResponse();
+        List<GithubContributor> githubContributorList = new ArrayList<>();
+        params.put("per_page", "100");
+        Integer page = 1;
+        while (true) {
+            params.put("page", String.valueOf(page));
+            buildQueryParams(params, urlBuilder);
+            String url = urlBuilder.build().toString();
+            Response response = httpClient.newCall(buildRequest(url)).execute();
+            if (!response.isSuccessful()) {
+                throw new IOException("Github ListRepoContributors Response: " + response.body().string());
+            }
+            JSONArray responseBody = JSON.parseArray(response.body().string());
+            log.info("Github ListRepoContributors Response: {}", responseBody);
+            for (int i = 0; i < responseBody.size(); i++) {
+                JSONObject item = responseBody.getJSONObject(i);
+                GithubContributor githubContributor = GithubContributorConvert.convert(item, repoName, owner);
+                githubContributorList.add(githubContributor);
+            }
+            if (responseBody.size() < 100) {
+                break;
+            }
+        }
+        githubContributorResponse.setGithubContributorList(githubContributorList);
+        return githubContributorResponse;
+    }
+
+    /**
+     * 获取仓库语言
+     */
+    public GithubLanguagesResponse listRepoLanguages(String owner, String repoName) throws IOException {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.GET_ONE_REPO.getAddress() + "/" + owner + "/" + repoName + "/languages").newBuilder();
+        GithubLanguagesResponse githubLanguagesResponse = new GithubLanguagesResponse();
+        String url = urlBuilder.build().toString();
+        Response response = httpClient.newCall(buildRequest(url)).execute();
+        if (!response.isSuccessful()) {
+            throw new IOException("Github ListRepoLanguages Response: " + response.body().string());
+        }
+        JSONObject responseBody = JSON.parseObject(response.body().string());
+        log.info("Github ListRepoLanguages Response: {}", responseBody);
+        Map<String, Integer> githubLanguagesMap = responseBody.getInnerMap().entrySet().stream()
+                .filter(entry -> entry.getValue() instanceof Number) // 过滤出值为数字的键值对
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> ((Number) entry.getValue()).intValue()  // 将值转换为 Integer 类型
+                ));
+        githubLanguagesResponse.setLanguagesMap(githubLanguagesMap);
+        return githubLanguagesResponse;
+    }
+
+    private void buildQueryParams(Map<String, String> params, HttpUrl.Builder urlBuilder) {
+        for (Map.Entry<String, String> entry : params.entrySet()) {
             urlBuilder.addQueryParameter(entry.getKey(), entry.getValue());
         }
     }
 
-    private Request buildRequest(String url){
+    private Request buildRequest(String url) {
         return new Request.Builder()
-                .header(ACCEPT,APPLICATION_VND_GITHUB_JSON)
-                .header(AUTHORIZATION,loadBalanceAuthToken())
+                .header(ACCEPT, APPLICATION_VND_GITHUB_JSON)
+                .header(AUTHORIZATION, loadBalanceAuthToken())
                 .header(X_GITHUB_API_VERSION_KEY, X_GITHUB_API_VERSION)
                 .url(url)
                 .build();
