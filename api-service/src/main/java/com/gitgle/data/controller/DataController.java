@@ -1,11 +1,8 @@
 package com.gitgle.data.controller;
 
 import com.gitgle.constant.RpcResultCode;
-import com.gitgle.response.GithubDataResponse;
-import com.gitgle.response.GithubRepos;
-import com.gitgle.response.GithubReposResponse;
-import com.gitgle.response.HotDomainResponse;
-import com.gitgle.result.R;
+import com.gitgle.response.*;
+import com.gitgle.result.Result;
 import com.gitgle.result.RpcResult;
 import com.gitgle.service.GithubDataService;
 import com.gitgle.service.GithubRepoService;
@@ -29,29 +26,38 @@ public class DataController {
     private GithubRepoService githubRepoService;
 
     @GetMapping("/all")
-    public R<GithubDataResponse> getAllGithubData(){
+    public Result<GithubDataResponse> getAllGithubData(){
         RpcResult<GithubDataResponse> allGithubData = githubDataService.getAllGithubData();
         if(!RpcResultCode.SUCCESS.equals(allGithubData.getCode())){
-            return R.Failed();
+            return Result.Failed();
         }
-        return R.Success(allGithubData.getData());
+        return Result.Success(allGithubData.getData());
     }
 
     @GetMapping("/hot/domain")
-    public R<HotDomainResponse> getHotDomain(){
+    public Result<HotDomainResponse> getHotDomain(){
         RpcResult<HotDomainResponse> hotDomain = rpcDomainService.getHotDomain();
         if(!RpcResultCode.SUCCESS.equals(hotDomain.getCode())){
-            return R.Failed();
+            return Result.Failed();
         }
-        return R.Success(hotDomain.getData());
+        return Result.Success(hotDomain.getData());
     }
 
     @GetMapping("/hot/repo")
-    public R<GithubReposResponse> getHotRepo(){
+    public Result<GithubReposResponse> getHotRepo(){
         RpcResult<GithubReposResponse> hotRepos = githubRepoService.getHotRepos();
         if(!RpcResultCode.SUCCESS.equals(hotRepos.getCode())){
-            return R.Failed();
+            return Result.Failed();
         }
-        return R.Success(hotRepos.getData());
+        return Result.Success(hotRepos.getData());
+    }
+
+    @GetMapping("/hot/domain/event")
+    public Result<HotDomainResponse> getHotDomainEvent(String domain){
+        RpcResult<HotDomainEventResponse> hotDomainEvent = rpcDomainService.getHotDomainEvent(domain);
+        if(!RpcResultCode.SUCCESS.equals(hotDomainEvent.getCode())){
+            return Result.Failed();
+        }
+        return Result.Success(hotDomainEvent.getData());
     }
 }
