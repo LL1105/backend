@@ -10,6 +10,7 @@ import com.gitgle.constant.RpcResultCode;
 import com.gitgle.dao.Commit;
 import com.gitgle.dao.Organization;
 import com.gitgle.dao.User;
+import com.gitgle.job.RefreshUserJob;
 import com.gitgle.mapper.UserMapper;
 import com.gitgle.produce.KafkaProducer;
 import com.gitgle.response.*;
@@ -45,26 +46,17 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
     private GithubApiRequestUtils githubApiRequestUtils;
 
     @Override
-    public RpcResult<GithubUserResponse> searchByDeveloperId(Map<String, String> searchParams) {
+    public RpcResult<GithubUserResponse> searchUsers(Map<String, String> searchParams) {
         RpcResult<GithubUserResponse> githubUserRpcResult = new RpcResult<>();
-        GithubUserResponse githubUserResponse = new GithubUserResponse();
         try {
-            Response response = githubApiRequestUtils.searchUsers(searchParams);
-            if(!response.isSuccessful()){
-                githubUserRpcResult.setCode(RpcResultCode.Github_RESPONSE_FAILED);
-                return githubUserRpcResult;
-            }
-            JSONObject responseBody = JSON.parseObject(response.body().string());
-            log.info("Github SearchUsers Response: {}", responseBody);
-            List<GithubUser> githubUserList = JSON.parseArray(responseBody.getJSONArray("items").toString(), GithubUser.class);
+            GithubUserResponse githubUserResponse = githubApiRequestUtils.searchUsers(searchParams);
             // 异步写库
             CompletableFuture.runAsync(()-> {
-                userService.writeGithubUser2User(githubUserList);
+                userService.writeGithubUser2User(githubUserResponse.getGithubUserList());
             }).exceptionally(ex -> {
                 log.error("Github SearchUsers Exception: {}", ex);
                 return null;
             });
-            githubUserResponse.setGithubUserList(githubUserList);
             githubUserRpcResult.setData(githubUserResponse);
             githubUserRpcResult.setCode(RpcResultCode.SUCCESS);
             return githubUserRpcResult;
@@ -148,14 +140,7 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
                 githubUserRpcResult.setCode(RpcResultCode.SUCCESS);
                 return githubUserRpcResult;
             }
-            Response response = githubApiRequestUtils.getUserByUsername(login);
-            if(!response.isSuccessful()){
-                githubUserRpcResult.setCode(RpcResultCode.Github_RESPONSE_FAILED);
-                return githubUserRpcResult;
-            }
-            JSONObject responseBody = JSON.parseObject(response.body().string());
-            log.info("Github GetUserByAccountId Response: {}", responseBody);
-            githubUser = JSON.parseObject(responseBody.toString(), GithubUser.class);
+            githubUser = githubApiRequestUtils.getUserByUsername(login);
             ArrayList githubUserList = new ArrayList<>();
             githubUserList.add(githubUser);
             // 异步更新库
@@ -173,5 +158,15 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
             githubUserRpcResult.setCode(RpcResultCode.FAILED);
             return githubUserRpcResult;
         }
+    }
+
+    @Resource
+    private RefreshUserJob refreshUserJob;
+
+    @Override
+    public RpcResult<GithubUser> listUserByFollowers() {
+        refreshUserJob.refreshAccountId();
+        refreshUserJob.refresh();
+        return null;
     }
 }

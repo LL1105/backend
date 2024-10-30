@@ -6,14 +6,12 @@ import com.gitgle.request.GithubRequest;
 import com.gitgle.response.GithubCommit;
 import com.gitgle.response.GithubCommitResponse;
 import com.gitgle.response.GithubRepos;
-import com.gitgle.response.GithubReposResponse;
 import com.gitgle.result.RpcResult;
 import com.gitgle.service.GithubCommitService;
-import com.gitgle.service.GithubProjectService;
+import com.gitgle.service.GithubRepoService;
 import com.gitgle.service.TalentRankCalculateService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
-import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -31,7 +29,7 @@ public class TalentRankCalculateServiceImpl implements TalentRankCalculateServic
     private String forkWeight = "0.5";
 
     @DubboReference
-    private GithubProjectService githubProjectService;
+    private GithubRepoService githubProjectService;
 
     @DubboReference
     private GithubCommitService githubCommitService;

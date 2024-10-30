@@ -15,7 +15,7 @@ public interface GithubUserService {
      * @param searchParams 查询参数
      * @return 开发者信息
      */
-    RpcResult<GithubUserResponse> searchByDeveloperId(Map<String, String> searchParams);
+    RpcResult<GithubUserResponse> searchUsers(Map<String, String> searchParams);
 
     /**
      * 根据开发者id查询组织列表
@@ -30,4 +30,6 @@ public interface GithubUserService {
      * @return 用户信息
      */
     RpcResult<GithubUser> getUserByLogin(String login);
+
+    RpcResult<GithubUser> listUserByFollowers();
 }
