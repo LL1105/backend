@@ -87,6 +87,15 @@ public class UserServiceImpl implements UserService{
         githubUser.setFollowing(user.getFollowing());
         return githubUser;
     }
+
+    @Override
+    public String getLoginByAccountId(Integer githubAccountId) {
+        User user = userMapper.selectOne(Wrappers.lambdaQuery(User.class).eq(User::getAccountId, githubAccountId));
+        if(ObjectUtils.isNotEmpty(user)){
+            return user.getLogin();
+        }
+        return null;
+    }
 }
 
 

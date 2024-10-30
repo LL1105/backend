@@ -1,21 +1,18 @@
 package com.gitgle.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.gitgle.constant.RpcResultCode;
 import com.gitgle.convert.GithubRepoContentConvert;
-import com.gitgle.convert.GithubRepoConvert;
 import com.gitgle.request.GithubRequest;
 import com.gitgle.response.*;
 import com.gitgle.result.RpcResult;
+import com.gitgle.service.ContributorService;
 import com.gitgle.service.GithubRepoService;
 import com.gitgle.service.RepoContentService;
 import com.gitgle.service.ReposService;
 import com.gitgle.utils.GithubApiRequestUtils;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.Response;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.dubbo.config.annotation.DubboService;
 
 import javax.annotation.Resource;
@@ -34,6 +31,9 @@ public class GithubRepoServiceImpl implements GithubRepoService {
 
     @Resource
     private ReposService reposService;
+
+    @Resource
+    private ContributorService contributorService;
 
     @Resource
     private RepoContentService repoContentService;
@@ -119,8 +119,20 @@ public class GithubRepoServiceImpl implements GithubRepoService {
     public RpcResult<GithubContributorResponse> listRepoContributors(String owner, String repoName) {
         RpcResult<GithubContributorResponse> githubContributorResponseRpcResult = new RpcResult<>();
         try{
+            // 先查库
+            List<GithubContributor> githubContributorList = contributorService.readContributor2GithubContributor(repoName, owner);
+            if(ObjectUtils.isNotEmpty(githubContributorList)){
+                GithubContributorResponse githubContributorResponse = new GithubContributorResponse();
+                githubContributorResponse.setGithubContributorList(githubContributorList);
+                githubContributorResponseRpcResult.setData(githubContributorResponse);
+                githubContributorResponseRpcResult.setCode(RpcResultCode.SUCCESS);
+                return githubContributorResponseRpcResult;
+            }
             Map<String,String> params = new HashMap<>();
             GithubContributorResponse githubContributorResponse = githubApiRequestUtils.listRepoContributors(owner, repoName, params);
+            CompletableFuture.runAsync(()->{
+                contributorService.writeGithubContributor2Contributor(githubContributorResponse.getGithubContributorList());
+            });
             githubContributorResponseRpcResult.setData(githubContributorResponse);
             githubContributorResponseRpcResult.setCode(RpcResultCode.SUCCESS);
             return githubContributorResponseRpcResult;

@@ -7,6 +7,8 @@ import java.io.Serializable;
 @Data
 public class GithubContributor implements Serializable {
 
+    private Integer id;
+
     private String login;
 
     private String repoName;
