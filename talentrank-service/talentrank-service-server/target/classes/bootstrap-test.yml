@@ -1,8 +1,0 @@
-spring:
-  cloud:
-    nacos:
-      config:
-        server-addr: 121.36.79.38:8848
-        namespace:
-        prefix: talentrank-service
-        file-extension: yaml
