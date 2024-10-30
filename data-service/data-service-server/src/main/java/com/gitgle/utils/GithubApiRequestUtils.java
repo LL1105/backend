@@ -76,6 +76,23 @@ public class GithubApiRequestUtils {
         return githubUserResponse;
     }
 
+    public Integer getGithubUserTotal() throws IOException {
+        Map<String, String> params = new HashMap<>();
+        params.put("q", "type:user");
+        params.put("page", "1");
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.SEARCH_USERS.getAddress()).newBuilder();
+        buildQueryParams(params, urlBuilder);
+        String url = urlBuilder.build().toString();
+        Response response = httpClient.newCall(buildRequest(url)).execute();
+        GithubUserResponse githubUserResponse = new GithubUserResponse();
+        if (!response.isSuccessful()) {
+            throw new IOException("Github SearchUsers Exception: " + response.body().string());
+        }
+        JSONObject responseBody = JSON.parseObject(response.body().string());
+        log.info("Github SearchUsers Response: {}", responseBody);
+        return responseBody.getInteger("total_count");
+    }
+
     /**
      * 搜索仓库
      */
