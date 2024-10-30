@@ -7,9 +7,13 @@ import com.gitgle.service.TalentRankService;
 import com.gitgle.service.UserService;
 import com.gitgle.service.VO.req.LoginReq;
 import com.gitgle.service.VO.UserVo;
+import com.gitgle.service.VO.req.SearchReq;
+import com.gitgle.service.VO.resp.SearchResp;
 import org.apache.dubbo.config.annotation.DubboReference;
 
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -57,6 +61,16 @@ public class UserController {
     @PostMapping("/getRank")
     public R getTalentRank(Integer userId) {
         return R.Success(talentRankService.getTalentrankByDeveloperId(String.valueOf(userId)));
+    }
+
+    @PostMapping("/search")
+    public R search(@RequestBody SearchReq req) {
+        return userService.search(req);
+    }
+
+    @PostMapping("/nation")
+    public R search() {
+        return userService.getNation();
     }
 
 }

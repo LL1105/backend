@@ -7,21 +7,25 @@ import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gitgle.VO.UserVoToUser;
 import com.gitgle.constant.RedisConstant;
+import com.gitgle.entity.Domain;
+import com.gitgle.entity.Nation;
+import com.gitgle.mapper.DomainMapper;
+import com.gitgle.mapper.GithubUserMapper;
+import com.gitgle.mapper.NationMapper;
 import com.gitgle.mapper.UserMapper;
 import com.gitgle.result.R;
 import com.gitgle.entity.User;
+
 import com.gitgle.service.VO.req.RankReq;
-import com.gitgle.service.VO.resp.LoginResp;
+import com.gitgle.service.VO.req.SearchReq;
+import com.gitgle.service.VO.resp.*;
 import com.gitgle.service.VO.UserVo;
-import com.gitgle.service.VO.resp.RankResp;
-import com.gitgle.service.VO.resp.RegisterResp;
-import com.gitgle.service.VO.resp.UserInfoResp;
 import com.gitgle.utils.Md5Util;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +58,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
 
     @Resource
     StringRedisTemplate stringRedisTemplate;
+
+    @Resource
+    DomainMapper domainMapper;
+
+//    @DubboReference
+//    RpcDomainService domainService;
+//
+//    @DubboReference
+//    NationService nationService;
+
+    @Resource
+    NationMapper nationMapper;
+
+    @Resource
+    GithubUserMapper githubUserMapper;
 
 
     @Override
@@ -110,6 +129,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         String password = Md5Util.md5(userVo.getPassword(), Md5Util.md5Key);
         userVo.setPassword(password);
 
+        //TODO 计算talentRank，Nation，domain，存进去
         User user = UserVoToUser.toUser(userVo);
         userMapper.insert(user);
         RegisterResp resp = new RegisterResp();
@@ -164,5 +184,33 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     public R conditionCheckRank(Integer size, Integer current, RankReq req) {
         List<RankResp> rankResps = userMapper.selectUsersCondition(current, size, req);
         return R.Success(rankResps);
+    }
+
+    @Override
+    public R search(SearchReq searchReq) {
+        //req:领域名，地区id，github用户名
+        //通过这套数据去查数据库，如果没有的话，再去通过github用户名去查service
+        Integer domainId = null;
+        String domain = searchReq.getDomain();
+
+        LambdaQueryWrapper<Domain> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Domain::getDomain, domain);
+        Domain selectOne = domainMapper.selectOne(queryWrapper);
+        domainId = selectOne == null ? null : selectOne.getId();
+        //暂时只能查询数据库里面存在的domain
+        if(domainId != null) {
+            searchReq.setDomain(String.valueOf(domainId));
+        }
+        List<SearchResp> searchList = githubUserMapper.searchByCondition(searchReq);
+        return R.Success(searchList);
+        //数据库里面没有这个领域，那么直接调用rpc接口，找到github的这个领域
+
+        //这里就直接去数据库查github的用户，根据domainId和nationId以及githubId的模糊查询
+    }
+
+    @Override
+    public R getNation() {
+        List<Nation> nations = nationMapper.selectList(new QueryWrapper<>());
+        return R.Success(nations);
     }
 }

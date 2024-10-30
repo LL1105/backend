@@ -4,6 +4,10 @@ import cn.dev33.satoken.util.SaResult;
 import com.gitgle.result.R;
 import com.gitgle.service.VO.UserVo;
 import com.gitgle.service.VO.req.RankReq;
+import com.gitgle.service.VO.req.SearchReq;
+import com.gitgle.service.VO.resp.SearchResp;
+
+import java.util.List;
 
 
 public interface UserService {
@@ -27,4 +31,9 @@ public interface UserService {
     R getUsersByNation(String nation);
 
     R conditionCheckRank(Integer size, Integer current, RankReq req);
+
+    //搜索用户
+    R search(SearchReq searchReq);
+
+    R getNation();
 }

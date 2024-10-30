@@ -9,32 +9,32 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 
- * @TableName user_domain
+ *
+ * @TableName github_user
  */
-@TableName(value ="user_domain")
+@TableName(value ="github_user")
 @Data
-public class UserDomain implements Serializable {
+public class GithubUser implements Serializable {
     /**
-     * 
+     *
      */
     @TableId(type = IdType.AUTO)
     private Integer id;
 
     /**
-     * 
+     *
      */
     private String login;
 
     /**
-     * 
+     *
      */
-    private Integer domainId;
+    private String avatar;
 
     /**
-     * 
+     *
      */
-    private Double confidence;
+    private String nation_id;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
