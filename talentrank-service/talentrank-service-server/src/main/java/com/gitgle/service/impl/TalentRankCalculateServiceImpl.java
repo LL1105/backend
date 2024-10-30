@@ -3,9 +3,7 @@ package com.gitgle.service.impl;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.gitgle.constant.RpcResultCode;
 import com.gitgle.request.GithubRequest;
-import com.gitgle.response.GithubCommit;
-import com.gitgle.response.GithubCommitResponse;
-import com.gitgle.response.GithubRepos;
+import com.gitgle.response.*;
 import com.gitgle.result.RpcResult;
 import com.gitgle.service.GithubCommitService;
 import com.gitgle.service.GithubRepoService;
@@ -85,14 +83,20 @@ public class TalentRankCalculateServiceImpl implements TalentRankCalculateServic
         if(StringUtils.isEmpty(repoOwner) || StringUtils.isEmpty(repoName) || StringUtils.isEmpty(author)){
             return "1";
         }
-        GithubRequest githubRequest = new GithubRequest();
-        githubRequest.setOwner(repoOwner);
-        githubRequest.setRepoName(repoName);
-        githubRequest.setAuthor(author);
-        RpcResult<GithubCommitResponse> githubCommitResponseRpcResultAuthor = githubCommitService.listCommitsByRepoAndAuthor(githubRequest);
-        if(!RpcResultCode.SUCCESS.equals(githubCommitResponseRpcResultAuthor.getCode())){
+        // 获取该仓库贡献度
+        RpcResult<GithubContributorResponse> githubContributorResponseRpcResult = githubProjectService.listRepoContributors(repoOwner, repoName);
+        if(!RpcResultCode.SUCCESS.equals(githubContributorResponseRpcResult.getCode())){
             return "0";
         }
-        return String.valueOf(githubCommitResponseRpcResultAuthor.getData().getGithubCommitList().size());
+        // 计算总贡献度和提交者贡献度
+        BigDecimal totalContribution = new BigDecimal(0);
+        BigDecimal authorContribution = null;
+        for(GithubContributor githubContributor : githubContributorResponseRpcResult.getData().getGithubContributorList()){
+            totalContribution = totalContribution.add(new BigDecimal(githubContributor.getContributions()));
+            if(githubContributor.getLogin().equals(author)){
+                authorContribution = new BigDecimal(githubContributor.getContributions());
+            }
+        }
+        return String.valueOf(authorContribution.divide(totalContribution));
     }
 }
