@@ -2,9 +2,11 @@ package com.gitgle.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 
+@EqualsAndHashCode
 @Data
 public class GithubRepos implements Serializable {
 

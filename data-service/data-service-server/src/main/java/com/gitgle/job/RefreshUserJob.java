@@ -1,7 +1,6 @@
 package com.gitgle.job;
 
-import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.gitgle.constant.RedisConstant;
 import com.gitgle.produce.KafkaProducer;
 import com.gitgle.response.GithubUser;
 import com.gitgle.response.GithubUserResponse;
@@ -9,6 +8,7 @@ import com.gitgle.service.UserService;
 import com.gitgle.utils.GithubApiRequestUtils;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -29,7 +29,7 @@ public class RefreshUserJob {
     private KafkaProducer kafkaProducer;
 
     @Resource
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String, Integer> redisTemplate;
 
     @Resource
     private GithubApiRequestUtils githubApiRequestUtils;
@@ -37,15 +37,17 @@ public class RefreshUserJob {
     @Resource
     private UserService userService;
 
-    private static final Integer LIMIT_PAGE = 1000;
-
-    private static final Integer CACHE_LIMIT_PAGE = 100;
-
+    /**
+     * 刷新用户信息
+     * @param startIndex github id缓存队列开始索引
+     * @param perSize 每次从对列取多少个
+     * @param limitTotalPage 循环次数
+     */
     @XxlJob("refresh-user-job")
-    public void refresh() {
+    public void refresh(Integer startIndex, Integer perSize, Integer limitTotalPage) {
         log.info("执行刷新User任务...");
-        for (int i = 0; i <= LIMIT_PAGE; i++) {
-            List<Integer> githubAccountIdList = redisTemplate.opsForList().range("github:account:id", i * LIMIT_PAGE, (i + 1) * LIMIT_PAGE);
+        for (int i = 0; i <= limitTotalPage; i++) {
+            List<Integer> githubAccountIdList = redisTemplate.opsForList().range(RedisConstant.GITHUB_ACCOUNT_ID, i*perSize, (i+1)*perSize);
             for (Integer githubAccountId : githubAccountIdList) {
                 try {
                     // 获取最新数据
@@ -62,25 +64,30 @@ public class RefreshUserJob {
                         writeGithubUser.add(finalGithubUser);
                         userService.writeGithubUser2User(writeGithubUser);
                     });
-//                    // 如果用户没有设置location，发送给Nation
-//                    if(StringUtils.isNotEmpty(githubUser.getLogin())){
-//                        kafkaProducer.sendMessage(githubUser.getLogin(), "Nation");
-//                    }
-//                    // 发送给user-service
-//                    kafkaProducer.sendMessage(JSON.toJSONString(githubUser), "GithubUserData");
+                    // 如果用户没有设置location，发送给Nation推测，否则发给user-service
+                    if(StringUtils.isNotEmpty(githubUser.getLogin())){
+                        kafkaProducer.sendMessage(githubUser.getLogin(), "Nation");
+                    }else {
+                        kafkaProducer.sendMessage(githubUser.getLogin(), "UserNation");
+                    }
                 } catch (IOException e) {
-                    log.info("Github GetUserByAccountId Exception: {}", e);
+                    log.error("Github User Exception: {}", e.getMessage());
                 }
             }
         }
     }
 
+    /**
+     * 刷新热门用户accountId到Redis缓存队列
+     * @param startPage 开始页码
+     * @param endPage 结束页码
+     */
     @XxlJob("refresh-account-id")
-    public void refreshAccountId() {
+    public void refreshAccountId(Integer startPage, Integer endPage) {
         log.info("执行刷新热门AccountId任务...");
-        redisTemplate.delete("github:account:id");
-        redisTemplate.expire("github:account:id", 7, TimeUnit.DAYS);
-        for (int i = 1; i <= LIMIT_PAGE; i++) {
+        redisTemplate.delete(RedisConstant.GITHUB_ACCOUNT_ID);
+        redisTemplate.expire(RedisConstant.GITHUB_ACCOUNT_ID, 7, TimeUnit.DAYS);
+        for (int i = startPage; i <= endPage; i++) {
             try {
                 Map<String, String> searchParams = new HashMap<>();
                 searchParams.put("q", "followers:>" + 0);
@@ -89,7 +96,7 @@ public class RefreshUserJob {
                 searchParams.put("page", String.valueOf(i));
                 GithubUserResponse githubUserResponse = githubApiRequestUtils.searchUsers(searchParams);
                 for (GithubUser githubUser : githubUserResponse.getGithubUserList()) {
-                    redisTemplate.opsForList().rightPush("github:account:id", githubUser.getId());
+                    redisTemplate.opsForList().rightPush(RedisConstant.GITHUB_ACCOUNT_ID, githubUser.getId());
                 }
             } catch (IOException e) {
                 log.error("Github SearchUsers Exception: {}", e.getMessage());
