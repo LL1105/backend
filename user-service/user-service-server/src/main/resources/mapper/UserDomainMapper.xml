@@ -7,12 +7,12 @@
     <resultMap id="BaseResultMap" type="com.gitgle.entity.UserDomain">
             <id property="id" column="id" jdbcType="INTEGER"/>
             <result property="login" column="login" jdbcType="VARCHAR"/>
-            <result property="domain" column="domain" jdbcType="VARCHAR"/>
+            <result property="domainId" column="domain_id" jdbcType="VARCHAR"/>
             <result property="confidence" column="confidence" jdbcType="FLOAT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,login,domain,
+        id,login,domain_id,
         confidence
     </sql>
 </mapper>

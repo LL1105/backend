@@ -9,32 +9,23 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 
- * @TableName user_domain
+ *
+ * @TableName domain
  */
-@TableName(value ="user_domain")
+@TableName(value ="domain")
 @Data
-public class UserDomain implements Serializable {
+public class Domain implements Serializable {
     /**
-     * 
+     *
      */
     @TableId(type = IdType.AUTO)
     private Integer id;
 
     /**
-     * 
+     *
      */
-    private String login;
+    private String domain;
 
-    /**
-     * 
-     */
-    private Integer domainId;
-
-    /**
-     * 
-     */
-    private Double confidence;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

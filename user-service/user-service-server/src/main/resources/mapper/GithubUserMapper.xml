@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gitgle.mapper.GithubUserMapper">
+
+
+    <select id="searchByCondition" resultType="com.gitgle.service.VO.resp.SearchResp">
+
+        SELECT DISTINCT github_user.login, avatar, talent_rank from github_user
+        LEFT JOIN user_domain on github_user.login=user_domain.login
+        LEFT JOIN domain on domain.id = user_domain.domain_id
+        <where>
+            <if test="domain != null and domain != ''">
+                AND domain_id = #{domain}
+            </if>
+            <if test="login != null and login != ''">
+                AND github_user.login like concat('%', #{login}, '%')
+            </if>
+            <if test="nationId != null and nationId != ''">
+                AND nation_id = #{nationId}
+            </if>
+        </where>
+
+
+<!--        SELECT user.id as userId, username, nation, domain, talent_rank, github_id-->
+<!--        FROM user-->
+<!--        INNER JOIN domain ON user.domain_id = domain.id-->
+<!--        INNER JOIN nation ON user.nation_id = nation.id    -->
+<!--        <where>-->
+<!--            <if test="req.domainId != null and req.domainId != ''">-->
+<!--                AND user.domain_id = #{req.domainId}-->
+<!--            </if>-->
+<!--            <if test="req.nationId != null and req.nationId != ''" >-->
+<!--                AND user.nation_id = #{req.nationId}-->
+<!--            </if>-->
+<!--            <if test="req.username != null and req.username !=''">-->
+<!--                AND user.username like concat('%', #{req.username},'%')-->
+<!--            </if>-->
+<!--        </where>-->
+<!--        <if test="current != null and size != null and current !='' and size != ''">-->
+<!--        LIMIT #{current}, #{size}-->
+    </select>
+</mapper>

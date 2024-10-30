@@ -1,6 +1,7 @@
 package com.gitgle.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
 
 /**
 * @author maojunjun
@@ -8,6 +9,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 * @createDate 2024-10-28 11:36:54
 * @Entity com.gitgle.dao.UserDomain
 */
+@Mapper
 public interface UserDomainMapper extends BaseMapper<com.gitgle.entity.UserDomain> {
 
 }
