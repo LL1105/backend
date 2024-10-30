@@ -1,8 +1,0 @@
-com/gitgle/response/GithubUser.class
-com/gitgle/response/GithubReposResponse.class
-com/gitgle/service/GithubUserService.class
-com/gitgle/service/GithubCommitService.class
-com/gitgle/response/GithubCommitResponse.class
-com/gitgle/response/GithubRepos.class
-com/gitgle/response/GithubCommit.class
-com/gitgle/service/GithubProjectService.class
