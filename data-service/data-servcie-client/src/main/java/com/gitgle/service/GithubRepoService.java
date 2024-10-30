@@ -1,9 +1,7 @@
 package com.gitgle.service;
 
 import com.gitgle.request.GithubRequest;
-import com.gitgle.response.GithubRepos;
-import com.gitgle.response.GithubReposContent;
-import com.gitgle.response.GithubReposResponse;
+import com.gitgle.response.*;
 import com.gitgle.result.RpcResult;
 
 /**
@@ -32,4 +30,14 @@ public interface GithubRepoService {
      * @return 仓库列表
      */
     RpcResult<GithubReposResponse> listUserRepos(String owner);
+
+    /**
+     * 列出仓库贡献者
+     */
+    RpcResult<GithubContributorResponse> listRepoContributors(String owner, String repoName);
+
+    /**
+     * 获取仓库语言
+     */
+    RpcResult<GithubLanguagesResponse> getRepoLanguages(String owner, String repoName);
 }
