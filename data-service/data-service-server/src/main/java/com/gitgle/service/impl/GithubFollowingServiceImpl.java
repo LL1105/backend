@@ -5,6 +5,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.gitgle.constant.RpcResultCode;
+import com.gitgle.convert.GithubFollowerConvert;
+import com.gitgle.convert.GithubFollowingConvert;
 import com.gitgle.response.GithubFollowers;
 import com.gitgle.response.GithubFollowersResponse;
 import com.gitgle.response.GithubFollowing;
@@ -67,10 +69,7 @@ public class GithubFollowingServiceImpl implements GithubFollowingService {
                 log.info("Github List Follower Response: {}", responseBody);
                 for(int i=0; i<responseBody.size(); i++){
                     JSONObject item =responseBody.getJSONObject(i);
-                    GithubFollowers githubFollowers = new GithubFollowers();
-                    githubFollowers.setId(item.getInteger("id"));
-                    githubFollowers.setLogin(item.getString("login"));
-                    githubFollowers.setAvatarUrl(item.getString("avatar_url"));
+                    GithubFollowers githubFollowers = GithubFollowerConvert.convert(item);
                     githubFollowersList.add(githubFollowers);
                     // 异步写库
                     CompletableFuture.runAsync(()-> {
@@ -129,10 +128,7 @@ public class GithubFollowingServiceImpl implements GithubFollowingService {
                 log.info("Github List Following Response: {}", responseBody);
                 for(int i=0; i<responseBody.size(); i++){
                     JSONObject item =responseBody.getJSONObject(i);
-                    GithubFollowing githubFollowing = new GithubFollowing();
-                    githubFollowing.setId(item.getInteger("id"));
-                    githubFollowing.setLogin(item.getString("login"));
-                    githubFollowing.setAvatarUrl(item.getString("avatar_url"));
+                    GithubFollowing githubFollowing = GithubFollowingConvert.convert(item);
                     githubFollowingList.add(githubFollowing);
                     // 异步写库
                     CompletableFuture.runAsync(()-> {

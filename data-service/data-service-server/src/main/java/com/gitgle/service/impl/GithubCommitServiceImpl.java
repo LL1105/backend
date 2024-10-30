@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.gitgle.constant.RpcResultCode;
+import com.gitgle.convert.GithubCommitConvert;
 import com.gitgle.request.GithubRequest;
 import com.gitgle.response.GithubCommit;
 import com.gitgle.response.GithubCommitResponse;
@@ -68,7 +69,7 @@ public class GithubCommitServiceImpl implements GithubCommitService {
                 log.info("Github SearchUsers Response: {}", responseBody);
                 for(int i=0; i<responseBody.getJSONArray("items").size(); i++){
                     JSONObject item = responseBody.getJSONArray("items").getJSONObject(i);
-                    GithubCommit githubCommit = json2GithubCommit(item);
+                    GithubCommit githubCommit = GithubCommitConvert.convert(item);
                     githubCommitList.add(githubCommit);
                     // 异步写库
                     CompletableFuture.runAsync(()-> {
@@ -155,16 +156,5 @@ public class GithubCommitServiceImpl implements GithubCommitService {
             githubCommitResponseRpcResult.setCode(RpcResultCode.FAILED);
             return githubCommitResponseRpcResult;
         }
-    }
-
-    public GithubCommit json2GithubCommit(JSONObject jsonObject){
-        GithubCommit githubCommit = new GithubCommit();
-        githubCommit.setAuthorLogin(jsonObject.getJSONObject("author").getString("login"));
-        githubCommit.setReposId(jsonObject.getJSONObject("repository").getString("id"));
-        githubCommit.setReposName(jsonObject.getJSONObject("repository").getString("name"));
-        githubCommit.setCommitDataTime(jsonObject.getJSONObject("commit").getJSONObject("committer").getString("date"));
-        githubCommit.setReposOwner(jsonObject.getJSONObject("repository").getJSONObject("owner").getString("login"));
-        githubCommit.setSha(jsonObject.getJSONObject("commit").getJSONObject("tree").getString("sha"));
-        return githubCommit;
     }
 }
