@@ -19,13 +19,12 @@ import com.gitgle.mapper.UserMapper;
 import com.gitgle.result.R;
 import com.gitgle.entity.User;
 
-import com.gitgle.service.VO.req.RankReq;
-import com.gitgle.service.VO.req.SearchReq;
-import com.gitgle.service.VO.resp.*;
-import com.gitgle.service.VO.UserVo;
+import com.gitgle.service.vo.req.RankReq;
+import com.gitgle.service.vo.req.SearchReq;
+import com.gitgle.service.vo.resp.*;
+import com.gitgle.service.vo.UserVo;
 import com.gitgle.utils.Md5Util;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

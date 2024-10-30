@@ -2,7 +2,7 @@ package com.gitgle.rank.controller;
 
 import com.gitgle.result.R;
 import com.gitgle.service.UserService;
-import com.gitgle.service.VO.req.RankReq;
+import com.gitgle.service.vo.req.RankReq;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.web.bind.annotation.*;
 

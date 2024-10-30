@@ -2,8 +2,8 @@ package com.gitgle.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.gitgle.entity.GithubUser;
-import com.gitgle.service.VO.req.SearchReq;
-import com.gitgle.service.VO.resp.SearchResp;
+import com.gitgle.service.vo.req.SearchReq;
+import com.gitgle.service.vo.resp.SearchResp;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

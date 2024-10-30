@@ -5,7 +5,7 @@
 <mapper namespace="com.gitgle.mapper.GithubUserMapper">
 
 
-    <select id="searchByCondition" resultType="com.gitgle.service.VO.resp.SearchResp">
+    <select id="searchByCondition" resultType="com.gitgle.service.vo.resp.SearchResp">
 
         SELECT DISTINCT github_user.login, avatar, talent_rank from github_user
         LEFT JOIN user_domain on github_user.login=user_domain.login

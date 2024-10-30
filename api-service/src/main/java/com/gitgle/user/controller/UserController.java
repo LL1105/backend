@@ -5,15 +5,12 @@ import cn.dev33.satoken.util.SaResult;
 import com.gitgle.result.R;
 import com.gitgle.service.TalentRankService;
 import com.gitgle.service.UserService;
-import com.gitgle.service.VO.req.LoginReq;
-import com.gitgle.service.VO.UserVo;
-import com.gitgle.service.VO.req.SearchReq;
-import com.gitgle.service.VO.resp.SearchResp;
+import com.gitgle.service.vo.req.LoginReq;
+import com.gitgle.service.vo.UserVo;
+import com.gitgle.service.vo.req.SearchReq;
 import org.apache.dubbo.config.annotation.DubboReference;
 
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 
 @RestController
