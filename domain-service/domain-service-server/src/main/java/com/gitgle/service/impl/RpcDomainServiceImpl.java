@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @DubboService
 @Slf4j
@@ -39,46 +42,34 @@ public class RpcDomainServiceImpl implements RpcDomainService {
     @DubboReference
     private GithubCommitService githubCommitService;
 
+    @DubboReference
+    private GithubRepoService getGithubProjectService;
+
     @Override
     public RpcResult<DomainResponse> getDomainByDeveloperId(String owner) {
         RpcResult<DomainResponse> domainResponseRpcResult = new RpcResult<>();
         DomainResponse domainResponse = new DomainResponse();
         try {
-            // 获取用户的所有提交
-            RpcResult<GithubCommitResponse> githubCommitResponseRpcResult = githubCommitService.searchCommitsByDeveloperId(owner);
-            if (!RpcResultCode.SUCCESS.equals(githubCommitResponseRpcResult.getCode())) {
-                domainResponseRpcResult.setCode(githubCommitResponseRpcResult.getCode());
-                return domainResponseRpcResult;
-            }
-            // 从commit中获取仓库
-            Map<String, String> githubRepoMap = new HashMap<>();
-            for (GithubCommit githubCommit : githubCommitResponseRpcResult.getData().getGithubCommitList()) {
-                githubRepoMap.put(githubCommit.getReposName(), githubCommit.getReposOwner());
-            }
+            // 获取用户参与提交的所有仓库
+            Map<String, String> githubRepoMap = getReposFromCommits(owner);
             // 从仓库中获取README,并合并到一起
-            StringBuilder readme = new StringBuilder();
-            for (Map.Entry<String, String> githubRepo : githubRepoMap.entrySet()) {
-                GithubRequest githubRequest = new GithubRequest();
-                githubRequest.setOwner(githubRepo.getValue());
-                githubRequest.setPath("README.md");
-                githubRequest.setRepoName(githubRepo.getKey());
-                RpcResult<GithubReposContent> repoContentByPath = githubProjectService.getRepoContentByPath(githubRequest);
-                if (!RpcResultCode.SUCCESS.equals(repoContentByPath.getCode())) {
-                    continue;
-                }
-                readme.append(repoContentByPath.getData().getContent());
-            }
-            String question = "根据以上信息，请你分析该信息对应的开发者的专业领域和编程语言,并从下列领域名词中选择出来，同时你需要计算每个名词的置信度，你只需要给我按格式返回选择的领域和置信度(你必须尽可能精确的预测），用|符分隔（例如：|后端开发|0.77|）：";
+            CompletableFuture<String> userReposReadme = getUserReposReadme(githubRepoMap);
+            // 获取仓库语言
+            CompletableFuture<String> repoLanguages = getRepoLanguages(githubRepoMap);
+            StringBuilder description = new StringBuilder();
+            description.append(userReposReadme.get());
+            description.append(repoLanguages.get());
+            String question = "根据以上信息，请你分析该信息对应的开发者的专业领域和编程语言,并从下列领域名词中选择出来，同时你需要计算每个名词的置信度，你只需要给我按格式返回选择的领域和置信度(你必须尽可能精确的预测），用|符分隔（例如：|后端开发|0.77|Java|0.88|）：";
             List<Domain> domainList = domainService.readAllDomain();
-            readme.append("\n");
-            readme.append(question);
-            readme.append("\n");
+            description.append("\n");
+            description.append(question);
+            description.append("\n");
             for (Domain domain : domainList) {
-                readme.append("|");
-                readme.append(domain.getDomain());
-                readme.append("|");
+                description.append("|");
+                description.append(domain.getDomain());
+                description.append("|");
             }
-            okhttp3.Response response = sparkApiUtils.doRequest(readme.toString());
+            okhttp3.Response response = sparkApiUtils.doRequest(description.toString());
             if (!response.isSuccessful()) {
                 domainResponseRpcResult.setCode(RpcResultCode.REQUEST_SPARK_FAILED);
                 return domainResponseRpcResult;
@@ -109,10 +100,86 @@ public class RpcDomainServiceImpl implements RpcDomainService {
             domainResponseRpcResult.setCode(RpcResultCode.SUCCESS);
             domainResponseRpcResult.setData(domainResponse);
             return domainResponseRpcResult;
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("推测开发者领域失败：{}", e);
             domainResponseRpcResult.setCode(RpcResultCode.Github_RESPONSE_FAILED);
             return domainResponseRpcResult;
         }
+    }
+
+    /**
+     * 获取仓库语言
+     */
+    public CompletableFuture<String> getRepoLanguages(Map<String, String> githubRepoMap) {
+        return CompletableFuture.supplyAsync(()->{
+            StringBuilder languages = new StringBuilder();
+            languages.append("仓库的编程语言信息如下：\n");
+            Map<String, Integer> repoLanguagesMap = new ConcurrentHashMap<>();
+            for (Map.Entry<String, String> entry : githubRepoMap.entrySet()) {
+                try {
+                    RpcResult<GithubLanguagesResponse> githubLanguagesRpcResult = githubProjectService.getRepoLanguages(entry.getValue(), entry.getKey());
+                    if (githubLanguagesRpcResult.getData() != null) {
+                        Map<String, Integer> languagesMap = githubLanguagesRpcResult.getData().getLanguagesMap();
+                        if (languagesMap != null) {
+                            languagesMap.forEach((language, count) ->
+                                    repoLanguagesMap.merge(language, count, Integer::sum)
+                            );
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error("Error fetching languages for repo {}: {}", entry.getKey(), e.getMessage());
+                }
+            }
+            languages.append(repoLanguagesMap);
+            languages.append("\n");
+            return languages.toString();
+        });
+    }
+
+    /**
+     * 获取仓库Readme
+     */
+    public CompletableFuture<String> getUserReposReadme(Map<String, String> githubRepoMap){
+        return CompletableFuture.supplyAsync(()->{
+            StringBuilder readme = new StringBuilder();
+            readme.append("仓库Readme信息如下：\n");
+            for (Map.Entry<String, String> githubRepo : githubRepoMap.entrySet()) {
+                GithubRequest githubRequest = new GithubRequest();
+                githubRequest.setOwner(githubRepo.getValue());
+                githubRequest.setPath("README.md");
+                githubRequest.setRepoName(githubRepo.getKey());
+                RpcResult<GithubReposContent> repoContentByPath = githubProjectService.getRepoContentByPath(githubRequest);
+                if (!RpcResultCode.SUCCESS.equals(repoContentByPath.getCode())) {
+                    continue;
+                }
+                readme.append(githubRepo.getKey() + ":");
+                readme.append(repoContentByPath.getData().getContent());
+                readme.append("\n");
+            }
+            return readme.toString();
+        });
+    }
+
+    /**
+     * 获取用户所有提交
+     */
+    public RpcResult<GithubCommitResponse> getUserAllCommit(String owner){
+        RpcResult<GithubCommitResponse> githubCommitResponseRpcResult = githubCommitService.searchCommitsByDeveloperId(owner);
+        if (!RpcResultCode.SUCCESS.equals(githubCommitResponseRpcResult.getCode())) {
+            throw new RuntimeException("获取用户Commit失败");
+        }
+        return githubCommitResponseRpcResult;
+    }
+
+    /**
+     * 从用户提交中提取仓库
+     */
+    public Map<String, String> getReposFromCommits(String owner){
+        Map<String, String> githubRepoMap = new HashMap<>();
+        RpcResult<GithubCommitResponse> githubCommitResponseRpcResult = getUserAllCommit(owner);
+        for (GithubCommit githubCommit : githubCommitResponseRpcResult.getData().getGithubCommitList()) {
+            githubRepoMap.put(githubCommit.getReposName(), githubCommit.getReposOwner());
+        }
+        return githubRepoMap;
     }
 }

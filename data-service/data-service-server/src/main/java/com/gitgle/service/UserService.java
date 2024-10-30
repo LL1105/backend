@@ -17,4 +17,5 @@ public interface UserService{
 
     GithubUser readGithubUser2GithubUser(String login);
 
+    String getLoginByAccountId(Integer githubAccountId);
 }
