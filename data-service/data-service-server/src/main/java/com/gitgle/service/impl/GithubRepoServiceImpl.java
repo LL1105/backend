@@ -4,11 +4,11 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.gitgle.constant.RpcResultCode;
-import com.gitgle.dao.RepoContent;
+import com.gitgle.convert.GithubRepoConvert;
 import com.gitgle.request.GithubRequest;
 import com.gitgle.response.*;
 import com.gitgle.result.RpcResult;
-import com.gitgle.service.GithubProjectService;
+import com.gitgle.service.GithubRepoService;
 import com.gitgle.service.RepoContentService;
 import com.gitgle.service.ReposService;
 import com.gitgle.utils.GithubApiRequestUtils;
@@ -19,11 +19,14 @@ import org.apache.dubbo.config.annotation.DubboService;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @DubboService
 @Slf4j
-public class GithubProjectServiceImpl implements GithubProjectService {
+public class GithubRepoServiceImpl implements GithubRepoService {
 
     @Resource
     private GithubApiRequestUtils githubApiRequestUtils;
@@ -52,18 +55,7 @@ public class GithubProjectServiceImpl implements GithubProjectService {
             }
             JSONObject responseBody = JSON.parseObject(response.body().string());
             log.info("Github GetRepo Response: {}", responseBody);
-            githubRepos = new GithubRepos();
-            githubRepos.setId(responseBody.getInteger("id"));
-            githubRepos.setRepoName(responseBody.getString("name"));
-            githubRepos.setOwnerLogin(responseBody.getJSONObject("owner").getString("login"));
-            githubRepos.setDescription(responseBody.getString("description"));
-            githubRepos.setForksCount(responseBody.getInteger("forks_count"));
-            githubRepos.setStarsCount(responseBody.getInteger("stargazers_count"));
-            githubRepos.setWatchersCount(responseBody.getInteger("watchers_count"));
-            githubRepos.setIssueCount(responseBody.getInteger("open_issues_count"));
-            githubRepos.setCreatedAt(responseBody.getString("created_at"));
-            githubRepos.setUpdateAt(responseBody.getString("updated_at"));
-            githubRepos.setOrPrivate(responseBody.getBoolean("private"));
+            githubRepos = GithubRepoConvert.convert(responseBody);
             // 异步写库
             final GithubRepos finalGithubRepos = githubRepos;
             CompletableFuture.runAsync(()->{
@@ -126,6 +118,22 @@ public class GithubProjectServiceImpl implements GithubProjectService {
             log.error("Github GetRepoContent Exception: {}", e);
             githubReposContentRpcResult.setCode(RpcResultCode.FAILED);
             return githubReposContentRpcResult;
+        }
+    }
+
+    @Override
+    public RpcResult<GithubReposResponse> listUserRepos(String owner) {
+        RpcResult<GithubReposResponse> githubReposResponseRpcResult = new RpcResult<>();
+        Map<String, String> queryParams = new HashMap<>();
+        try {
+            GithubReposResponse githubReposResponse = githubApiRequestUtils.listUserRepos(owner, queryParams);
+            githubReposResponseRpcResult.setData(githubReposResponse);
+            githubReposResponseRpcResult.setCode(RpcResultCode.SUCCESS);
+            return githubReposResponseRpcResult;
+        } catch (IOException e) {
+            log.info("Github ListUserRepos Exception: {}", e.getMessage());
+            githubReposResponseRpcResult.setCode(RpcResultCode.FAILED);
+            return githubReposResponseRpcResult;
         }
     }
 }

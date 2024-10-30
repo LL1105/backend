@@ -10,7 +10,7 @@ import com.gitgle.result.RpcResult;
 import com.gitgle.service.DomainService;
 import com.gitgle.service.RpcDomainService;
 import com.gitgle.service.GithubCommitService;
-import com.gitgle.service.GithubProjectService;
+import com.gitgle.service.GithubRepoService;
 import com.gitgle.utils.SparkApiUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
@@ -34,7 +34,7 @@ public class RpcDomainServiceImpl implements RpcDomainService {
     private DomainService domainService;
 
     @DubboReference
-    private GithubProjectService githubProjectService;
+    private GithubRepoService githubProjectService;
 
     @DubboReference
     private GithubCommitService githubCommitService;
