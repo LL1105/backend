@@ -21,9 +21,6 @@ spring:
 github:
   auth-token:
     list:
-#      - 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
-      - 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
-#      - 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
 
 dubbo:
   registry:
