@@ -107,6 +107,25 @@ public class RpcDomainServiceImpl implements RpcDomainService {
         }
     }
 
+    @Override
+    public RpcResult<HotDomainResponse> getHotDomain() {
+        RpcResult<HotDomainResponse> hotDomainResponseRpcResult = new RpcResult<>();
+        HotDomainResponse hotDomainResponse = new HotDomainResponse();
+        List<HotDomain> hotDomainList = new ArrayList<>();
+        HotDomain hotDomain = new HotDomain();
+        hotDomain.setDeveloperTotal(199999);
+        hotDomain.setDomain("后端开发");
+        hotDomainList.add(hotDomain);
+        HotDomain hotDomain2 = new HotDomain();
+        hotDomain2.setDeveloperTotal(99999);
+        hotDomain2.setDomain("机器学习");
+        hotDomainList.add(hotDomain2);
+        hotDomainResponse.setHotDomainList(hotDomainList);
+        hotDomainResponseRpcResult.setData(hotDomainResponse);
+        hotDomainResponseRpcResult.setCode(RpcResultCode.SUCCESS);
+        return hotDomainResponseRpcResult;
+    }
+
     /**
      * 获取仓库语言
      */
