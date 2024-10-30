@@ -11,6 +11,6 @@ public class NationResponse implements Serializable {
 
     private String nationEnglish;
 
-    private String confidence;
+    private Double confidence;
 
 }

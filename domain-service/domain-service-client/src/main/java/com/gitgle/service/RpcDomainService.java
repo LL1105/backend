@@ -3,7 +3,7 @@ package com.gitgle.service;
 import com.gitgle.response.DomainResponse;
 import com.gitgle.result.RpcResult;
 
-public interface DomainService {
+public interface RpcDomainService {
 
     /**
      * 根据开发者login获取其所在领域

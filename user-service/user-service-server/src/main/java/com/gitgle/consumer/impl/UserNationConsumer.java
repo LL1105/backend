@@ -14,11 +14,11 @@ import java.util.Properties;
 
 @Component
 @Slf4j
-public class TalentRankConsumer implements KafkaConsumer {
+public class UserNationConsumer implements KafkaConsumer {
 
-    private static final String TOPIC = "test";
+    private static final String TOPIC = "Domain";
 
-    private static final String GROUP_ID = "test";
+    private static final String GROUP_ID = "Domain";
 
     @Override
     public void consumer(Properties props) {

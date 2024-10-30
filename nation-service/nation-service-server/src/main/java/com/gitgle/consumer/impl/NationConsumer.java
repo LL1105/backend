@@ -1,8 +1,16 @@
 package com.gitgle.consumer.impl;
 
+import com.alibaba.fastjson2.JSON;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.gitgle.constant.RpcResultCode;
 import com.gitgle.consumer.KafkaConsumer;
 import com.gitgle.produce.KafkaProducer;
-import com.gitgle.service.RpcDomainService;
+import com.gitgle.response.GithubUser;
+import com.gitgle.response.NationResponse;
+import com.gitgle.result.RpcResult;
+import com.gitgle.service.NationService;
+import com.gitgle.service.impl.NationServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -14,22 +22,25 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
-public class TalentRankConsumer implements KafkaConsumer {
+public class NationConsumer implements KafkaConsumer {
 
-    private static final String TOPIC = "Domain";
+    private static final String TOPIC = "Nation";
 
-    private static final String GROUP_ID = "Domain";
+    private static final String GROUP_ID = "Nation";
 
-    private static final String USER_DOMAIN_TOPIC = "UserDomain";
+    private static final String USER_NATION_TOPIC = "UserNation";
+
+    private static final Integer NATION_RETRY_COUNT = 3;
 
     @Resource
     private KafkaProducer kafkaProducer;
 
     @Resource
-    private RpcDomainService rpcDomainService;
+    private NationService nationService;
 
     @Override
     public void consumer(Properties props) {
@@ -60,6 +71,23 @@ public class TalentRankConsumer implements KafkaConsumer {
     }
 
     public void processMessage(String message){
-
+        GithubUser githubUser = JSON.parseObject(message, GithubUser.class);
+        CompletableFuture.runAsync(()->{
+            NationResponse nationResponse = new NationResponse();
+            nationResponse.setNation(githubUser.getLocation());
+            nationResponse.setConfidence(1.0);
+            if(StringUtils.isEmpty(githubUser.getLocation())){
+                for(int i=0;i<NATION_RETRY_COUNT;i++){
+                    RpcResult<NationResponse> nationResponseRpcResult = nationService.getNationByDeveloperId(githubUser.getLogin());
+                    if(RpcResultCode.SUCCESS.equals(nationResponseRpcResult.getCode())){
+                        nationResponse = nationResponseRpcResult.getData();
+                        break;
+                    }
+                }
+            }
+            if(StringUtils.isNotEmpty(nationResponse.getNation())){
+                kafkaProducer.sendMessage(JSON.toJSONString(nationResponse), USER_NATION_TOPIC);
+            }
+        });
     }
 }

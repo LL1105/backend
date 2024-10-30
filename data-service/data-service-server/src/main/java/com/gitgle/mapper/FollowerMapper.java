@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 /**
 * @author maojunjun
 * @description 针对表【follower】的数据库操作Mapper
-* @createDate 2024-10-28 23:55:45
+* @createDate 2024-10-29 21:21:55
 * @Entity com.gitgle.dao.Follower
 */
 public interface FollowerMapper extends BaseMapper<Follower> {

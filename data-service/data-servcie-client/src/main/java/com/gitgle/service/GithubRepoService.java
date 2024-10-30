@@ -9,7 +9,7 @@ import com.gitgle.result.RpcResult;
 /**
  * 仓库相关接口
  */
-public interface GithubProjectService {
+public interface GithubRepoService {
 
     /**
      * 根据仓库持有者和仓库名查询仓库信息
@@ -25,4 +25,11 @@ public interface GithubProjectService {
      * @return 文件内容
      */
     RpcResult<GithubReposContent> getRepoContentByPath(GithubRequest githubRequest);
+
+    /**
+     * 列出用户的仓库
+     * @param owner 用户login
+     * @return 仓库列表
+     */
+    RpcResult<GithubReposResponse> listUserRepos(String owner);
 }

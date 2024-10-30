@@ -4,6 +4,8 @@ import com.gitgle.dao.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.gitgle.response.GithubUser;
 
+import java.util.List;
+
 /**
 * @author maojunjun
 * @description 针对表【user】的数据库操作Service
@@ -11,7 +13,8 @@ import com.gitgle.response.GithubUser;
 */
 public interface UserService{
 
-    void writeGithubUser2User(GithubUser githubUser);
+    void writeGithubUser2User(List<GithubUser> githubUserList);
 
     GithubUser readGithubUser2GithubUser(String login);
+
 }
