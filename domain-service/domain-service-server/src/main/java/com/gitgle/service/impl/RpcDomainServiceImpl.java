@@ -126,6 +126,11 @@ public class RpcDomainServiceImpl implements RpcDomainService {
         return hotDomainResponseRpcResult;
     }
 
+    @Override
+    public RpcResult<HotDomainEventResponse> getHotDomainEvent(String domain) {
+        return null;
+    }
+
     /**
      * 获取仓库语言
      */

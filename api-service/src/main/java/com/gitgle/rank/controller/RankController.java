@@ -1,6 +1,6 @@
 package com.gitgle.rank.controller;
 
-import com.gitgle.result.R;
+import com.gitgle.result.Result;
 import com.gitgle.service.UserService;
 import com.gitgle.service.vo.req.RankReq;
 import org.apache.dubbo.config.annotation.DubboReference;
@@ -15,7 +15,7 @@ public class RankController {
 
 
     @PostMapping()
-    public R sendEmail(@RequestParam("size") Integer size, @RequestParam("current") Integer current, @RequestBody RankReq req) {
+    public Result sendEmail(@RequestParam("size") Integer size, @RequestParam("current") Integer current, @RequestBody RankReq req) {
         return userService.conditionCheckRank(size, current, req);
     }
 }

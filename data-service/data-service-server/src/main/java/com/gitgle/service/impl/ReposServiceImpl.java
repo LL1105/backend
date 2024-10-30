@@ -2,14 +2,20 @@ package com.gitgle.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.gitgle.convert.GithubRepoConvert;
 import com.gitgle.dao.Repos;
 import com.gitgle.response.GithubRepos;
+import com.gitgle.response.GithubReposContent;
 import com.gitgle.service.ReposService;
 import com.gitgle.mapper.ReposMapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ReposServiceImpl implements ReposService{
@@ -57,19 +63,16 @@ public class ReposServiceImpl implements ReposService{
         if(ObjectUtils.isEmpty(repo)){
             return null;
         }
-        GithubRepos githubRepos = new GithubRepos();
-        githubRepos.setWatchersCount(repo.getWatchersCount());
-        githubRepos.setOwnerLogin(repo.getOwnerlogin());
-        githubRepos.setId(repo.getId());
-        githubRepos.setRepoName(repo.getRepoName());
-        githubRepos.setOrPrivate(repo.getOrPrivate());
-        githubRepos.setCreatedAt(repo.getCreateAt());
-        githubRepos.setUpdateAt(repo.getUpdateAt());
-        githubRepos.setStarsCount(repo.getStarsCount());
-        githubRepos.setForksCount(repo.getForksCount());
-        githubRepos.setIssueCount(repo.getIssueCount());
-        githubRepos.setDescription(repo.getDescription());
-        return githubRepos;
+        return GithubRepoConvert.convert(repo);
+    }
+
+    @Override
+    public List<GithubRepos> getReposOrderByStar() {
+        Page<Repos> page = new Page<>(1, 100);
+        Page<Repos> reposPage = reposMapper.selectPage(page, Wrappers.lambdaQuery(Repos.class).orderBy(true, false, Repos::getStarsCount));
+        return reposPage.getRecords().stream().map(repo -> {
+            return GithubRepoConvert.convert(repo);
+        }).collect(Collectors.toList());
     }
 }
 
