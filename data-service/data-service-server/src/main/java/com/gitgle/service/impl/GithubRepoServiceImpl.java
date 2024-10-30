@@ -157,4 +157,15 @@ public class GithubRepoServiceImpl implements GithubRepoService {
             return githubLanguagesResponseRpcResult;
         }
     }
+
+    @Override
+    public RpcResult<GithubReposResponse> getHotRepos() {
+        RpcResult<GithubReposResponse> githubReposResponseRpcResult = new RpcResult<>();
+        GithubReposResponse githubReposResponse = new GithubReposResponse();
+        List<GithubRepos> githubReposList = reposService.getReposOrderByStar();
+        githubReposResponse.setGithubProjectList(githubReposList);
+        githubReposResponseRpcResult.setData(githubReposResponse);
+        githubReposResponseRpcResult.setCode(RpcResultCode.SUCCESS);
+        return githubReposResponseRpcResult;
+    }
 }

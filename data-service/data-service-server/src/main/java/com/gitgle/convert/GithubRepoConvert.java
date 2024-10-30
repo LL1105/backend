@@ -1,6 +1,7 @@
 package com.gitgle.convert;
 
 import com.alibaba.fastjson.JSONObject;
+import com.gitgle.dao.Repos;
 import com.gitgle.response.GithubRepos;
 
 public class GithubRepoConvert {
@@ -18,6 +19,22 @@ public class GithubRepoConvert {
         githubRepos.setCreatedAt(responseBody.getString("created_at"));
         githubRepos.setUpdateAt(responseBody.getString("updated_at"));
         githubRepos.setOrPrivate(responseBody.getBoolean("private"));
+        return githubRepos;
+    }
+
+    public static GithubRepos convert(Repos repo){
+        GithubRepos githubRepos = new GithubRepos();
+        githubRepos.setWatchersCount(repo.getWatchersCount());
+        githubRepos.setOwnerLogin(repo.getOwnerlogin());
+        githubRepos.setId(repo.getId());
+        githubRepos.setRepoName(repo.getRepoName());
+        githubRepos.setOrPrivate(repo.getOrPrivate());
+        githubRepos.setCreatedAt(repo.getCreateAt());
+        githubRepos.setUpdateAt(repo.getUpdateAt());
+        githubRepos.setStarsCount(repo.getStarsCount());
+        githubRepos.setForksCount(repo.getForksCount());
+        githubRepos.setIssueCount(repo.getIssueCount());
+        githubRepos.setDescription(repo.getDescription());
         return githubRepos;
     }
 }

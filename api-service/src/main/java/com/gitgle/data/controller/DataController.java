@@ -2,10 +2,13 @@ package com.gitgle.data.controller;
 
 import com.gitgle.constant.RpcResultCode;
 import com.gitgle.response.GithubDataResponse;
+import com.gitgle.response.GithubRepos;
+import com.gitgle.response.GithubReposResponse;
 import com.gitgle.response.HotDomainResponse;
 import com.gitgle.result.R;
 import com.gitgle.result.RpcResult;
 import com.gitgle.service.GithubDataService;
+import com.gitgle.service.GithubRepoService;
 import com.gitgle.service.RpcDomainService;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +24,9 @@ public class DataController {
 
     @DubboReference
     private RpcDomainService rpcDomainService;
+
+    @DubboReference
+    private GithubRepoService githubRepoService;
 
     @GetMapping("/all")
     public R<GithubDataResponse> getAllGithubData(){
@@ -38,5 +44,14 @@ public class DataController {
             return R.Failed();
         }
         return R.Success(hotDomain.getData());
+    }
+
+    @GetMapping("/hot/repo")
+    public R<GithubReposResponse> getHotRepo(){
+        RpcResult<GithubReposResponse> hotRepos = githubRepoService.getHotRepos();
+        if(!RpcResultCode.SUCCESS.equals(hotRepos.getCode())){
+            return R.Failed();
+        }
+        return R.Success(hotRepos.getData());
     }
 }
