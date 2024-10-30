@@ -6,11 +6,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.gitgle.config.GithubAuthToken;
 import com.gitgle.constant.GithubRestApi;
 import com.gitgle.constant.RpcResultCode;
+import com.gitgle.convert.GithubRepoContentConvert;
 import com.gitgle.convert.GithubRepoConvert;
-import com.gitgle.response.GithubRepos;
-import com.gitgle.response.GithubReposResponse;
-import com.gitgle.response.GithubUser;
-import com.gitgle.response.GithubUserResponse;
+import com.gitgle.response.*;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -105,10 +103,16 @@ public class GithubApiRequestUtils {
     /**
      * 获取一个仓库信息
      */
-    public Response getOneRepo(String owner, String repoName) throws IOException {
+    public GithubRepos getOneRepo(String owner, String repoName) throws IOException {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.GET_ONE_REPO.getAddress() + "/" + owner + "/" + repoName).newBuilder();
         String url = urlBuilder.build().toString();
-        return httpClient.newCall(buildRequest(url)).execute();
+        Response response = httpClient.newCall(buildRequest(url)).execute();
+        if(!response.isSuccessful()){
+            throw new IOException("Github GetOneRepo Exception: " + response.body().string());
+        }
+        JSONObject responseBody = JSON.parseObject(response.body().string());
+        log.info("Github GetRepo Response: {}", responseBody);
+        return GithubRepoConvert.convert(responseBody);
     }
 
     /**
@@ -124,10 +128,16 @@ public class GithubApiRequestUtils {
     /**
      * 获取仓库文件内容
      */
-    public Response getRepoContent(String owner, String repoName, String path) throws IOException {
+    public JSONObject getRepoContent(String owner, String repoName, String path) throws IOException {
         HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.GET_ONE_REPO.getAddress() + "/" + owner + "/" + repoName + "/contents/" + path).newBuilder();
         String url = urlBuilder.build().toString();
-        return httpClient.newCall(buildRequest(url)).execute();
+        Response response = httpClient.newCall(buildRequest(url)).execute();
+        if(!response.isSuccessful()){
+            throw new IOException("Github GetRepoContent Exception: " + response.body().string());
+        }
+        JSONObject responseBody = JSON.parseObject(response.body().string());
+        log.info("Github GetRepoContent Response: {}", responseBody);
+        return responseBody;
     }
 
     /**
