@@ -10,6 +10,7 @@ public enum GithubRestApi {
     SEARCH_COMMIT("https://api.github.com/search/commits","GET"),
     GET_USERS("https://api.github.com/users","GET"),
     GET_USER("https://api.github.com/user","GET"),
+    SEARCH_CODE("https://api.github.com/search/code","GET"),
     GET_ONE_REPO("https://api.github.com/repos","GET");
 
     private final String address;
