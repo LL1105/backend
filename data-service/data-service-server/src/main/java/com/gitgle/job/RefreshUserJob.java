@@ -37,14 +37,17 @@ public class RefreshUserJob {
     @Resource
     private UserService userService;
 
+    private Integer startIndex = 0;
+
+    private Integer perSize = 100;
+
+    private Integer limitTotalPage = 100;
+
     /**
      * 刷新用户信息
-     * @param startIndex github id缓存队列开始索引
-     * @param perSize 每次从对列取多少个
-     * @param limitTotalPage 循环次数
      */
     @XxlJob("refresh-user-job")
-    public void refresh(Integer startIndex, Integer perSize, Integer limitTotalPage) {
+    public void refresh() {
         log.info("执行刷新User任务...");
         for (int i = 0; i <= limitTotalPage; i++) {
             List<Integer> githubAccountIdList = redisTemplate.opsForList().range(RedisConstant.GITHUB_ACCOUNT_ID, i*perSize, (i+1)*perSize);
@@ -77,13 +80,15 @@ public class RefreshUserJob {
         }
     }
 
+    private Integer startPage = 1;
+
+    private Integer endPage = 100;
+
     /**
      * 刷新热门用户accountId到Redis缓存队列
-     * @param startPage 开始页码
-     * @param endPage 结束页码
      */
     @XxlJob("refresh-account-id")
-    public void refreshAccountId(Integer startPage, Integer endPage) {
+    public void refreshAccountId() {
         log.info("执行刷新热门AccountId任务...");
         redisTemplate.delete(RedisConstant.GITHUB_ACCOUNT_ID);
         redisTemplate.expire(RedisConstant.GITHUB_ACCOUNT_ID, 7, TimeUnit.DAYS);

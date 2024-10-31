@@ -19,6 +19,7 @@ public class GithubRepoConvert {
         githubRepos.setCreatedAt(responseBody.getString("created_at"));
         githubRepos.setUpdateAt(responseBody.getString("updated_at"));
         githubRepos.setOrPrivate(responseBody.getBoolean("private"));
+        githubRepos.setUrl(responseBody.getString("html_url"));
         return githubRepos;
     }
 
@@ -26,7 +27,7 @@ public class GithubRepoConvert {
         GithubRepos githubRepos = new GithubRepos();
         githubRepos.setWatchersCount(repo.getWatchersCount());
         githubRepos.setOwnerLogin(repo.getOwnerlogin());
-        githubRepos.setId(repo.getId());
+        githubRepos.setId(repo.getRepoId());
         githubRepos.setRepoName(repo.getRepoName());
         githubRepos.setOrPrivate(repo.getOrPrivate());
         githubRepos.setCreatedAt(repo.getCreateAt());
@@ -35,6 +36,7 @@ public class GithubRepoConvert {
         githubRepos.setForksCount(repo.getForksCount());
         githubRepos.setIssueCount(repo.getIssueCount());
         githubRepos.setDescription(repo.getDescription());
+        githubRepos.setUrl(repo.getUrl());
         return githubRepos;
     }
 }

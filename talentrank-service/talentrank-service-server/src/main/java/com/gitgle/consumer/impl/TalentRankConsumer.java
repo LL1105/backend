@@ -52,7 +52,7 @@ public class TalentRankConsumer implements KafkaConsumer {
                     ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
                     if (records.isEmpty()) {
                         // 没有新消息时休眠一段时间
-                        Thread.sleep(100); // 休眠 100 毫秒
+//                        Thread.sleep(100); // 休眠 100 毫秒
                         continue; // 跳过本次循环，重新检查
                     }
                     for (ConsumerRecord<String, String> record : records) {
@@ -64,9 +64,6 @@ public class TalentRankConsumer implements KafkaConsumer {
                 } catch (WakeupException e) {
                     log.info("Consumer wakeup triggered.");
                     break; // 退出循环
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt(); // 重新设置中断标志
-                    log.error("Thread was interrupted: {}", e);
                 } catch (Exception e) {
                     log.error("Consumer encountered an error: {}", e);
                 }

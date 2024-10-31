@@ -39,6 +39,8 @@ public class ReposServiceImpl implements ReposService{
             repo.setForksCount(githubRepos.getForksCount());
             repo.setIssueCount(githubRepos.getIssueCount());
             repo.setDescription(githubRepos.getDescription());
+            repo.setRepoId(githubRepos.getId());
+            repo.setUrl(githubRepos.getUrl());
             return;
         }
         repo = new Repos();
@@ -54,6 +56,8 @@ public class ReposServiceImpl implements ReposService{
         repo.setForksCount(githubRepos.getForksCount());
         repo.setIssueCount(githubRepos.getIssueCount());
         repo.setDescription(githubRepos.getDescription());
+        repo.setRepoId(githubRepos.getId());
+        repo.setUrl(githubRepos.getUrl());
         reposMapper.insert(repo);
     }
 

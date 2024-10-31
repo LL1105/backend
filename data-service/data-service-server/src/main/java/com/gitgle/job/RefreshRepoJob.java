@@ -44,14 +44,17 @@ public class RefreshRepoJob {
     @Resource
     private GithubApiRequestUtils githubApiRequestUtils;
 
+    private Integer startIndex = 1;
+
+    private Integer perSize = 100;
+
+    private Integer limitTotalPage = 10;
+
     /**
      * 刷新仓库和贡献度
-     * @param startIndex 热门用户开始索引
-     * @param perSize 每次查询数量
-     * @param limitTotalPage 循环次数
      */
     @XxlJob("refresh-repo-job")
-    public void refresh(Integer startIndex, Integer perSize, Integer limitTotalPage){
+    public void refresh(){
         log.info("执行刷新Repo任务...");
         // 根据热门用户刷新仓库
         for(int i=startIndex; i<limitTotalPage;i++){
