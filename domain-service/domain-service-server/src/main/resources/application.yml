@@ -29,6 +29,7 @@ dubbo:
   application:
     name: ${spring.application.name}
     logger: slf4j
+    qos-port: 3333
 
 kafka:
   bootstrap-servers: ckafka-9jnjx2m9.ap-beijing.ckafka.tencentcloudmq.com:50002
