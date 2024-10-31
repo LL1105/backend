@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  *
@@ -35,6 +36,9 @@ public class GithubUser implements Serializable {
      *
      */
     private String nation_id;
+
+
+    private BigDecimal talentRank;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

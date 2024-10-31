@@ -1,4 +1,4 @@
-package com.gitgle.service.vo.resp;
+package com.gitgle.service.resp;
 
 import lombok.Data;
 
@@ -13,7 +13,9 @@ public class RegisterResp implements Serializable {
 
     private String email;
 
-    private String githubId;
+    private String login;
 
     private String talentRank;
+
+    private String avatar;
 }

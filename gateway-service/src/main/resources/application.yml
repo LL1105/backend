@@ -24,7 +24,7 @@ spring:
         - id: userService
           uri: lb://api-service
           predicates:
-            - Path=/user/**
+            - Path=/**
         - id: data_asset
           uri: lb://data_asset
           predicates:

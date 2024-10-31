@@ -1,5 +1,6 @@
 server:
   group: gitgle
+  port: 8080
 
 spring:
   application:
@@ -84,4 +85,8 @@ sa-token:
     password: gitgle_1024
     # 连接超时时间
     timeout: 10s
+
+kafka:
+  bootstrap-servers: ckafka-9jnjx2m9.ap-beijing.ckafka.tencentcloudmq.com:50002
+  sasl-jaas-config: /etc/ckafka_client_jaas.conf
 

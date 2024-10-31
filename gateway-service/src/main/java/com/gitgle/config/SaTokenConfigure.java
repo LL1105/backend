@@ -25,12 +25,16 @@ public class SaTokenConfigure {
                 .addExclude("/user/sendEmail")
                 .addExclude("/user/register")
                 .addExclude("/user/getRank")
+                .addExclude("/data/**")
+                .addExclude("/user/nation")
+                .addExclude("/user/search")
                 // 鉴权方法：每次访问进入
                 .setAuth(obj -> {
                     // 登录校验 -- 拦截所有路由，并排除/user/doLogin 用于开放登录
                     SaRouter.match("/**", "/user/login", r -> StpUtil.checkLogin());
                     SaRouter.match("/**", "/user/register", r -> StpUtil.checkLogin());
                     SaRouter.match("/**", "/user/sendEmail", r -> StpUtil.checkLogin());
+                    SaRouter.match("/**", "/data/all", r -> StpUtil.checkLogin());
 //                    // 角色认证 -- 拦截以 admin 开头的路由，必须具备 admin 角色或者 super-admin 角色才可以通过认证
 //                    SaRouter.match("/admin/**", r -> StpUtil.checkRoleOr("admin", "super-admin"));
 //                    // 权限认证 -- 不同模块, 校验不同权限
