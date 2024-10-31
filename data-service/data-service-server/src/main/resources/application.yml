@@ -1,6 +1,6 @@
 server:
   port: 8081
-  group: maojunjun
+  group: gitgle
 
 spring:
   application:
@@ -15,16 +15,13 @@ spring:
       discovery:
         enabled: false
   redis:
-    host: nacos://49.232.232.203
+    host: 49.232.232.203
     password: gitgle_1024
     port: 6379
 
 github:
   auth-token:
     list:
-      - ${GITHUB_TOKEN_0}
-      - ${GITHUB_TOKEN_1}
-      - ${GITHUB_TOKEN_2}
 
 dubbo:
   provider:
@@ -54,5 +51,6 @@ xxl:
     executor:
       logretentiondays: 7
       port: 9081
+      ip: 49.232.232.203
       logpath: ./log
       appname: ${spring.application.name}

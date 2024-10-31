@@ -250,6 +250,7 @@ public class GithubApiRequestUtils {
             if (responseBody.size() < 100) {
                 break;
             }
+            page++;
         }
         githubReposResponse.setGithubProjectList(githubProjectList);
         return githubReposResponse;
@@ -282,6 +283,7 @@ public class GithubApiRequestUtils {
             if (responseBody.size() < 100) {
                 break;
             }
+            page++;
         }
         githubContributorResponse.setGithubContributorList(githubContributorList);
         return githubContributorResponse;
