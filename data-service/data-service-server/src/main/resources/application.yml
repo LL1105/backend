@@ -1,5 +1,6 @@
 server:
   port: 8081
+  group: gitgle
 
 spring:
   application:
@@ -12,9 +13,9 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 121.36.79.38:8848
+        enabled: false
   redis:
-    host: 49.232.232.203
+    host: nacos://49.232.232.203
     password: gitgle_1024
     port: 6379
 
@@ -23,14 +24,20 @@ github:
     list:
 
 dubbo:
+  provider:
+    group: ${server.group}
+  consumer:
+    group: ${server.group}
   registry:
     address: nacos://121.36.79.38:8848
+    group: ${server.group}
   protocol:
     name: dubbo
     port: 50060
   application:
     name: ${spring.application.name}
     logger: slf4j
+    qos-accept-foreign-ip: true
 
 kafka:
   bootstrap-servers: ckafka-9jnjx2m9.ap-beijing.ckafka.tencentcloudmq.com:50002
@@ -44,5 +51,5 @@ xxl:
     executor:
       logretentiondays: 7
       port: 9081
-      logpath: ./
+      logpath: ./log
       appname: ${spring.application.name}
