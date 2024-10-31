@@ -18,6 +18,6 @@ public class RankResp implements Serializable {
 
     private BigDecimal talentRank;
 
-    private String githubId;
+    private String login;
 
 }

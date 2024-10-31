@@ -13,7 +13,9 @@ public class RegisterResp implements Serializable {
 
     private String email;
 
-    private String githubId;
+    private String login;
 
     private String talentRank;
+
+    private String avatar;
 }

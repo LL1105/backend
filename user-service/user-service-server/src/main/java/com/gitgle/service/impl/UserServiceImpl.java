@@ -6,6 +6,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gitgle.constant.RedisConstant;
@@ -22,9 +23,7 @@ import com.gitgle.entity.User;
 
 import com.gitgle.result.RpcResult;
 import com.gitgle.service.GithubUserService;
-import com.gitgle.service.req.RankReq;
-import com.gitgle.service.req.RegisterReq;
-import com.gitgle.service.req.SearchReq;
+import com.gitgle.service.req.*;
 import com.gitgle.service.resp.*;
 import com.gitgle.utils.Md5Util;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +37,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
@@ -90,14 +90,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         Object loginId = StpUtil.getLoginId();
         User user = userMapper.selectById(loginId.toString());
         if(user != null) {
-            String githubId = user.getGithubId();
-            RpcResult<GithubUser> userByLogin = githubUserService.getUserByLogin(githubId);
-            if(userByLogin.getCode().equals(RpcResultCode.SUCCESS)) {
-
-            } else {
-
-            }
+            String login = user.getLogin();
+            RpcResult<GithubUser> userByLogin = githubUserService.getUserByLogin(login);
             UserInfoResp resp = new UserInfoResp();
+            //展示系统内user信息以及关联的github用户的信息
+            if(userByLogin.getCode().equals(RpcResultCode.SUCCESS)) {
+                GithubUser githubUser = userByLogin.getData();
+                resp.setGithubUser(githubUser);
+            }
             BeanUtils.copyProperties(user, resp);
             return Result.Success(resp);
         }
@@ -125,6 +125,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     }
 
     @Override
+    @Transactional
     public Result register(RegisterReq req) {
         User one = this.getOne(Wrappers.lambdaQuery(User.class).eq(User::getEmail, req.getEmail()));
         if(one != null) return Result.Failed("邮箱已经存在");
@@ -135,10 +136,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
 
         if(!code.equals(req.getCode())) return Result.Failed("验证码无效");
 
+        if(StringUtils.isEmpty(req.getLogin())) return Result.Failed("请输入GitHub用户名");
+
         String password = Md5Util.md5(req.getPassword(), Md5Util.md5Key);
         req.setPassword(password);
 
         User user = new User();
+
+        //搜索github用户，添加头像的url
+        RpcResult<GithubUser> userByLogin = githubUserService.getUserByLogin(req.getLogin());
+        if(userByLogin.getCode().equals(RpcResultCode.SUCCESS)) {
+            GithubUser githubUser = userByLogin.getData();
+            user.setAvatar(githubUser.getAvatarUrl());
+        }
         BeanUtils.copyProperties(req, user);
         userMapper.insert(user);
         RegisterResp resp = new RegisterResp();
@@ -185,11 +195,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     }
 
     @Override
-    public Result getUsersByNation(String nation) {
-        return null;
-    }
-
-    @Override
     public Result conditionCheckRank(Integer size, Integer current, RankReq req) {
         List<RankResp> rankResps = userMapper.selectUsersCondition(current, size, req);
         return Result.Success(rankResps);
@@ -214,7 +219,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         return Result.Success(searchList);
         //数据库里面没有这个领域，那么直接调用rpc接口，找到github的这个领域
 
-        //这里就直接去数据库查github的用户，根据domainId和nationId以及githubId的模糊查询
+        //这里就直接去数据库查github的用户，根据domainId和nationId以及login的模糊查询
     }
 
     @Override
@@ -224,7 +229,49 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     }
 
     @Override
-    public Result changeUserInfo() {
-        return null;
+    public Result changeUserInfo(ChangeUserInfoReq req) {
+        //从token里面解析id
+        Object loginId = StpUtil.getLoginId();
+        User user = userMapper.selectById(loginId.toString());
+        if(user == null) return Result.Failed("账号不存在");
+
+        UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id", user.getId())
+                .set("username", req.getUsername())
+                .set("email", req.getEmail())
+                .set("github_id", req.getLogin());
+
+        int update = userMapper.update(null, updateWrapper);
+        ChangeUserInfoResp resp = new ChangeUserInfoResp();
+        BeanUtils.copyProperties(user, resp);
+        return Result.Success(resp);
     }
+
+    @Override
+    public Result showUserInfo(String login) {
+        RpcResult<GithubUser> userByLogin = githubUserService.getUserByLogin(login);
+        if(userByLogin.getCode().equals(RpcResultCode.SUCCESS)) {
+            return Result.Success(userByLogin.getData());
+        }
+        return Result.Failed("详情获取失败");
+    }
+
+    @Override
+    public Result changePassword(ChangePasswordReq req) {
+        Object loginId = StpUtil.getLoginId();
+        User user = userMapper.selectById(loginId.toString());
+        if(user == null) return Result.Failed("账号不存在");
+
+        String oldPassword = req.getOldPassword();
+        String newPassword = req.getNewPassword();
+
+        if(!Md5Util.passwordVerify(newPassword, oldPassword, Md5Util.md5Key)) {
+            return Result.Failed("旧密码错误");
+        }
+        UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id", user.getId()).set("password", Md5Util.md5(newPassword, Md5Util.md5Key));
+        userMapper.update(null, updateWrapper);
+        return Result.Success();
+    }
+
 }

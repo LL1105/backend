@@ -2,9 +2,7 @@ package com.gitgle.service;
 
 import cn.dev33.satoken.util.SaResult;
 import com.gitgle.result.Result;
-import com.gitgle.service.req.RankReq;
-import com.gitgle.service.req.RegisterReq;
-import com.gitgle.service.req.SearchReq;
+import com.gitgle.service.req.*;
 
 
 public interface UserService {
@@ -25,8 +23,6 @@ public interface UserService {
     //登出
     SaResult logout();
 
-    Result getUsersByNation(String nation);
-
     Result conditionCheckRank(Integer size, Integer current, RankReq req);
 
     //搜索用户
@@ -34,7 +30,13 @@ public interface UserService {
 
     Result getNation();
 
-    Result changeUserInfo();
+    Result changeUserInfo(ChangeUserInfoReq req);
+
+    Result showUserInfo(String login);
+
+    Result changePassword(ChangePasswordReq req);
+
+
 
 
 }

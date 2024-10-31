@@ -13,7 +13,7 @@ public class RegisterReq implements Serializable {
 
     private String email;
 
-    private String githubId;
+    private String login;
 
     private String code;
 
