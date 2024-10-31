@@ -9,4 +9,5 @@ public interface DomainService {
 
     List<Domain> readAllDomain();
 
+    Integer getDomainId(String domain);
 }

@@ -22,4 +22,9 @@ public class DomainServiceImpl implements DomainService {
         List<Domain> domainList = domainMapper.selectList(Wrappers.lambdaQuery(Domain.class));
         return domainList;
     }
+
+    @Override
+    public Integer getDomainId(String domain) {
+        return domainMapper.selectOne(Wrappers.lambdaQuery(Domain.class).eq(Domain::getDomain, domain)).getId();
+    }
 }
