@@ -1,6 +1,6 @@
 server:
   port: 8081
-  group: gitgle
+  group: maojunjun
 
 spring:
   application:
@@ -22,6 +22,9 @@ spring:
 github:
   auth-token:
     list:
+      - ${GITHUB_TOKEN_0}
+      - ${GITHUB_TOKEN_1}
+      - ${GITHUB_TOKEN_2}
 
 dubbo:
   provider:
