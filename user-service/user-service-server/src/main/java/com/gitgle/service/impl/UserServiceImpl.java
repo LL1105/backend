@@ -8,29 +8,34 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.gitgle.VO.UserVoToUser;
 import com.gitgle.constant.RedisConstant;
+import com.gitgle.constant.RpcResultCode;
 import com.gitgle.entity.Domain;
 import com.gitgle.entity.Nation;
 import com.gitgle.mapper.DomainMapper;
 import com.gitgle.mapper.GithubUserMapper;
 import com.gitgle.mapper.NationMapper;
 import com.gitgle.mapper.UserMapper;
+import com.gitgle.response.GithubUser;
 import com.gitgle.result.Result;
 import com.gitgle.entity.User;
 
-import com.gitgle.service.vo.req.RankReq;
-import com.gitgle.service.vo.req.SearchReq;
-import com.gitgle.service.vo.resp.*;
-import com.gitgle.service.vo.UserVo;
+import com.gitgle.result.RpcResult;
+import com.gitgle.service.GithubUserService;
+import com.gitgle.service.req.RankReq;
+import com.gitgle.service.req.RegisterReq;
+import com.gitgle.service.req.SearchReq;
+import com.gitgle.service.resp.*;
 import com.gitgle.utils.Md5Util;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.util.StringUtils;
@@ -61,11 +66,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     @Resource
     DomainMapper domainMapper;
 
-//    @DubboReference
-//    RpcDomainService domainService;
-//
-//    @DubboReference
-//    NationService nationService;
+    @DubboReference
+    GithubUserService githubUserService;
 
     @Resource
     NationMapper nationMapper;
@@ -84,9 +86,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
 
     @Override
     public Result getUserInfo() {
+        //展示所有的个人信息，包括系统内部的和github相关的
         Object loginId = StpUtil.getLoginId();
         User user = userMapper.selectById(loginId.toString());
         if(user != null) {
+            String githubId = user.getGithubId();
+            RpcResult<GithubUser> userByLogin = githubUserService.getUserByLogin(githubId);
+            if(userByLogin.getCode().equals(RpcResultCode.SUCCESS)) {
+
+            } else {
+
+            }
             UserInfoResp resp = new UserInfoResp();
             BeanUtils.copyProperties(user, resp);
             return Result.Success(resp);
@@ -115,21 +125,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     }
 
     @Override
-    public Result register(UserVo userVo) {
-        User one = this.getOne(Wrappers.lambdaQuery(User.class).eq(User::getEmail, userVo.getEmail()));
+    public Result register(RegisterReq req) {
+        User one = this.getOne(Wrappers.lambdaQuery(User.class).eq(User::getEmail, req.getEmail()));
         if(one != null) return Result.Failed("邮箱已经存在");
 
-        String code = stringRedisTemplate.opsForValue().get(RedisConstant.REGISTER_CODE_PREFIX + userVo.getEmail());
+        String code = stringRedisTemplate.opsForValue().get(RedisConstant.REGISTER_CODE_PREFIX + req.getEmail());
 
         if(StringUtils.isEmpty(code)) return Result.Failed("验证码已过期，请重新发送");
 
-        if(!code.equals(userVo.getCode())) return Result.Failed("验证码无效");
+        if(!code.equals(req.getCode())) return Result.Failed("验证码无效");
 
-        String password = Md5Util.md5(userVo.getPassword(), Md5Util.md5Key);
-        userVo.setPassword(password);
+        String password = Md5Util.md5(req.getPassword(), Md5Util.md5Key);
+        req.setPassword(password);
 
-        //TODO 计算talentRank，Nation，domain，存进去
-        User user = UserVoToUser.toUser(userVo);
+        User user = new User();
+        BeanUtils.copyProperties(req, user);
         userMapper.insert(user);
         RegisterResp resp = new RegisterResp();
         BeanUtils.copyProperties(user, resp);
@@ -211,5 +221,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     public Result getNation() {
         List<Nation> nations = nationMapper.selectList(new QueryWrapper<>());
         return Result.Success(nations);
+    }
+
+    @Override
+    public Result changeUserInfo() {
+        return null;
     }
 }

@@ -1,13 +1,11 @@
-package com.gitgle.service.vo.resp;
+package com.gitgle.service.resp;
 
 import lombok.Data;
 
 import java.io.Serializable;
 
 @Data
-public class RegisterResp implements Serializable {
-
-    private Integer id;
+public class UserInfoResp implements Serializable {
 
     private String username;
 

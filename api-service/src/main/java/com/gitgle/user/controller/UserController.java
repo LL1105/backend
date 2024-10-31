@@ -5,9 +5,9 @@ import cn.dev33.satoken.util.SaResult;
 import com.gitgle.result.Result;
 import com.gitgle.service.TalentRankService;
 import com.gitgle.service.UserService;
-import com.gitgle.service.vo.req.LoginReq;
-import com.gitgle.service.vo.UserVo;
-import com.gitgle.service.vo.req.SearchReq;
+import com.gitgle.service.req.LoginReq;
+import com.gitgle.service.req.RegisterReq;
+import com.gitgle.service.req.SearchReq;
 import org.apache.dubbo.config.annotation.DubboReference;
 
 import org.springframework.web.bind.annotation.*;
@@ -31,8 +31,8 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public Result register(@RequestBody UserVo userVo) {
-        return  userService.register(userVo);
+    public Result register(@RequestBody RegisterReq req) {
+        return  userService.register(req);
     }
 
     @PostMapping("/login")

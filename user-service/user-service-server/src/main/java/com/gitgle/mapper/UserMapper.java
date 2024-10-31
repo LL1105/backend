@@ -2,8 +2,8 @@ package com.gitgle.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.gitgle.entity.User;
-import com.gitgle.service.vo.req.RankReq;
-import com.gitgle.service.vo.resp.RankResp;
+import com.gitgle.service.req.RankReq;
+import com.gitgle.service.resp.RankResp;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 

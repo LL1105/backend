@@ -1,6 +1,12 @@
 package com.gitgle.consumer.impl;
 
+import com.alibaba.fastjson2.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.gitgle.consumer.KafkaConsumer;
+import com.gitgle.consumer.message.NationMessage;
+import com.gitgle.consumer.message.TalentRankMessage;
+import com.gitgle.entity.GithubUser;
+import com.gitgle.mapper.GithubUserMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -8,11 +14,13 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
@@ -21,6 +29,9 @@ public class UserNationConsumer implements KafkaConsumer {
     private static final String TOPIC = "UserNation";
 
     private static final String GROUP_ID = "UserNation";
+
+    @Resource
+    GithubUserMapper githubUserMapper;
 
     @Override
     public void consumer(Properties props) {
@@ -66,6 +77,15 @@ public class UserNationConsumer implements KafkaConsumer {
     }
 
     public void processMessage(String message){
-
+        NationMessage nationMessage = JSONObject.parseObject(message, NationMessage.class);
+        //异步刷新数据库
+        UpdateWrapper<GithubUser> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("login", nationMessage.getLogin())
+                .set("nation", nationMessage.getNation())
+                .set("nation_confidence", nationMessage.getConfidence())
+                .set("nation_english", nationMessage.getNationEnglish());
+        CompletableFuture.runAsync(() -> {
+            githubUserMapper.update(null, updateWrapper);
+        });
     }
 }

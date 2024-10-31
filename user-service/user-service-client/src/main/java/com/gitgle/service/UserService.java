@@ -2,9 +2,9 @@ package com.gitgle.service;
 
 import cn.dev33.satoken.util.SaResult;
 import com.gitgle.result.Result;
-import com.gitgle.service.vo.UserVo;
-import com.gitgle.service.vo.req.RankReq;
-import com.gitgle.service.vo.req.SearchReq;
+import com.gitgle.service.req.RankReq;
+import com.gitgle.service.req.RegisterReq;
+import com.gitgle.service.req.SearchReq;
 
 
 public interface UserService {
@@ -17,7 +17,7 @@ public interface UserService {
     Result sendMimeMail(String email);
 
     //用户注册，验证验证码并保存用户信息
-    Result register(UserVo userVo);
+    Result register(RegisterReq req);
 
     //登录
     Result login(String email, String password) throws Exception;
@@ -33,4 +33,8 @@ public interface UserService {
     Result search(SearchReq searchReq);
 
     Result getNation();
+
+    Result changeUserInfo();
+
+
 }
