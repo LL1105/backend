@@ -104,6 +104,16 @@ public class GithubApiRequestUtils {
     }
 
     /**
+     * 搜索代码
+     */
+    public Response searchCode(Map<String, String> params) throws IOException {
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(GithubRestApi.SEARCH_CODE.getAddress()).newBuilder();
+        buildQueryParams(params, urlBuilder);
+        String url = urlBuilder.build().toString();
+        return httpClient.newCall(buildRequest(url)).execute();
+    }
+
+    /**
      * 搜索提交记录
      */
     public Response searchCommits(Map<String, String> params) throws IOException {
