@@ -5,10 +5,12 @@ import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.gitgle.constant.RpcResultCode;
 import com.gitgle.consumer.KafkaConsumer;
+import com.gitgle.dto.NationDto;
 import com.gitgle.produce.KafkaProducer;
 import com.gitgle.response.GithubUser;
 import com.gitgle.response.NationResponse;
 import com.gitgle.result.RpcResult;
+import com.gitgle.service.NationCalculationService;
 import com.gitgle.service.NationService;
 import com.gitgle.service.impl.NationServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +44,7 @@ public class NationConsumer implements KafkaConsumer {
     private KafkaProducer kafkaProducer;
 
     @Resource
-    private NationService nationService;
+    private NationCalculationService nationCalculationService;
 
     @Override
     public void consumer(Properties props) {
@@ -87,23 +89,20 @@ public class NationConsumer implements KafkaConsumer {
         }
     }
 
-    public void processMessage(String message){
-        GithubUser githubUser = JSON.parseObject(message, GithubUser.class);
-        CompletableFuture.runAsync(()->{
+    public void processMessage(String message) {
+        CompletableFuture.runAsync(() -> {
             NationResponse nationResponse = new NationResponse();
-            nationResponse.setNation(githubUser.getLocation());
-            nationResponse.setConfidence(1.0);
-            if(StringUtils.isEmpty(githubUser.getLocation())){
-                for(int i=0;i<NATION_RETRY_COUNT;i++){
-                    RpcResult<NationResponse> nationResponseRpcResult = nationService.getNationByDeveloperId(githubUser.getLogin());
-                    if(RpcResultCode.SUCCESS.equals(nationResponseRpcResult.getCode())){
-                        nationResponse = nationResponseRpcResult.getData();
-                        break;
-                    }
+            for (int i = 0; i < NATION_RETRY_COUNT; i++) {
+                nationResponse = nationCalculationService.calculateNation(message);
+                if(ObjectUtils.isNotEmpty(nationResponse) && StringUtils.isNotEmpty(nationResponse.getNation())){
+                    NationDto nationDto = new NationDto();
+                    nationDto.setNation(nationResponse.getNation());
+                    nationDto.setLogin(message);
+                    nationDto.setNationEnglish(nationResponse.getNationEnglish());
+                    nationDto.setConfidence(nationResponse.getConfidence());
+                    kafkaProducer.sendMessage(JSON.toJSONString(nationDto), USER_NATION_TOPIC);
+                    break;
                 }
-            }
-            if(StringUtils.isNotEmpty(nationResponse.getNation())){
-                kafkaProducer.sendMessage(JSON.toJSONString(nationResponse), USER_NATION_TOPIC);
             }
         });
     }
