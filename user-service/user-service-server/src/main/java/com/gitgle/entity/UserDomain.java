@@ -36,6 +36,11 @@ public class UserDomain implements Serializable {
      */
     private Double confidence;
 
+    /**
+     *
+     */
+    private String domain;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

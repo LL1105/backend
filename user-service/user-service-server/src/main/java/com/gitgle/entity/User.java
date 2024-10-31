@@ -29,10 +29,15 @@ public class User implements Serializable {
     private String email;
 
     @TableField("github_id")
-    private String githubId;
+    private String login;
 
     @TableField("talent_rank")
     private String talentRank;
+
+    @TableField("avatar")
+    private String avatar;
+
+
 
 
 }

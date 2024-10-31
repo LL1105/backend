@@ -11,7 +11,7 @@ public class Md5Util {
     }
 
 
-    public static boolean passwordVerify(String pwdStr,String oldPwd,String key) {
+    public static boolean passwordVerify(String pwdStr, String oldPwd, String key) {
         String md5Pwd= md5(pwdStr, key);
         return md5Pwd.equalsIgnoreCase(oldPwd);
     }

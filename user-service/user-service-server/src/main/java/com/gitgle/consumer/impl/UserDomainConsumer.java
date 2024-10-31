@@ -1,18 +1,29 @@
 package com.gitgle.consumer.impl;
 
+import com.alibaba.fastjson2.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.fasterxml.jackson.databind.util.BeanUtil;
 import com.gitgle.consumer.KafkaConsumer;
+import com.gitgle.consumer.message.DomainMessage;
+import com.gitgle.entity.GithubUser;
+import com.gitgle.entity.UserDomain;
+import com.gitgle.mapper.UserDomainMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
@@ -21,6 +32,9 @@ public class UserDomainConsumer implements KafkaConsumer {
     private static final String TOPIC = "UserNation";
 
     private static final String GROUP_ID = "UserNation";
+
+    @Resource
+    UserDomainMapper userDomainMapper;
 
     @Override
     public void consumer(Properties props) {
@@ -67,6 +81,15 @@ public class UserDomainConsumer implements KafkaConsumer {
     }
 
     public void processMessage(String message){
+        List<DomainMessage> domainMessages = JSON.parseArray(message, DomainMessage.class);
+        //异步插入到数据库
+        for (DomainMessage domainMessage : domainMessages) {
+            UserDomain userDomain = new UserDomain();
+            BeanUtils.copyProperties(domainMessage, userDomain);
+            CompletableFuture.runAsync(() -> {
+                userDomainMapper.insert(userDomain);
+            });
+        }
 
     }
 }

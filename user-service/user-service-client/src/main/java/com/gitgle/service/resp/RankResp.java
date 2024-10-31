@@ -1,4 +1,4 @@
-package com.gitgle.service.vo.resp;
+package com.gitgle.service.resp;
 
 import lombok.Data;
 
@@ -18,6 +18,6 @@ public class RankResp implements Serializable {
 
     private BigDecimal talentRank;
 
-    private String githubId;
+    private String login;
 
 }

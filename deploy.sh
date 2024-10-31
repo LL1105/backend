@@ -10,6 +10,7 @@ REMOTE_DIR="/gitgle" # 远程服务器上的目录
 JAR_PATHS=(
     "user-service/user-service-server/target/user-service.jar"
     "data-service/data-service-server/target/data-service.jar"
+    "domain-service/domain-service-server/target/domain-service.jar"
     "talentrank-service/talentrank-service-server/target/talentrank-service.jar"
     "api-service/target/api-service.jar"
     "gateway-service/target/gateway-service.jar"
