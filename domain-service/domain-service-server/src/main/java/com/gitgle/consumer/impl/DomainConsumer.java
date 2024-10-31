@@ -1,7 +1,14 @@
 package com.gitgle.consumer.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.gitgle.consumer.KafkaConsumer;
+import com.gitgle.dto.DomainDto;
 import com.gitgle.produce.KafkaProducer;
+import com.gitgle.response.DomainResponse;
+import com.gitgle.response.UserDomainBase;
+import com.gitgle.result.RpcResult;
+import com.gitgle.service.DomainCalculationService;
+import com.gitgle.service.DomainService;
 import com.gitgle.service.RpcDomainService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -19,7 +26,7 @@ import java.util.Properties;
 
 @Component
 @Slf4j
-public class TalentRankConsumer implements KafkaConsumer {
+public class DomainConsumer implements KafkaConsumer {
 
     private static final String TOPIC = "Domain";
 
@@ -31,7 +38,10 @@ public class TalentRankConsumer implements KafkaConsumer {
     private KafkaProducer kafkaProducer;
 
     @Resource
-    private RpcDomainService rpcDomainService;
+    private DomainCalculationService domainCalculationService;
+
+    @Resource
+    private DomainService domainService;
 
     @Override
     public void consumer(Properties props) {
@@ -77,6 +87,16 @@ public class TalentRankConsumer implements KafkaConsumer {
     }
 
     public void processMessage(String message){
-
+        DomainResponse domainResponse = domainCalculationService.calculationDomain(message);
+        List<DomainDto> domainDtoList = new ArrayList<>();
+        for(UserDomainBase userDomainBase: domainResponse.getUserDomainBaseList()){
+            Integer domainId = domainService.getDomainId(userDomainBase.getDomain());
+            DomainDto domainDto = new DomainDto();
+            domainDto.setDomainId(domainId);
+            domainDto.setDomain(userDomainBase.getDomain());
+            domainDto.setConfidence(Double.valueOf(userDomainBase.getConfidence()));
+            domainDto.setLogin(message);
+        }
+        kafkaProducer.sendMessage(JSON.toJSONString(domainDtoList), USER_DOMAIN_TOPIC);
     }
 }
