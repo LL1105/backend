@@ -165,8 +165,11 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
 
     @Override
     public RpcResult<GithubUser> listUserByFollowers() {
-        refreshUserJob.refreshAccountId();
-        refreshUserJob.refresh();
+        try {
+            log.info("GithubUser总数:{}", githubApiRequestUtils.getGithubUserTotal());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return null;
     }
 }

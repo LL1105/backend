@@ -1,7 +1,10 @@
 package com.gitgle.consumer.impl;
 
 import com.gitgle.consumer.KafkaConsumer;
+import com.gitgle.dto.TalentRankDto;
 import com.gitgle.produce.KafkaProducer;
+import com.gitgle.service.TalentRankCalculateService;
+import com.gitgle.service.TalentRankService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -28,6 +31,9 @@ public class TalentRankConsumer implements KafkaConsumer {
 
     @Resource
     private KafkaProducer kafkaProducer;
+
+    @Resource
+    private TalentRankCalculateService talentRankCalculateService;
 
     @Override
     public void consumer(Properties props) {
@@ -71,6 +77,10 @@ public class TalentRankConsumer implements KafkaConsumer {
     }
 
     public void processMessage(String message){
-
+        String TalentRank = talentRankCalculateService.calculateTalentRank(message);
+        TalentRankDto talentRankDto = new TalentRankDto();
+        talentRankDto.setTalentRank(TalentRank);
+        talentRankDto.setLogin(message);
+        kafkaProducer.sendMessage(talentRankDto.toString(), USER_TALENT_RANK_TOPIC);
     }
 }

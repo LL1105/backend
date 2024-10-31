@@ -13,7 +13,5 @@ public class GithubDataResponse implements Serializable {
 
     private Integer githubCommitTotal;
 
-    private Integer githubOrganizationTotal;
-
-    private Integer githubCountry;
+    private Integer githubCodeTotal;
 }
