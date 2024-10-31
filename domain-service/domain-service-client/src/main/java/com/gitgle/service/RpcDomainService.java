@@ -1,6 +1,7 @@
 package com.gitgle.service;
 
 import com.gitgle.response.DomainResponse;
+import com.gitgle.response.HotDomainEventResponse;
 import com.gitgle.response.HotDomainResponse;
 import com.gitgle.result.RpcResult;
 
@@ -17,4 +18,9 @@ public interface RpcDomainService {
      * 获取热门领域u
      */
     RpcResult<HotDomainResponse> getHotDomain();
+
+    /**
+     * 获取领域的热门事件
+     */
+    RpcResult<HotDomainEventResponse> getHotDomainEvent(String domain);
 }

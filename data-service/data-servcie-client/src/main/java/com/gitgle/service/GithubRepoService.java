@@ -40,4 +40,9 @@ public interface GithubRepoService {
      * 获取仓库语言
      */
     RpcResult<GithubLanguagesResponse> getRepoLanguages(String owner, String repoName);
+
+    /**
+     * 获取热门仓库
+     */
+    RpcResult<GithubReposResponse> getHotRepos();
 }

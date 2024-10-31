@@ -16,7 +16,7 @@ import com.gitgle.mapper.DomainMapper;
 import com.gitgle.mapper.GithubUserMapper;
 import com.gitgle.mapper.NationMapper;
 import com.gitgle.mapper.UserMapper;
-import com.gitgle.result.R;
+import com.gitgle.result.Result;
 import com.gitgle.entity.User;
 
 import com.gitgle.service.vo.req.RankReq;
@@ -83,20 +83,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     }
 
     @Override
-    public R getUserInfo() {
+    public Result getUserInfo() {
         Object loginId = StpUtil.getLoginId();
         User user = userMapper.selectById(loginId.toString());
         if(user != null) {
             UserInfoResp resp = new UserInfoResp();
             BeanUtils.copyProperties(user, resp);
-            return R.Success(resp);
+            return Result.Success(resp);
         }
-        return R.Failed("用户不存在");
+        return Result.Failed("用户不存在");
     }
 
     @Override
-    public R sendMimeMail(String email) {
-        if(StringUtils.isEmpty(email)) return R.Failed("邮箱地址不能为空");
+    public Result sendMimeMail(String email) {
+        if(StringUtils.isEmpty(email)) return Result.Failed("邮箱地址不能为空");
         try {
             SimpleMailMessage mailMessage = new SimpleMailMessage();
             mailMessage.setSubject("欢迎来到gitgle，您的验证码是：");
@@ -107,23 +107,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
             mailMessage.setTo(email);
             mailMessage.setFrom(from);
             mailSender.send(mailMessage);
-            return R.Success();
+            return Result.Success();
         } catch (Exception e) {
             logger.error("发送邮件时发生异常", e);
-            return R.Failed("邮件发送失败，请稍后再试");
+            return Result.Failed("邮件发送失败，请稍后再试");
         }
     }
 
     @Override
-    public R register(UserVo userVo) {
+    public Result register(UserVo userVo) {
         User one = this.getOne(Wrappers.lambdaQuery(User.class).eq(User::getEmail, userVo.getEmail()));
-        if(one != null) return R.Failed("邮箱已经存在");
+        if(one != null) return Result.Failed("邮箱已经存在");
 
         String code = stringRedisTemplate.opsForValue().get(RedisConstant.REGISTER_CODE_PREFIX + userVo.getEmail());
 
-        if(StringUtils.isEmpty(code)) return R.Failed("验证码已过期，请重新发送");
+        if(StringUtils.isEmpty(code)) return Result.Failed("验证码已过期，请重新发送");
 
-        if(!code.equals(userVo.getCode())) return R.Failed("验证码无效");
+        if(!code.equals(userVo.getCode())) return Result.Failed("验证码无效");
 
         String password = Md5Util.md5(userVo.getPassword(), Md5Util.md5Key);
         userVo.setPassword(password);
@@ -133,7 +133,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         userMapper.insert(user);
         RegisterResp resp = new RegisterResp();
         BeanUtils.copyProperties(user, resp);
-        return R.Success(resp);
+        return Result.Success(resp);
     }
 
     public String randomCode() {
@@ -146,9 +146,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     }
 
     @Override
-    public R login(String email, String password)  {
+    public Result login(String email, String password)  {
         User user = this.getOne(Wrappers.lambdaQuery(User.class).eq(User::getEmail, email));
-        if(user == null) return R.Failed("账号或密码错误");
+        if(user == null) return Result.Failed("账号或密码错误");
 
         boolean result = Md5Util.passwordVerify(password, user.getPassword(), Md5Util.md5Key);
 
@@ -159,10 +159,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
             resp.setUserId(user.getId());
             resp.setUserName(user.getUsername());
             resp.setToken(tokenInfo.getTokenValue());
-            return R.Success(resp);
+            return Result.Success(resp);
         }
 
-        return R.Failed("账号或密码错误");
+        return Result.Failed("账号或密码错误");
     }
 
     @Override
@@ -175,18 +175,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     }
 
     @Override
-    public R getUsersByNation(String nation) {
+    public Result getUsersByNation(String nation) {
         return null;
     }
 
     @Override
-    public R conditionCheckRank(Integer size, Integer current, RankReq req) {
+    public Result conditionCheckRank(Integer size, Integer current, RankReq req) {
         List<RankResp> rankResps = userMapper.selectUsersCondition(current, size, req);
-        return R.Success(rankResps);
+        return Result.Success(rankResps);
     }
 
     @Override
-    public R search(SearchReq searchReq) {
+    public Result search(SearchReq searchReq) {
         //req:领域名，地区id，github用户名
         //通过这套数据去查数据库，如果没有的话，再去通过github用户名去查service
         Integer domainId = null;
@@ -201,15 +201,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
             searchReq.setDomain(String.valueOf(domainId));
         }
         List<SearchResp> searchList = githubUserMapper.searchByCondition(searchReq);
-        return R.Success(searchList);
+        return Result.Success(searchList);
         //数据库里面没有这个领域，那么直接调用rpc接口，找到github的这个领域
 
         //这里就直接去数据库查github的用户，根据domainId和nationId以及githubId的模糊查询
     }
 
     @Override
-    public R getNation() {
+    public Result getNation() {
         List<Nation> nations = nationMapper.selectList(new QueryWrapper<>());
-        return R.Success(nations);
+        return Result.Success(nations);
     }
 }

@@ -2,7 +2,7 @@ package com.gitgle.user.controller;
 
 
 import cn.dev33.satoken.util.SaResult;
-import com.gitgle.result.R;
+import com.gitgle.result.Result;
 import com.gitgle.service.TalentRankService;
 import com.gitgle.service.UserService;
 import com.gitgle.service.vo.req.LoginReq;
@@ -26,17 +26,17 @@ public class UserController {
 
 
     @GetMapping("/sendEmail")
-    public R sendEmail(@RequestParam("email") String email) {
+    public Result sendEmail(@RequestParam("email") String email) {
         return userService.sendMimeMail(email);
     }
 
     @PostMapping("/register")
-    public R register(@RequestBody UserVo userVo) {
+    public Result register(@RequestBody UserVo userVo) {
         return  userService.register(userVo);
     }
 
     @PostMapping("/login")
-    public R login(@RequestBody LoginReq loginReq) throws Exception {
+    public Result login(@RequestBody LoginReq loginReq) throws Exception {
         return userService.login(loginReq.getEmail(), loginReq.getPassword());
     }
 
@@ -46,27 +46,27 @@ public class UserController {
     }
 
     @PostMapping("/auth")
-    public R auth() {
-        return R.Success("auth success");
+    public Result auth() {
+        return Result.Success("auth success");
     }
 
     @PostMapping("/getUserInfo")
-    public R getUserInfo() {
+    public Result getUserInfo() {
         return userService.getUserInfo();
     }
 
     @PostMapping("/getRank")
-    public R getTalentRank(Integer userId) {
-        return R.Success(talentRankService.getTalentrankByDeveloperId(String.valueOf(userId)));
+    public Result getTalentRank(Integer userId) {
+        return Result.Success(talentRankService.getTalentrankByDeveloperId(String.valueOf(userId)));
     }
 
     @PostMapping("/search")
-    public R search(@RequestBody SearchReq req) {
+    public Result search(@RequestBody SearchReq req) {
         return userService.search(req);
     }
 
     @PostMapping("/nation")
-    public R search() {
+    public Result search() {
         return userService.getNation();
     }
 
