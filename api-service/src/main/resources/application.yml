@@ -1,4 +1,8 @@
 
+server:
+  port: 8083
+  group: gitgle
+
 spring:
   application:
     name: api-service
@@ -13,8 +17,13 @@ spring:
         server-addr: 121.36.79.38:8848
 
 dubbo:
+  provider:
+    group: ${server.group}
+  consumer:
+    group: ${server.group}
   registry:
     address: nacos://121.36.79.38:8848
+    group: ${server.group}
   application:
     qos-port: 2222
     name: ${spring.application.name}
@@ -23,9 +32,6 @@ dubbo:
     check-serializable: false
     # 检查模式分为三个级别：STRICT 严格检查，WARN 告警，DISABLE 禁用
     serialize-check-status: DISABLE
-
-server:
-  port: 8083
 
 # Sa-Token配置
 sa-token:

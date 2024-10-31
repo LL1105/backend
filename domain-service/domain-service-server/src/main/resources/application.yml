@@ -1,5 +1,6 @@
 server:
   port: 8091
+  group: gitgle
 
 spring:
   application:
@@ -12,11 +13,16 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 121.36.79.38:8848
+        enabled: false
 
 dubbo:
+  provider:
+    group: ${server.group}
+  consumer:
+    group: ${server.group}
   registry:
     address: nacos://121.36.79.38:8848
+    group: ${server.group}
   protocol:
     name: dubbo
     port: 50090

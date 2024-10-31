@@ -1,3 +1,6 @@
+server:
+  group: gitgle
+
 spring:
   application:
     name: user-service
@@ -9,8 +12,7 @@ spring:
   cloud:
     nacos:
       discovery:
-        register-enabled: true
-        server-addr: 121.36.79.38:8848
+        enabled: false
 
   redis:
     host: 49.232.232.203
@@ -39,9 +41,14 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 dubbo:
+  provider:
+    group: ${server.group}
+  consumer:
+    group: ${server.group}
   registry:
     address: nacos://121.36.79.38:8848
     register-mode: all
+    group: ${server.group}
   protocol:
     name: dubbo
     port: -1
