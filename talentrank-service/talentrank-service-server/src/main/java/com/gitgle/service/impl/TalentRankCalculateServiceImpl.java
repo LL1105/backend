@@ -70,6 +70,7 @@ public class TalentRankCalculateServiceImpl implements TalentRankCalculateServic
                         supplyAsync(() -> new BigDecimal(calculateProjectImportance(owner, githubRepo.getKey())));
                 CompletableFuture<BigDecimal> contribution = CompletableFuture.
                         supplyAsync(() -> new BigDecimal(calculateContribution(githubRepo.getValue(), githubRepo.getKey(), owner)));
+                CompletableFuture.allOf(projectImportance, contribution).join();
                 talentRank = talentRank.add(projectImportance.get().multiply(contribution.get()));
             }catch (Exception e){
                 log.error("TalentRank计算出错:{}", e);
@@ -97,6 +98,6 @@ public class TalentRankCalculateServiceImpl implements TalentRankCalculateServic
                 authorContribution = new BigDecimal(githubContributor.getContributions());
             }
         }
-        return String.valueOf(authorContribution.divide(totalContribution));
+        return String.valueOf(authorContribution.divide(totalContribution, 5, BigDecimal.ROUND_HALF_UP));
     }
 }

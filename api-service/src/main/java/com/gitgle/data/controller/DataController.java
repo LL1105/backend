@@ -9,6 +9,7 @@ import com.gitgle.service.GithubRepoService;
 import com.gitgle.service.RpcDomainService;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -54,6 +55,15 @@ public class DataController {
         return Result.Success(hotRepos.getData());
     }
 
+    @GetMapping("/repo/list")
+    public Result<PageRepoResponse> getRepos(Integer page, Integer size){
+        RpcResult<PageRepoResponse> repos = githubRepoService.getReposOrderByStar(page, size);
+        if(!RpcResultCode.SUCCESS.equals(repos.getCode())){
+            return Result.Failed();
+        }
+        return Result.Success(repos.getData());
+    }
+
     @GetMapping("/hot/domain/event")
     public Result<HotDomainResponse> getHotDomainEvent(String domain){
         RpcResult<HotDomainEventResponse> hotDomainEvent = rpcDomainService.getHotDomainEvent(domain);
@@ -61,5 +71,14 @@ public class DataController {
             return Result.Failed();
         }
         return Result.Success(hotDomainEvent.getData());
+    }
+
+    @GetMapping("/repo/{id}")
+    public Result<GithubRepos> getRepoById(@PathVariable(value = "id") Integer repoId){
+        RpcResult<GithubRepos> repoById = githubRepoService.getRepoById(repoId);
+        if(!RpcResultCode.SUCCESS.equals(repoById.getCode())){
+            return Result.Failed();
+        }
+        return Result.Success(repoById.getData());
     }
 }
