@@ -40,6 +40,8 @@ public class DomainCalculationServiceImpl implements DomainCalculationService {
     @DubboReference
     private GithubCommitService githubCommitService;
 
+    private static final Double DOMAIN_FOOTER_SCORE = 0.6;
+
 
     @Override
     public DomainResponse calculationDomain(String owner) {
@@ -66,7 +68,6 @@ public class DomainCalculationServiceImpl implements DomainCalculationService {
             }
             okhttp3.Response response = sparkApiUtils.doRequest(description.toString());
             JSONObject responseBody = JSON.parseObject(response.body().string());
-            Integer code = responseBody.getInteger("code");
             String content = responseBody.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content");
             log.info("Spark Response Content: {}", content);
             List<UserDomainBase> userDomainBaseList = new ArrayList<>();
@@ -79,6 +80,9 @@ public class DomainCalculationServiceImpl implements DomainCalculationService {
                 if(domain.matches("-?\\d+(\\.\\d+)?")){
                     UserDomainBase userDomainBase = new UserDomainBase();
                     userDomainBase.setDomain(domainArray[i-1]);
+                    if(Double.valueOf(domain) <= DOMAIN_FOOTER_SCORE){
+                        continue;
+                    }
                     userDomainBase.setConfidence(domain);
                     userDomainBaseList.add(userDomainBase);
                 }
