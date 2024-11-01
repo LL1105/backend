@@ -35,10 +35,16 @@ public class GithubUser implements Serializable {
     /**
      *
      */
-    private String nation_id;
+    private String nationId;
 
 
     private BigDecimal talentRank;
+
+    private String nation;
+
+    private BigDecimal nationConfidence;
+
+    private String nationEnglish;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

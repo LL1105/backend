@@ -78,8 +78,8 @@ public class UserController {
     }
 
     @PostMapping("/search")
-    public Result search(@RequestBody SearchReq req) {
-        return userService.search(req);
+    public Result search(@RequestParam("page") Integer page, @RequestParam("size") Integer size , @RequestBody SearchReq req) {
+        return userService.search(page, size, req);
     }
 
     /**
@@ -96,7 +96,7 @@ public class UserController {
      * @param githubId
      * @return
      */
-    @PostMapping
+    @PostMapping("/detail")
     public Result showGithubUserInfo(@RequestParam("githubId") String githubId) {
         return userService.showUserInfo(githubId);
     }

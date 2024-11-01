@@ -2,19 +2,25 @@ package com.gitgle.consumer.impl;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.gitgle.constant.RpcResultCode;
 import com.gitgle.consumer.KafkaConsumer;
 import com.gitgle.consumer.message.NationMessage;
 import com.gitgle.consumer.message.TalentRankMessage;
 import com.gitgle.entity.GithubUser;
 import com.gitgle.mapper.GithubUserMapper;
+import com.gitgle.result.RpcResult;
+import com.gitgle.service.GithubUserService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +38,9 @@ public class UserNationConsumer implements KafkaConsumer {
 
     @Resource
     GithubUserMapper githubUserMapper;
+
+    @DubboReference
+    GithubUserService githubUserService;
 
     @Override
     public void consumer(Properties props) {
@@ -77,15 +86,33 @@ public class UserNationConsumer implements KafkaConsumer {
     }
 
     public void processMessage(String message){
+        log.info("UserNationMessage::{}", message);
         NationMessage nationMessage = JSONObject.parseObject(message, NationMessage.class);
-        //异步刷新数据库
-        UpdateWrapper<GithubUser> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("login", nationMessage.getLogin())
-                .set("nation", nationMessage.getNation())
-                .set("nation_confidence", nationMessage.getConfidence())
-                .set("nation_english", nationMessage.getNationEnglish());
-        CompletableFuture.runAsync(() -> {
-            githubUserMapper.update(null, updateWrapper);
-        });
+        GithubUser githubUser = githubUserMapper.selectById(nationMessage.getLogin());
+        if(githubUser == null) {
+            //插入
+            GithubUser user = new GithubUser();
+            BeanUtils.copyProperties(nationMessage, user);
+            user.setNationConfidence(BigDecimal.valueOf(nationMessage.getConfidence()));
+            //更新头像
+            RpcResult<com.gitgle.response.GithubUser> githubUserRpcResult = githubUserService.getUserByLogin(user.getLogin());
+            if(githubUserRpcResult.getCode().equals(RpcResultCode.SUCCESS)) {
+                user.setAvatar(githubUserRpcResult.getData().getAvatarUrl());
+            }
+            CompletableFuture.runAsync(() -> {
+                githubUserMapper.insert(user);
+            });
+        } else {
+            //异步刷新数据库
+            UpdateWrapper<GithubUser> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.eq("login", nationMessage.getLogin())
+                    .set("nation", nationMessage.getNation())
+                    .set("nation_confidence", nationMessage.getConfidence())
+                    .set("nation_english", nationMessage.getNationEnglish());
+            CompletableFuture.runAsync(() -> {
+                githubUserMapper.update(null, updateWrapper);
+            });
+        }
+
     }
 }

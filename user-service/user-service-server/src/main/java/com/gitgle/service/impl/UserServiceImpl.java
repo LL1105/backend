@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gitgle.constant.RedisConstant;
 import com.gitgle.constant.RpcResultCode;
@@ -17,18 +18,23 @@ import com.gitgle.mapper.DomainMapper;
 import com.gitgle.mapper.GithubUserMapper;
 import com.gitgle.mapper.NationMapper;
 import com.gitgle.mapper.UserMapper;
-import com.gitgle.response.GithubUser;
+import com.gitgle.response.*;
 import com.gitgle.result.Result;
 import com.gitgle.entity.User;
 
 import com.gitgle.result.RpcResult;
+import com.gitgle.service.GithubFollowingService;
+import com.gitgle.service.GithubRepoService;
+import com.gitgle.service.GithubUserInfo;
 import com.gitgle.service.GithubUserService;
 import com.gitgle.service.req.*;
 import com.gitgle.service.resp.*;
 import com.gitgle.utils.Md5Util;
+import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
+import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -75,6 +81,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     @Resource
     GithubUserMapper githubUserMapper;
 
+    @DubboReference
+    GithubFollowingService githubFollowingService;
+
+    @DubboReference
+    GithubRepoService githubRepoService;
+
 
     @Override
     public String getRank(Integer userId) {
@@ -90,18 +102,37 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         Object loginId = StpUtil.getLoginId();
         User user = userMapper.selectById(loginId.toString());
         if(user != null) {
-            String login = user.getLogin();
-            RpcResult<GithubUser> userByLogin = githubUserService.getUserByLogin(login);
             UserInfoResp resp = new UserInfoResp();
-            //展示系统内user信息以及关联的github用户的信息
-            if(userByLogin.getCode().equals(RpcResultCode.SUCCESS)) {
-                GithubUser githubUser = userByLogin.getData();
-                resp.setGithubUser(githubUser);
+            if(!StringUtils.isEmpty(user.getLogin())) {
+                String login = user.getLogin();
+                GithubUserInfo githubUserInfo = getGithubUserInfoBylogin(login);
+                resp.setGithubUserInfo(githubUserInfo);
             }
+
             BeanUtils.copyProperties(user, resp);
             return Result.Success(resp);
         }
         return Result.Failed("用户不存在");
+    }
+
+    public GithubUserInfo getGithubUserInfoBylogin(String login) {
+        //组装follow和个人信息
+        GithubUserInfo info = new GithubUserInfo();
+        RpcResult<GithubUser> userByLogin = githubUserService.getUserByLogin(login);
+        RpcResult<GithubFollowersResponse> followers = githubFollowingService.getFollowersByDeveloperId(login);
+        RpcResult<GithubFollowingResponse> following = githubFollowingService.listUserFollowingByDeveloperId(login);
+        if(userByLogin.getCode().equals(RpcResultCode.SUCCESS)) {
+            info.setGithubUser(userByLogin.getData());
+        }
+
+        if(followers.getCode().equals(RpcResultCode.SUCCESS)) {
+            info.setGithubFollowers(followers.getData());
+        }
+
+        if(following.getCode().equals(RpcResultCode.SUCCESS)) {
+            info.setGithubFollowing(following.getData());
+        }
+        return info;
     }
 
     @Override
@@ -136,19 +167,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
 
         if(!code.equals(req.getCode())) return Result.Failed("验证码无效");
 
-        if(StringUtils.isEmpty(req.getLogin())) return Result.Failed("请输入GitHub用户名");
-
         String password = Md5Util.md5(req.getPassword(), Md5Util.md5Key);
         req.setPassword(password);
 
         User user = new User();
 
         //搜索github用户，添加头像的url
-        RpcResult<GithubUser> userByLogin = githubUserService.getUserByLogin(req.getLogin());
-        if(userByLogin.getCode().equals(RpcResultCode.SUCCESS)) {
-            GithubUser githubUser = userByLogin.getData();
-            user.setAvatar(githubUser.getAvatarUrl());
+        if(!StringUtils.isEmpty(req.getLogin())) {
+            RpcResult<GithubUser> userByLogin = githubUserService.getUserByLogin(req.getLogin());
+            if(userByLogin.getCode().equals(RpcResultCode.SUCCESS)) {
+                GithubUser githubUser = userByLogin.getData();
+                user.setAvatar(githubUser.getAvatarUrl());
+            }
         }
+
         BeanUtils.copyProperties(req, user);
         userMapper.insert(user);
         RegisterResp resp = new RegisterResp();
@@ -201,25 +233,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     }
 
     @Override
-    public Result search(SearchReq searchReq) {
-        //req:领域名，地区id，github用户名
-        //通过这套数据去查数据库，如果没有的话，再去通过github用户名去查service
-        Integer domainId = null;
-        String domain = searchReq.getDomain();
+    public Result search(Integer page, Integer size, SearchReq searchReq) {
+        Integer current = (page - 1) * size;
+        SearchResp resp = new SearchResp();
 
-        LambdaQueryWrapper<Domain> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Domain::getDomain, domain);
-        Domain selectOne = domainMapper.selectOne(queryWrapper);
-        domainId = selectOne == null ? null : selectOne.getId();
-        //暂时只能查询数据库里面存在的domain
-        if(domainId != null) {
-            searchReq.setDomain(String.valueOf(domainId));
-        }
-        List<SearchResp> searchList = githubUserMapper.searchByCondition(searchReq);
-        return Result.Success(searchList);
-        //数据库里面没有这个领域，那么直接调用rpc接口，找到github的这个领域
-
-        //这里就直接去数据库查github的用户，根据domainId和nationId以及login的模糊查询
+        List<SearchUser> searchList = githubUserMapper.searchByCondition(current, size, searchReq);
+        //查全部条数
+        Integer count = githubUserMapper.searchCount(searchReq);
+        resp.setSearchUsers(searchList);
+        resp.setPage(page);
+        resp.setPageSize(size);
+        resp.setTotalPage((long) Math.round(((count / size) + 0.5)));
+        return Result.Success(resp);
     }
 
     @Override
@@ -229,6 +254,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     }
 
     @Override
+    @Transactional
     public Result changeUserInfo(ChangeUserInfoReq req) {
         //从token里面解析id
         Object loginId = StpUtil.getLoginId();
@@ -241,22 +267,51 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
                 .set("email", req.getEmail())
                 .set("github_id", req.getLogin());
 
+        //搜索github用户，添加头像的url
+        if(!StringUtils.isEmpty(req.getLogin())) {
+            RpcResult<GithubUser> userByLogin = githubUserService.getUserByLogin(req.getLogin());
+            if(userByLogin.getCode().equals(RpcResultCode.SUCCESS)) {
+                GithubUser githubUser = userByLogin.getData();
+                updateWrapper.set("avatar", githubUser.getAvatarUrl());
+            }
+        }
+
         int update = userMapper.update(null, updateWrapper);
+        if(update != 1) return Result.Failed();
+
+        User updateUser = userMapper.selectById(user.getId());
         ChangeUserInfoResp resp = new ChangeUserInfoResp();
-        BeanUtils.copyProperties(user, resp);
+        BeanUtils.copyProperties(updateUser, resp);
         return Result.Success(resp);
     }
 
     @Override
     public Result showUserInfo(String login) {
+        ShowUserInfoResp resp = new ShowUserInfoResp();
         RpcResult<GithubUser> userByLogin = githubUserService.getUserByLogin(login);
-        if(userByLogin.getCode().equals(RpcResultCode.SUCCESS)) {
-            return Result.Success(userByLogin.getData());
+        try {
+            if(userByLogin.getCode().equals(RpcResultCode.SUCCESS)) {
+                GithubUser data = userByLogin.getData();
+                resp.setGithubUser(data);
+                RpcResult<GithubReposResponse> rpcResult = githubRepoService.listUserRepos(data.getLogin());
+                //组装开发者的仓库信息
+                if(rpcResult.getCode().equals(RpcResultCode.SUCCESS)) {
+                    GithubReposResponse githubReposResponse = rpcResult.getData();
+                    List<GithubRepos> githubProjectList = githubReposResponse.getGithubProjectList();
+                    resp.setGithubReposList(githubProjectList);
+                }
+                return Result.Success(resp);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.Failed("详情获取失败");
         }
+
         return Result.Failed("详情获取失败");
     }
 
     @Override
+    @Transactional
     public Result changePassword(ChangePasswordReq req) {
         Object loginId = StpUtil.getLoginId();
         User user = userMapper.selectById(loginId.toString());
@@ -265,7 +320,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         String oldPassword = req.getOldPassword();
         String newPassword = req.getNewPassword();
 
-        if(!Md5Util.passwordVerify(newPassword, oldPassword, Md5Util.md5Key)) {
+        if(!Md5Util.passwordVerify(oldPassword, user.getPassword(), Md5Util.md5Key)) {
             return Result.Failed("旧密码错误");
         }
         UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();

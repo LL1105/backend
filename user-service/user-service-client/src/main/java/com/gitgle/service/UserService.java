@@ -26,7 +26,7 @@ public interface UserService {
     Result conditionCheckRank(Integer size, Integer current, RankReq req);
 
     //搜索用户
-    Result search(SearchReq searchReq);
+    Result search(Integer page, Integer size, SearchReq searchReq);
 
     Result getNation();
 

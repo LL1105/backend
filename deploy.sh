@@ -11,6 +11,7 @@ JAR_PATHS=(
     "user-service/user-service-server/target/user-service.jar"
     "data-service/data-service-server/target/data-service.jar"
     "domain-service/domain-service-server/target/domain-service.jar"
+    "nation-service/nation-service-server/target/nation-service.jar"
     "talentrank-service/talentrank-service-server/target/talentrank-service.jar"
     "api-service/target/api-service.jar"
     "gateway-service/target/gateway-service.jar"
@@ -43,13 +44,13 @@ if [ $? -ne 0 ]; then
 fi
 
 # 使用SSH在远程服务器上启动JAR包
-echo "在远程服务器上启动JAR包..."
-ssh -p $REMOTE_PORT $REMOTE_USER@$REMOTE_HOST << 'EOF'
-cd $REMOTE_DIR
-for jar in *.jar; do
-    echo "启动 $jar..."
-    nohup java -jar $jar >/dev/null 2>&1 &
-done
-EOF
-
-echo "所有操作完成。"
+#echo "在远程服务器上启动JAR包..."
+#ssh -p $REMOTE_PORT $REMOTE_USER@$REMOTE_HOST << 'EOF'
+#cd $REMOTE_DIR
+#for jar in *.jar; do
+#    echo "启动 $jar..."
+#    nohup java -jar $jar >/dev/null 2>&1 &
+#done
+#EOF
+#
+#echo "所有操作完成。"

@@ -1,16 +1,23 @@
 package com.gitgle.consumer.impl;
 
 import com.alibaba.fastjson2.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.fasterxml.jackson.databind.util.BeanUtil;
+import com.gitgle.constant.RpcResultCode;
 import com.gitgle.consumer.KafkaConsumer;
 import com.gitgle.consumer.message.TalentRankMessage;
 import com.gitgle.entity.GithubUser;
 import com.gitgle.mapper.GithubUserMapper;
+import com.gitgle.result.RpcResult;
+import com.gitgle.service.GithubUserService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -31,6 +38,9 @@ public class UserTalentRankConsumer implements KafkaConsumer {
 
     @Resource
     GithubUserMapper githubUserMapper;
+
+    @DubboReference
+    GithubUserService githubUserService;
 
     @Override
     public void consumer(Properties props) {
@@ -76,12 +86,31 @@ public class UserTalentRankConsumer implements KafkaConsumer {
     }
 
     public void processMessage(String message){
+        log.info("UserTalentRankMessage::{}", message);
         TalentRankMessage talentRankMessage = JSONObject.parseObject(message, TalentRankMessage.class);
-        //异步刷新数据库
-        UpdateWrapper<GithubUser> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("login", talentRankMessage.getLogin()).set("talent_rank", talentRankMessage.getTalentRank());
-        CompletableFuture.runAsync(() -> {
-            githubUserMapper.update(null, updateWrapper);
-        });
+        String login = talentRankMessage.getLogin();
+        GithubUser githubUser = githubUserMapper.selectById(login);
+        if(githubUser == null) {
+            //插入
+            GithubUser user = new GithubUser();
+            BeanUtils.copyProperties(talentRankMessage, user);
+            //更新头像
+            RpcResult<com.gitgle.response.GithubUser> githubUserRpcResult = githubUserService.getUserByLogin(user.getLogin());
+            if(githubUserRpcResult.getCode().equals(RpcResultCode.SUCCESS)) {
+                user.setAvatar(githubUserRpcResult.getData().getAvatarUrl());
+            }
+            CompletableFuture.runAsync(() -> {
+                githubUserMapper.insert(user);
+            });
+        } else {
+            //更新Rank
+            UpdateWrapper<GithubUser> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.eq("login", talentRankMessage.getLogin()).set("talent_rank", talentRankMessage.getTalentRank());
+            CompletableFuture.runAsync(() -> {
+                githubUserMapper.update(null, updateWrapper);
+            });
+        }
+
+
     }
 }

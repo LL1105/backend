@@ -6,8 +6,10 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.fasterxml.jackson.databind.util.BeanUtil;
 import com.gitgle.consumer.KafkaConsumer;
 import com.gitgle.consumer.message.DomainMessage;
+import com.gitgle.entity.Domain;
 import com.gitgle.entity.GithubUser;
 import com.gitgle.entity.UserDomain;
+import com.gitgle.mapper.DomainMapper;
 import com.gitgle.mapper.UserDomainMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -15,6 +17,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -35,6 +38,11 @@ public class UserDomainConsumer implements KafkaConsumer {
 
     @Resource
     UserDomainMapper userDomainMapper;
+
+    @Resource
+    DomainMapper DomainMapper;
+    @Autowired
+    private DomainMapper domainMapper;
 
     @Override
     public void consumer(Properties props) {
@@ -80,12 +88,21 @@ public class UserDomainConsumer implements KafkaConsumer {
 
     }
 
-    public void processMessage(String message){
+    public void processMessage(String message) {
+        log.info("UserDomainMessage::{}", message);
         List<DomainMessage> domainMessages = JSON.parseArray(message, DomainMessage.class);
         //异步插入到数据库
         for (DomainMessage domainMessage : domainMessages) {
+            //取出DomainId
+            String domain = domainMessage.getDomain();
+            QueryWrapper<Domain> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("domain", domain);
+            Domain selectOne = domainMapper.selectOne(queryWrapper);
+            Integer domainId = selectOne.getId();
+
             UserDomain userDomain = new UserDomain();
             BeanUtils.copyProperties(domainMessage, userDomain);
+            userDomain.setDomainId(domainId);
             CompletableFuture.runAsync(() -> {
                 userDomainMapper.insert(userDomain);
             });
