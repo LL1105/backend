@@ -54,6 +54,15 @@ public class DataController {
         return Result.Success(hotRepos.getData());
     }
 
+    @GetMapping("/repo/list")
+    public Result<PageRepoResponse> getRepos(Integer page, Integer size){
+        RpcResult<PageRepoResponse> repos = githubRepoService.getReposOrderByStar(page, size);
+        if(!RpcResultCode.SUCCESS.equals(repos.getCode())){
+            return Result.Failed();
+        }
+        return Result.Success(repos.getData());
+    }
+
     @GetMapping("/hot/domain/event")
     public Result<HotDomainResponse> getHotDomainEvent(String domain){
         RpcResult<HotDomainEventResponse> hotDomainEvent = rpcDomainService.getHotDomainEvent(domain);

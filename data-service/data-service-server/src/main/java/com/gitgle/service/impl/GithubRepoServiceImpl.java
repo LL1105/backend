@@ -176,10 +176,18 @@ public class GithubRepoServiceImpl implements GithubRepoService {
             githubReposResponseRpcResult.setCode(RpcResultCode.SUCCESS);
             return githubReposResponseRpcResult;
         }
-        List<GithubRepos> githubReposList = reposService.getReposOrderByStar();
-        githubRepoRankList= githubReposList.stream().map(repos -> GithubRepoConvert.convertToRank(repos)).collect(Collectors.toList());
+        githubRepoRankList = reposService.getReposOrderByStar();
         githubRepoRankResponse.setGithubRepoRankList(githubRepoRankList);
         githubReposResponseRpcResult.setData(githubRepoRankResponse);
+        githubReposResponseRpcResult.setCode(RpcResultCode.SUCCESS);
+        return githubReposResponseRpcResult;
+    }
+
+    @Override
+    public RpcResult<PageRepoResponse> getReposOrderByStar(Integer page, Integer size) {
+        RpcResult<PageRepoResponse> githubReposResponseRpcResult = new RpcResult<>();
+        PageRepoResponse pageRepoResponse = reposService.pageRepos2GithubRepos(page, size);
+        githubReposResponseRpcResult.setData(pageRepoResponse);
         githubReposResponseRpcResult.setCode(RpcResultCode.SUCCESS);
         return githubReposResponseRpcResult;
     }

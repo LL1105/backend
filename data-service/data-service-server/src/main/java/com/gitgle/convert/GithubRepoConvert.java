@@ -7,12 +7,14 @@ import com.gitgle.response.GithubRepos;
 
 public class GithubRepoConvert {
 
-    public static GithubRepoRank convertToRank(GithubRepos githubRepos){
+    public static GithubRepoRank convert2Rank(Repos repos){
         GithubRepoRank githubRepoRank = new GithubRepoRank();
-        githubRepoRank.setRepoName(githubRepos.getRepoName());
-        githubRepoRank.setOwnerLogin(githubRepos.getOwnerLogin());
-        githubRepoRank.setOwnerAvatarUrl(githubRepos.getOwnerAvatarUrl());
-        githubRepoRank.setStarsCount(githubRepos.getStarsCount());
+        githubRepoRank.setRepoName(repos.getRepoName());
+        githubRepoRank.setOwnerLogin(repos.getOwnerlogin());
+        githubRepoRank.setOwnerAvatarUrl(repos.getOwnerAvatarUrl());
+        githubRepoRank.setStarsCount(repos.getStarsCount());
+        githubRepoRank.setForksCount(repos.getForksCount());
+        githubRepoRank.setWatchersCount(repos.getWatchersCount());
         return githubRepoRank;
     }
 

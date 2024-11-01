@@ -45,4 +45,9 @@ public interface GithubRepoService {
      * 获取热门仓库
      */
     RpcResult<GithubRepoRankResponse> getHotRepos();
+
+    /**
+     * 分页获取排序后的仓库
+     */
+    RpcResult<PageRepoResponse> getReposOrderByStar(Integer page, Integer size);
 }

@@ -5,15 +5,15 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gitgle.convert.GithubRepoConvert;
 import com.gitgle.dao.Repos;
+import com.gitgle.response.GithubRepoRank;
 import com.gitgle.response.GithubRepos;
-import com.gitgle.response.GithubReposContent;
+import com.gitgle.response.PageRepoResponse;
 import com.gitgle.service.ReposService;
 import com.gitgle.mapper.ReposMapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -73,12 +73,26 @@ public class ReposServiceImpl implements ReposService{
     }
 
     @Override
-    public List<GithubRepos> getReposOrderByStar() {
+    public List<GithubRepoRank> getReposOrderByStar() {
         Page<Repos> page = new Page<>(1, 100);
         Page<Repos> reposPage = reposMapper.selectPage(page, Wrappers.lambdaQuery(Repos.class).orderBy(true, false, Repos::getStarsCount));
         return reposPage.getRecords().stream().map(repo -> {
-            return GithubRepoConvert.convert(repo);
+            return GithubRepoConvert.convert2Rank(repo);
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public PageRepoResponse pageRepos2GithubRepos(Integer page, Integer size) {
+        PageRepoResponse pageRepoResponse = new PageRepoResponse();
+        Page<Repos> pageN = new Page<>(page, size);
+        Page<Repos> reposPage = reposMapper.selectPage(pageN, Wrappers.lambdaQuery(Repos.class).orderBy(true, false, Repos::getStarsCount));
+        pageRepoResponse.setTotalPage(reposPage.getPages());
+        pageRepoResponse.setPageSize(size);
+        pageRepoResponse.setPage(page);
+        pageRepoResponse.setGithubReposList(reposPage.getRecords().stream().map(repo -> {
+            return GithubRepoConvert.convert2Rank(repo);
+        }).collect(Collectors.toList()));
+        return pageRepoResponse;
     }
 }
 

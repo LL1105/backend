@@ -14,4 +14,8 @@ public class GithubRepoRank implements Serializable {
     private String ownerAvatarUrl;
 
     private Integer starsCount;
+
+    private Integer forksCount;
+
+    private Integer watchersCount;
 }

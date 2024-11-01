@@ -2,7 +2,9 @@ package com.gitgle.service;
 
 import com.gitgle.dao.Repos;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.gitgle.response.GithubRepoRank;
 import com.gitgle.response.GithubRepos;
+import com.gitgle.response.PageRepoResponse;
 
 import java.util.List;
 
@@ -17,5 +19,7 @@ public interface ReposService{
 
     GithubRepos readRepos2GithubRepos(String owner, String repoName);
 
-    List<GithubRepos> getReposOrderByStar();
+    List<GithubRepoRank> getReposOrderByStar();
+
+    PageRepoResponse pageRepos2GithubRepos(Integer page, Integer size);
 }
