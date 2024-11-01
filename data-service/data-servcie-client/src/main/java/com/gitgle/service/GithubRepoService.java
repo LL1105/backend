@@ -44,5 +44,5 @@ public interface GithubRepoService {
     /**
      * 获取热门仓库
      */
-    RpcResult<GithubReposResponse> getHotRepos();
+    RpcResult<GithubRepoRankResponse> getHotRepos();
 }

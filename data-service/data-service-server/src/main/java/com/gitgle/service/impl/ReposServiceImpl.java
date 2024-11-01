@@ -41,6 +41,7 @@ public class ReposServiceImpl implements ReposService{
             repo.setDescription(githubRepos.getDescription());
             repo.setRepoId(githubRepos.getId());
             repo.setUrl(githubRepos.getUrl());
+            repo.setOwnerAvatarUrl(githubRepos.getOwnerAvatarUrl());
             return;
         }
         repo = new Repos();
@@ -58,6 +59,7 @@ public class ReposServiceImpl implements ReposService{
         repo.setDescription(githubRepos.getDescription());
         repo.setRepoId(githubRepos.getId());
         repo.setUrl(githubRepos.getUrl());
+        repo.setOwnerAvatarUrl(githubRepos.getOwnerAvatarUrl());
         reposMapper.insert(repo);
     }
 
