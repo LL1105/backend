@@ -2,9 +2,19 @@ package com.gitgle.convert;
 
 import com.alibaba.fastjson.JSONObject;
 import com.gitgle.dao.Repos;
+import com.gitgle.response.GithubRepoRank;
 import com.gitgle.response.GithubRepos;
 
 public class GithubRepoConvert {
+
+    public static GithubRepoRank convertToRank(GithubRepos githubRepos){
+        GithubRepoRank githubRepoRank = new GithubRepoRank();
+        githubRepoRank.setRepoName(githubRepos.getRepoName());
+        githubRepoRank.setOwnerLogin(githubRepos.getOwnerLogin());
+        githubRepoRank.setOwnerAvatarUrl(githubRepos.getOwnerAvatarUrl());
+        githubRepoRank.setStarsCount(githubRepos.getStarsCount());
+        return githubRepoRank;
+    }
 
     public static GithubRepos convert(JSONObject responseBody){
         GithubRepos githubRepos = new GithubRepos();
@@ -20,6 +30,7 @@ public class GithubRepoConvert {
         githubRepos.setUpdateAt(responseBody.getString("updated_at"));
         githubRepos.setOrPrivate(responseBody.getBoolean("private"));
         githubRepos.setUrl(responseBody.getString("html_url"));
+        githubRepos.setOwnerAvatarUrl(responseBody.getJSONObject("owner").getString("avatar_url"));
         return githubRepos;
     }
 
@@ -37,6 +48,7 @@ public class GithubRepoConvert {
         githubRepos.setIssueCount(repo.getIssueCount());
         githubRepos.setDescription(repo.getDescription());
         githubRepos.setUrl(repo.getUrl());
+        githubRepos.setOwnerAvatarUrl(repo.getOwnerAvatarUrl());
         return githubRepos;
     }
 }

@@ -20,6 +20,7 @@
             <result property="repoId" column="repo_id" jdbcType="INTEGER"/>
             <result property="description" column="description" jdbcType="VARCHAR"/>
             <result property="url" column="url" jdbcType="VARCHAR"/>
+            <result property="ownerAvatarUrl" column="owner_avatar_url" jdbcType="VARCHAR"/>
     </resultMap>
 
     <sql id="Base_Column_List">
@@ -27,6 +28,7 @@
         repo_name,or_private,ownerLogin,
         stars_count,forks_count,issue_count,
         create_at,update_at,watchers_count,
-        repo_id,description,url
+        repo_id,description,url,
+        owner_avatar_url
     </sql>
 </mapper>

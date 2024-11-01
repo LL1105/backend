@@ -2,8 +2,10 @@ package com.gitgle.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
+import com.gitgle.constant.RedisConstant;
 import com.gitgle.constant.RpcResultCode;
 import com.gitgle.convert.GithubRepoContentConvert;
+import com.gitgle.convert.GithubRepoConvert;
 import com.gitgle.request.GithubRequest;
 import com.gitgle.response.*;
 import com.gitgle.result.RpcResult;
@@ -14,6 +16,7 @@ import com.gitgle.service.ReposService;
 import com.gitgle.utils.GithubApiRequestUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -21,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @DubboService
 @Slf4j
@@ -37,6 +41,9 @@ public class GithubRepoServiceImpl implements GithubRepoService {
 
     @Resource
     private RepoContentService repoContentService;
+
+    @Resource
+    private RedisTemplate redisTemplate;
 
     @Override
     public RpcResult<GithubRepos> getRepoByOwnerAndRepoName(String developerId, String repoName) {
@@ -159,12 +166,20 @@ public class GithubRepoServiceImpl implements GithubRepoService {
     }
 
     @Override
-    public RpcResult<GithubReposResponse> getHotRepos() {
-        RpcResult<GithubReposResponse> githubReposResponseRpcResult = new RpcResult<>();
-        GithubReposResponse githubReposResponse = new GithubReposResponse();
+    public RpcResult<GithubRepoRankResponse> getHotRepos() {
+        RpcResult<GithubRepoRankResponse> githubReposResponseRpcResult = new RpcResult<>();
+        GithubRepoRankResponse githubRepoRankResponse = new GithubRepoRankResponse();
+        List<GithubRepoRank> githubRepoRankList = redisTemplate.opsForList().range(RedisConstant.GITHUB_REPO_RANK, 0, 50);
+        if(ObjectUtils.isNotEmpty(githubRepoRankList)){
+            githubRepoRankResponse.setGithubRepoRankList(githubRepoRankList);
+            githubReposResponseRpcResult.setData(githubRepoRankResponse);
+            githubReposResponseRpcResult.setCode(RpcResultCode.SUCCESS);
+            return githubReposResponseRpcResult;
+        }
         List<GithubRepos> githubReposList = reposService.getReposOrderByStar();
-        githubReposResponse.setGithubProjectList(githubReposList);
-        githubReposResponseRpcResult.setData(githubReposResponse);
+        githubRepoRankList= githubReposList.stream().map(repos -> GithubRepoConvert.convertToRank(repos)).collect(Collectors.toList());
+        githubRepoRankResponse.setGithubRepoRankList(githubRepoRankList);
+        githubReposResponseRpcResult.setData(githubRepoRankResponse);
         githubReposResponseRpcResult.setCode(RpcResultCode.SUCCESS);
         return githubReposResponseRpcResult;
     }

@@ -13,4 +13,6 @@ public class RedisConstant {
     public static String GITHUB_COMMIT_TOTAL = "github:commit:total";
 
     public static String GITHUB_CODE_TOTAL = "github:code:total";
+
+    public static String GITHUB_REPO_RANK = "github:repo:rank";
 }

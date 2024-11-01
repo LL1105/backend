@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/data")
 public class DataController {
@@ -44,8 +46,8 @@ public class DataController {
     }
 
     @GetMapping("/hot/repo")
-    public Result<GithubReposResponse> getHotRepo(){
-        RpcResult<GithubReposResponse> hotRepos = githubRepoService.getHotRepos();
+    public Result<List<GithubRepoRank>> getHotRepo(){
+        RpcResult<GithubRepoRankResponse> hotRepos = githubRepoService.getHotRepos();
         if(!RpcResultCode.SUCCESS.equals(hotRepos.getCode())){
             return Result.Failed();
         }
