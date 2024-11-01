@@ -29,9 +29,9 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class UserDomainConsumer implements KafkaConsumer {
 
-    private static final String TOPIC = "UserNation";
+    private static final String TOPIC = "UserDomain";
 
-    private static final String GROUP_ID = "UserNation";
+    private static final String GROUP_ID = "UserDomain";
 
     @Resource
     UserDomainMapper userDomainMapper;
