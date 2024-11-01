@@ -191,4 +191,13 @@ public class GithubRepoServiceImpl implements GithubRepoService {
         githubReposResponseRpcResult.setCode(RpcResultCode.SUCCESS);
         return githubReposResponseRpcResult;
     }
+
+    @Override
+    public RpcResult<GithubRepos> getRepoById(Integer repoId) {
+        RpcResult<GithubRepos> githubReposRpcResult = new RpcResult<>();
+        GithubRepos githubRepos = reposService.getRepoByRepoId(repoId);
+        githubReposRpcResult.setCode(RpcResultCode.SUCCESS);
+        githubReposRpcResult.setData(githubRepos);
+        return githubReposRpcResult;
+    }
 }

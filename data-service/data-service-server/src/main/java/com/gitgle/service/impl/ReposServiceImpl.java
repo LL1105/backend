@@ -94,6 +94,15 @@ public class ReposServiceImpl implements ReposService{
         }).collect(Collectors.toList()));
         return pageRepoResponse;
     }
+
+    @Override
+    public GithubRepos getRepoByRepoId(Integer repoId) {
+        Repos repos = reposMapper.selectOne(Wrappers.lambdaQuery(Repos.class).eq(Repos::getRepoId, repoId));
+        if(ObjectUtils.isNotEmpty(repos)){
+            return GithubRepoConvert.convert(repos);
+        }
+        return null;
+    }
 }
 
 

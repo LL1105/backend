@@ -22,4 +22,6 @@ public interface ReposService{
     List<GithubRepoRank> getReposOrderByStar();
 
     PageRepoResponse pageRepos2GithubRepos(Integer page, Integer size);
+
+    GithubRepos getRepoByRepoId(Integer repoId);
 }
