@@ -135,7 +135,7 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
         try {
             // 先查库，如果用户信息不全，再从github上搜索
             GithubUser githubUser = userService.readGithubUser2GithubUser(login);
-            if(ObjectUtils.isNotEmpty(githubUser) && StringUtils.isNotEmpty(githubUser.getLocation())){
+            if(ObjectUtils.isNotEmpty(githubUser)){
                 githubUserRpcResult.setData(githubUser);
                 githubUserRpcResult.setCode(RpcResultCode.SUCCESS);
                 return githubUserRpcResult;
