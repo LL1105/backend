@@ -38,9 +38,6 @@ public class RefreshRepoJob {
     private ContributorService contributorService;
 
     @Resource
-    private UserService userService;
-
-    @Resource
     private ReposService reposService;
 
     @Resource
@@ -93,6 +90,9 @@ public class RefreshRepoJob {
                             githubRepoRank.setStarsCount(githubRepos.getStarsCount());
                             githubRepoRank.setOwnerLogin(githubRepos.getOwnerLogin());
                             githubRepoRank.setOwnerAvatarUrl(githubRepos.getOwnerAvatarUrl());
+                            githubRepoRank.setRepoId(githubRepos.getId());
+                            githubRepoRank.setWatchersCount(githubRepos.getWatchersCount());
+                            githubRepoRank.setForksCount(githubRepos.getForksCount());
                             redisTemplate.opsForList().rightPush(RedisConstant.GITHUB_REPO_RANK, githubRepoRank);
                             redisTemplate.expire(RedisConstant.GITHUB_REPO_RANK, 7, TimeUnit.DAYS);
                         }
