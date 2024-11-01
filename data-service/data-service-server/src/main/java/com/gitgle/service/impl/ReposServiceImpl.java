@@ -3,6 +3,7 @@ package com.gitgle.service.impl;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.gitgle.constant.RedisConstant;
 import com.gitgle.convert.GithubRepoConvert;
 import com.gitgle.dao.Repos;
 import com.gitgle.response.GithubRepoRank;
@@ -10,57 +11,57 @@ import com.gitgle.response.GithubRepos;
 import com.gitgle.response.PageRepoResponse;
 import com.gitgle.service.ReposService;
 import com.gitgle.mapper.ReposMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class ReposServiceImpl implements ReposService{
 
     @Resource
     private ReposMapper reposMapper;
 
+    @Resource
+    private RedissonClient redissonClient;
 
     @Override
     public void writeGithubRepos2Repos(GithubRepos githubRepos) {
-        Repos repo = reposMapper.selectOne(Wrappers.lambdaQuery(Repos.class).eq(Repos::getRepoName, githubRepos.getRepoName()).eq(Repos::getOwnerlogin, githubRepos.getOwnerLogin()));
-        if(ObjectUtils.isNotEmpty(repo)){
-            // 更新
-            repo.setUpdateTime(LocalDateTime.now());
-            repo.setWatchersCount(githubRepos.getWatchersCount());
-            repo.setRepoName(githubRepos.getRepoName());
-            repo.setOrPrivate(githubRepos.getOrPrivate());
-            repo.setCreateAt(githubRepos.getCreatedAt());
-            repo.setUpdateAt(githubRepos.getUpdateAt());
-            repo.setStarsCount(githubRepos.getStarsCount());
-            repo.setForksCount(githubRepos.getForksCount());
-            repo.setIssueCount(githubRepos.getIssueCount());
-            repo.setDescription(githubRepos.getDescription());
-            repo.setRepoId(githubRepos.getId());
-            repo.setUrl(githubRepos.getUrl());
-            repo.setOwnerAvatarUrl(githubRepos.getOwnerAvatarUrl());
-            return;
+        RLock lock = redissonClient.getLock(RedisConstant.GITHUB_REPO_LOCK + githubRepos.getRepoName() + ":" + githubRepos.getOwnerLogin());
+        try {
+            lock.lock(5, TimeUnit.SECONDS);
+            Repos repo = reposMapper.selectOne(Wrappers.lambdaQuery(Repos.class).eq(Repos::getRepoName, githubRepos.getRepoName()).eq(Repos::getOwnerlogin, githubRepos.getOwnerLogin()));
+            if (ObjectUtils.isNotEmpty(repo)) {
+                // 更新
+                repo.setUpdateTime(LocalDateTime.now());
+                repo.setWatchersCount(githubRepos.getWatchersCount());
+                repo.setRepoName(githubRepos.getRepoName());
+                repo.setOrPrivate(githubRepos.getOrPrivate());
+                repo.setCreateAt(githubRepos.getCreatedAt());
+                repo.setUpdateAt(githubRepos.getUpdateAt());
+                repo.setStarsCount(githubRepos.getStarsCount());
+                repo.setForksCount(githubRepos.getForksCount());
+                repo.setIssueCount(githubRepos.getIssueCount());
+                repo.setDescription(githubRepos.getDescription());
+                repo.setRepoId(githubRepos.getId());
+                repo.setUrl(githubRepos.getUrl());
+                repo.setOwnerAvatarUrl(githubRepos.getOwnerAvatarUrl());
+                return;
+            }
+            repo = GithubRepoConvert.convert2Repos(githubRepos);
+            reposMapper.insert(repo);
+        }catch (Exception e){
+            log.error("write github repos error: {}", e.getMessage());
+        }finally {
+            lock.unlock();
         }
-        repo = new Repos();
-        repo.setCreateTime(LocalDateTime.now());
-        repo.setUpdateTime(LocalDateTime.now());
-        repo.setOwnerlogin(githubRepos.getOwnerLogin());
-        repo.setWatchersCount(githubRepos.getWatchersCount());
-        repo.setRepoName(githubRepos.getRepoName());
-        repo.setOrPrivate(githubRepos.getOrPrivate());
-        repo.setCreateAt(githubRepos.getCreatedAt());
-        repo.setUpdateAt(githubRepos.getUpdateAt());
-        repo.setStarsCount(githubRepos.getStarsCount());
-        repo.setForksCount(githubRepos.getForksCount());
-        repo.setIssueCount(githubRepos.getIssueCount());
-        repo.setDescription(githubRepos.getDescription());
-        repo.setRepoId(githubRepos.getId());
-        repo.setUrl(githubRepos.getUrl());
-        repo.setOwnerAvatarUrl(githubRepos.getOwnerAvatarUrl());
-        reposMapper.insert(repo);
     }
 
     @Override
