@@ -14,4 +14,5 @@ public class NationMessage implements Serializable {
     private String nationEnglish;
 
     private Double confidence;
+
 }

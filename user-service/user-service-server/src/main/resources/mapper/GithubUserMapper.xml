@@ -5,40 +5,40 @@
 <mapper namespace="com.gitgle.mapper.GithubUserMapper">
 
 
-    <select id="searchByCondition" resultType="com.gitgle.service.resp.SearchResp">
+    <select id="searchByCondition" resultType="com.gitgle.service.resp.SearchUser">
 
         SELECT DISTINCT github_user.login, avatar, talent_rank from github_user
         LEFT JOIN user_domain on github_user.login=user_domain.login
         LEFT JOIN domain on domain.id = user_domain.domain_id
         <where>
+            <if test="req.domain != null and req.domain != ''">
+                AND domain = #{req.domain}
+            </if>
+            <if test="req.login != null and req.login != ''">
+                AND github_user.login like concat('%', #{req.login}, '%')
+            </if>
+            <if test="req.nation != null and req.nation != ''">
+                AND nation like concat('%', #{req.nation}, '%')
+            </if>
+        </where>
+        ORDER BY talent_rank desc
+            LIMIT #{current}, #{size}
+
+    </select>
+    <select id="searchCount" resultType="java.lang.Integer">
+        SELECT COUNT(*) from github_user
+        LEFT JOIN user_domain on github_user.login=user_domain.login
+        LEFT JOIN domain on domain.id = user_domain.domain_id
+        <where>
             <if test="domain != null and domain != ''">
-                AND domain_id = #{domain}
+                AND domain = #{domain}
             </if>
             <if test="login != null and login != ''">
                 AND github_user.login like concat('%', #{login}, '%')
             </if>
-            <if test="nationId != null and nationId != ''">
-                AND nation_id = #{nationId}
+            <if test="nation != null and nation != ''">
+                AND nation like concat('%', #{nation}, '%')
             </if>
         </where>
-
-
-<!--        SELECT user.id as userId, username, nation, domain, talent_rank, github_id-->
-<!--        FROM user-->
-<!--        INNER JOIN domain ON user.domain_id = domain.id-->
-<!--        INNER JOIN nation ON user.nation_id = nation.id    -->
-<!--        <where>-->
-<!--            <if test="req.domainId != null and req.domainId != ''">-->
-<!--                AND user.domain_id = #{req.domainId}-->
-<!--            </if>-->
-<!--            <if test="req.nationId != null and req.nationId != ''" >-->
-<!--                AND user.nation_id = #{req.nationId}-->
-<!--            </if>-->
-<!--            <if test="req.username != null and req.username !=''">-->
-<!--                AND user.username like concat('%', #{req.username},'%')-->
-<!--            </if>-->
-<!--        </where>-->
-<!--        <if test="current != null and size != null and current !='' and size != ''">-->
-<!--        LIMIT #{current}, #{size}-->
     </select>
 </mapper>

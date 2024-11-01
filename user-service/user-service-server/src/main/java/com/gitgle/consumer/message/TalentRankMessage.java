@@ -10,6 +10,6 @@ public class TalentRankMessage implements Serializable {
 
     private String login;
 
-    private BigDecimal talentRank;
+    private Double talentRank;
 
 }

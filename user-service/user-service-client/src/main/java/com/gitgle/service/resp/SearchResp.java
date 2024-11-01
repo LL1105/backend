@@ -1,15 +1,20 @@
 package com.gitgle.service.resp;
 
+import com.gitgle.response.GithubRepoRank;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 public class SearchResp implements Serializable {
 
-    private String login;
+    private Long totalPage;
 
-    private String avatar;
+    private Integer page;
 
-    private String talentRank;
+    private Integer pageSize;
+
+    private List<SearchUser> searchUsers;
+
 }

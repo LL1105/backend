@@ -14,8 +14,4 @@ public class ChangeUserInfoReq implements Serializable {
 
     private String email;
 
-    private String oldPassword;
-
-    private String newPassword;
-
 }

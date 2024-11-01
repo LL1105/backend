@@ -9,7 +9,7 @@ public class SearchReq implements Serializable {
 
     private String domain;
 
-    private Integer nationId;
+    private String nation;
 
     private String login;
 

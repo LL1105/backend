@@ -46,13 +46,14 @@ dubbo:
     group: ${server.group}
   consumer:
     group: ${server.group}
+    timeout: 10000
   registry:
     address: nacos://121.36.79.38:8848
     register-mode: all
     group: ${server.group}
   protocol:
     name: dubbo
-    port: -1
+    port: 51010
   application:
     name: ${spring.application.name}
     logger: slf4j
