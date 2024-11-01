@@ -1,5 +1,6 @@
 package com.gitgle.job;
 
+import com.alibaba.fastjson.JSON;
 import com.gitgle.constant.RedisConstant;
 import com.gitgle.produce.KafkaProducer;
 import com.gitgle.response.GithubUser;
@@ -61,6 +62,9 @@ public class RefreshUserJob {
                     GithubUser githubUser = githubApiRequestUtils.getUserByAccountId(githubAccountId);
                     // 如果数据没有更新，不入库，不发消息
                     GithubUser user = userService.readGithubUser2GithubUser(githubUser.getLogin());
+                    if(Objects.isNull(user)){
+                        kafkaProducer.sendMessage(githubUser.getLogin(), "Domain");
+                    }
                     if (!githubUser.equals(user)) {
                         final GithubUser finalGithubUser = githubUser;
                         // 异步入库
