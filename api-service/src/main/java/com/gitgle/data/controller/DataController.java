@@ -46,7 +46,7 @@ public class DataController {
     }
 
     @GetMapping("/hot/repo")
-    public Result<List<GithubRepoRank>> getHotRepo(){
+    public Result<GithubRepoRankResponse> getHotRepo(){
         RpcResult<GithubRepoRankResponse> hotRepos = githubRepoService.getHotRepos();
         if(!RpcResultCode.SUCCESS.equals(hotRepos.getCode())){
             return Result.Failed();
