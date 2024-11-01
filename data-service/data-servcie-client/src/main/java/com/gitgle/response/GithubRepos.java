@@ -67,4 +67,14 @@ public class GithubRepos implements Serializable {
      * 更新时间
      */
     private String updateAt;
+
+    /**
+     * 仓库地址
+     */
+    private String url;
+
+    /**
+     * 仓库拥有者头像
+     */
+    private String ownerAvatarUrl;
 }

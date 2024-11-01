@@ -15,7 +15,7 @@ spring:
       discovery:
         enabled: false
   redis:
-    host: nacos://49.232.232.203
+    host: 49.232.232.203
     password: gitgle_1024
     port: 6379
 
@@ -51,5 +51,6 @@ xxl:
     executor:
       logretentiondays: 7
       port: 9081
+      ip: 49.232.232.203
       logpath: ./log
       appname: ${spring.application.name}

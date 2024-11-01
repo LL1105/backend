@@ -64,9 +64,6 @@ public class TalentRankConsumer implements KafkaConsumer {
                 } catch (WakeupException e) {
                     log.info("Consumer wakeup triggered.");
                     break; // 退出循环
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt(); // 重新设置中断标志
-                    log.error("Thread was interrupted: {}", e);
                 } catch (Exception e) {
                     log.error("Consumer encountered an error: {}", e);
                 }

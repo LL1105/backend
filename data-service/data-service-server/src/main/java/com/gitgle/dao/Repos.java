@@ -86,6 +86,16 @@ public class Repos implements Serializable {
      */
     private String description;
 
+    /**
+     * 
+     */
+    private String url;
+
+    /**
+     * 
+     */
+    private String ownerAvatarUrl;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }
