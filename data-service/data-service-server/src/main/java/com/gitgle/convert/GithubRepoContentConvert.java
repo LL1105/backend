@@ -16,9 +16,13 @@ public class GithubRepoContentConvert {
         githubReposContent.setEncoding(responseBody.getString("encoding"));
         githubReposContent.setSize(responseBody.getInteger("size"));
         byte[] decodedBytes = Base64.decodeBase64(responseBody.getString("content"));
+        String content = new String(decodedBytes);
+        if(content.length() > 1000){
+            content = content.substring(0, 1000);
+        }
         githubReposContent.setRepoName(githubRequest.getRepoName());
         githubReposContent.setRepoOwner(githubRequest.getOwner());
-        githubReposContent.setContent(new String(decodedBytes));
+        githubReposContent.setContent(content);
         return githubReposContent;
     }
 }
