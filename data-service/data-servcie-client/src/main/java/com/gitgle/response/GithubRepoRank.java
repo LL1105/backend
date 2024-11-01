@@ -7,6 +7,8 @@ import java.io.Serializable;
 @Data
 public class GithubRepoRank implements Serializable {
 
+    private Integer repoId;
+
     private String repoName;
 
     private String ownerLogin;

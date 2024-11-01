@@ -15,6 +15,7 @@ public class GithubRepoConvert {
         githubRepoRank.setStarsCount(repos.getStarsCount());
         githubRepoRank.setForksCount(repos.getForksCount());
         githubRepoRank.setWatchersCount(repos.getWatchersCount());
+        githubRepoRank.setRepoId(repos.getRepoId());
         return githubRepoRank;
     }
 
