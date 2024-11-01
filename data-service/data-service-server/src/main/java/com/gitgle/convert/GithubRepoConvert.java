@@ -5,6 +5,8 @@ import com.gitgle.dao.Repos;
 import com.gitgle.response.GithubRepoRank;
 import com.gitgle.response.GithubRepos;
 
+import java.time.LocalDateTime;
+
 public class GithubRepoConvert {
 
     public static GithubRepoRank convert2Rank(Repos repos){
@@ -53,5 +55,25 @@ public class GithubRepoConvert {
         githubRepos.setUrl(repo.getUrl());
         githubRepos.setOwnerAvatarUrl(repo.getOwnerAvatarUrl());
         return githubRepos;
+    }
+
+    public static Repos convert2Repos(GithubRepos githubRepos){
+        Repos repo = new Repos();
+        repo.setCreateTime(LocalDateTime.now());
+        repo.setUpdateTime(LocalDateTime.now());
+        repo.setOwnerlogin(githubRepos.getOwnerLogin());
+        repo.setWatchersCount(githubRepos.getWatchersCount());
+        repo.setRepoName(githubRepos.getRepoName());
+        repo.setOrPrivate(githubRepos.getOrPrivate());
+        repo.setCreateAt(githubRepos.getCreatedAt());
+        repo.setUpdateAt(githubRepos.getUpdateAt());
+        repo.setStarsCount(githubRepos.getStarsCount());
+        repo.setForksCount(githubRepos.getForksCount());
+        repo.setIssueCount(githubRepos.getIssueCount());
+        repo.setDescription(githubRepos.getDescription());
+        repo.setRepoId(githubRepos.getId());
+        repo.setUrl(githubRepos.getUrl());
+        repo.setOwnerAvatarUrl(githubRepos.getOwnerAvatarUrl());
+        return repo;
     }
 }

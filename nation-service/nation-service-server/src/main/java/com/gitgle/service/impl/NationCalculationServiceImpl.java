@@ -18,8 +18,10 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
@@ -38,7 +40,7 @@ public class NationCalculationServiceImpl implements NationCalculationService {
     public NationResponse calculateNation(String login) {
         NationResponse nationResponse = new NationResponse();
         try {
-            Set<String> relationshipLocationSet = Collections.synchronizedSet(new HashSet<>());
+            Map<String, Integer> relationshipLocationSet = new ConcurrentHashMap<>();
             // 异步并行获取关注列表
             CompletableFuture<Void> followerFuture = CompletableFuture
                     .runAsync(() -> fetchLocationDataFromFollowing(login, relationshipLocationSet))
@@ -77,7 +79,7 @@ public class NationCalculationServiceImpl implements NationCalculationService {
         }
     }
 
-    private void fetchLocationDataFromFollowing(String login, Set<String> locationSet) {
+    private void fetchLocationDataFromFollowing(String login, Map<String, Integer> locationSet) {
         RpcResult<GithubFollowingResponse> followingResponse = githubFollowingService.listUserFollowingByDeveloperId(login);
         if (!RpcResultCode.SUCCESS.equals(followingResponse.getCode())) {
             throw new RuntimeException("获取用户关注列表失败");
@@ -87,7 +89,7 @@ public class NationCalculationServiceImpl implements NationCalculationService {
         }
     }
 
-    private void fetchLocationDataFromFollowers(String login, Set<String> locationSet) {
+    private void fetchLocationDataFromFollowers(String login, Map<String, Integer> locationSet) {
         RpcResult<GithubFollowersResponse> followersResponse = githubFollowingService.getFollowersByDeveloperId(login);
         if (!RpcResultCode.SUCCESS.equals(followersResponse.getCode())) {
             throw new RuntimeException("获取开发者粉丝列表失败");
@@ -97,12 +99,12 @@ public class NationCalculationServiceImpl implements NationCalculationService {
         }
     }
 
-    private void addLocationToSet(String login, Set<String> locationSet) {
+    private void addLocationToSet(String login, Map<String, Integer> locationSet) {
         RpcResult<GithubUser> userResult = githubUserService.getUserByLogin(login);
         if (RpcResultCode.SUCCESS.equals(userResult.getCode())) {
             GithubUser githubUser = userResult.getData();
             if (StringUtils.isNotEmpty(githubUser.getLocation())) {
-                locationSet.add(githubUser.getLocation());
+                locationSet.compute(githubUser.getLocation(), (k, v) -> v == null ? 1 : v + 1);
             }
         }
     }
