@@ -8,6 +8,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -18,6 +19,7 @@ import java.util.concurrent.Future;
 
 @Component
 @Slf4j
+@Order(1)
 public class KafkaProducer implements CommandLineRunner {
 
     @Resource

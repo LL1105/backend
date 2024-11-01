@@ -6,6 +6,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Properties;
 
 @Component
+@Order(2)
 public class KafkaConsumerStater implements CommandLineRunner {
 
     @Resource
