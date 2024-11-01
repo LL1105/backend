@@ -54,8 +54,10 @@ public class RefreshRepoJob {
             starsUpperLimit = Integer.valueOf(params[1]);
         }
         Integer starsFloorLimit = Integer.valueOf(params[0]);
-        redisTemplate.delete(RedisConstant.GITHUB_ACCOUNT_ID);
-        redisTemplate.expire(RedisConstant.GITHUB_ACCOUNT_ID, 7, TimeUnit.DAYS);
+        if(redisTemplate.hasKey(RedisConstant.GITHUB_REPO_RANK)){
+            redisTemplate.delete(RedisConstant.GITHUB_REPO_RANK);
+        }
+        redisTemplate.expire(RedisConstant.GITHUB_REPO_RANK, 7, TimeUnit.DAYS);
         Integer page = 1;
         while (true) {
             Map<String, String> searchParams = new HashMap<>();

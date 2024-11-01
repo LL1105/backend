@@ -96,7 +96,9 @@ public class RefreshUserJob {
         log.info("执行刷新热门AccountId任务...");
         String param = XxlJobHelper.getJobParam();
         Integer hotFollowersCount = Integer.valueOf(param);
-        redisTemplate.delete(RedisConstant.GITHUB_ACCOUNT_ID);
+        if(redisTemplate.hasKey(RedisConstant.GITHUB_ACCOUNT_ID)){
+            redisTemplate.delete(RedisConstant.GITHUB_ACCOUNT_ID);
+        }
         redisTemplate.expire(RedisConstant.GITHUB_ACCOUNT_ID, 7, TimeUnit.DAYS);
         Integer page = 1;
         while (true) {
