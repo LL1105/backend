@@ -9,5 +9,5 @@ public class HotDomain implements Serializable {
 
     private String domain;
 
-    private Integer developerTotal;
+    private Long developerTotal;
 }

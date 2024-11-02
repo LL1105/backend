@@ -30,5 +30,6 @@ public class ThreadPoolConfig {
         executor.setThreadNamePrefix("refresh-commit-");
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        return executor;
     }
 }
