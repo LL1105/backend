@@ -54,14 +54,14 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
             CompletableFuture.runAsync(()-> {
                 userService.writeGithubUser2User(githubUserResponse.getGithubUserList());
             }).exceptionally(ex -> {
-                log.error("Github SearchUsers Exception: {}", ex);
+                log.error("Github SearchUsers Exception: {}", ex.getMessage());
                 return null;
             });
             githubUserRpcResult.setData(githubUserResponse);
             githubUserRpcResult.setCode(RpcResultCode.SUCCESS);
             return githubUserRpcResult;
         } catch (IOException e) {
-            log.error("Github SearchUsers Exception: {}", e);
+            log.error("Github SearchUsers Exception: {}", e.getMessage());
             githubUserRpcResult.setCode(RpcResultCode.FAILED);
             return githubUserRpcResult;
         }
@@ -109,7 +109,7 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
                     CompletableFuture.runAsync(()-> {
                         organizationService.writeGithubOrganization2Organization(githubOrganization);
                     }).exceptionally(ex -> {
-                        log.error("Github Follower Write Exception: {}", ex);
+                        log.error("Github Follower Write Exception: {}", ex.getMessage());
                         return null;
                     });
                 }
@@ -123,7 +123,7 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
             githubOrganizationResponseRpcResult.setData(githubOrganizationResponse);
             return githubOrganizationResponseRpcResult;
         } catch (IOException e) {
-            log.info("Github GetFollowers Exception: {}", e);
+            log.info("Github GetFollowers Exception: {}", e.getMessage());
             githubOrganizationResponseRpcResult.setCode(RpcResultCode.FAILED);
             return githubOrganizationResponseRpcResult;
         }
@@ -147,14 +147,14 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
             CompletableFuture.runAsync(()->{
                 userService.writeGithubUser2User(githubUserList);
             }).exceptionally(ex -> {
-                log.error("Github User Write Exception: {}", ex);
+                log.error("Github User Write Exception: {}", ex.getMessage());
                 return null;
             });
             githubUserRpcResult.setData(githubUser);
             githubUserRpcResult.setCode(RpcResultCode.SUCCESS);
             return githubUserRpcResult;
         }catch (IOException e){
-            log.error("Github GetUserByAccountId Exception: {}", e);
+            log.error("Github GetUserByUsername Exception: {}", e.getMessage());
             githubUserRpcResult.setCode(RpcResultCode.FAILED);
             return githubUserRpcResult;
         }

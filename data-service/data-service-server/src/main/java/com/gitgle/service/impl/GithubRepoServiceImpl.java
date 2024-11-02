@@ -62,14 +62,14 @@ public class GithubRepoServiceImpl implements GithubRepoService {
             CompletableFuture.runAsync(()->{
                 reposService.writeGithubRepos2Repos(finalGithubRepos);
             }).exceptionally(ex -> {
-                log.error("Github Write Exception: {}", ex);
+                log.error("Github Write Exception: {}", ex.getMessage());
                 return null;
             });
             githubReposRpcResult.setData(githubRepos);
             githubReposRpcResult.setCode(RpcResultCode.SUCCESS);
             return githubReposRpcResult;
         } catch (IOException e) {
-            log.error("Github getRepo Exception: {}", e);
+            log.error("Github getRepo Exception: {}", e.getMessage());
             githubReposRpcResult.setCode(RpcResultCode.FAILED);
             return githubReposRpcResult;
         }
@@ -93,14 +93,14 @@ public class GithubRepoServiceImpl implements GithubRepoService {
             CompletableFuture.runAsync(()->{
                 repoContentService.writeGithubReposContent2RepoContent(finalGithubReposContent);
             }).exceptionally(ex -> {
-                log.error("Github Write Exception: {}", ex);
+                log.error("Github Write Exception: {}", ex.getMessage());
                 return null;
             });
             githubReposContentRpcResult.setData(githubReposContent);
             githubReposContentRpcResult.setCode(RpcResultCode.SUCCESS);
             return githubReposContentRpcResult;
         } catch (IOException e) {
-            log.error("Github GetRepoContent Exception: {}", e);
+            log.error("Github GetRepoContent Exception: {}", e.getMessage());
             githubReposContentRpcResult.setCode(RpcResultCode.FAILED);
             return githubReposContentRpcResult;
         }
