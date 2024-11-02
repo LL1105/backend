@@ -3,6 +3,7 @@ package com.gitgle.consumer.impl;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.fasterxml.jackson.databind.util.BeanUtil;
 import com.gitgle.constant.RedisConstant;
 import com.gitgle.constant.RpcResultCode;
@@ -124,7 +125,7 @@ public class UserDomainConsumer implements KafkaConsumer {
             queryWrapper.eq("login", login);
             GithubUser githubUser = githubUserMapper.selectOne(queryWrapper);
             //表中不存在则新增
-            if(githubUser == null) {
+            if(ObjectUtils.isEmpty(githubUser)) {
                 GithubUser user = new GithubUser();
                 user.setLogin(login);
                 //填充头像

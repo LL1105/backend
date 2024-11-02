@@ -3,6 +3,8 @@ package com.gitgle.consumer.impl;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.fasterxml.jackson.databind.util.BeanUtil;
 import com.gitgle.constant.RedisConstant;
 import com.gitgle.constant.RpcResultCode;
@@ -25,11 +27,9 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -104,10 +104,11 @@ public class UserTalentRankConsumer implements KafkaConsumer {
             QueryWrapper<GithubUser> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("login", login);
             List<GithubUser> githubUsers = githubUserMapper.selectList(queryWrapper);
-            if(githubUsers == null) {
+            if(ObjectUtils.isEmpty(githubUsers)) {
                 //插入
                 GithubUser user = new GithubUser();
-                BeanUtils.copyProperties(talentRankMessage, user);
+                user.setTalentRank(new BigDecimal(talentRankMessage.getTalentRank()));
+                user.setLogin(talentRankMessage.getLogin());
                 //更新头像
                 RpcResult<com.gitgle.response.GithubUser> githubUserRpcResult = githubUserService.getUserByLogin(user.getLogin());
                 if(githubUserRpcResult.getCode().equals(RpcResultCode.SUCCESS)) {
@@ -117,7 +118,7 @@ public class UserTalentRankConsumer implements KafkaConsumer {
             } else {
                 //更新Rank
                 UpdateWrapper<GithubUser> updateWrapper = new UpdateWrapper<>();
-                updateWrapper.eq("login", talentRankMessage.getLogin()).set("talent_rank", talentRankMessage.getTalentRank());
+                updateWrapper.eq("login", talentRankMessage.getLogin()).set("talent_rank", new BigDecimal(talentRankMessage.getTalentRank()));
                 githubUserMapper.update(null, updateWrapper);
             }
         } catch (Exception e) {

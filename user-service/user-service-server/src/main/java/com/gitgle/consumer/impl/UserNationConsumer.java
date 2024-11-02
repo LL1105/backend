@@ -3,6 +3,7 @@ package com.gitgle.consumer.impl;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.gitgle.constant.RedisConstant;
 import com.gitgle.constant.RpcResultCode;
 import com.gitgle.consumer.KafkaConsumer;
@@ -109,10 +110,12 @@ public class UserNationConsumer implements KafkaConsumer {
             queryWrapper.eq("login", nationMessage.getLogin());
             List<GithubUser> githubUsers = githubUserMapper.selectList(queryWrapper);
 
-            if(githubUsers == null) {
+            if(ObjectUtils.isEmpty(githubUsers)) {
                 //不存在则新增，并填入头像url
                 GithubUser user = new GithubUser();
-                BeanUtils.copyProperties(nationMessage, user);
+                user.setNation(nationMessage.getNation());
+                user.setLogin(nationMessage.getLogin());
+                user.setNationEnglish(nationMessage.getNationEnglish());
                 user.setNationConfidence(BigDecimal.valueOf(nationMessage.getConfidence()));
                 //更新头像
                 RpcResult<com.gitgle.response.GithubUser> githubUserRpcResult = githubUserService.getUserByLogin(user.getLogin());
