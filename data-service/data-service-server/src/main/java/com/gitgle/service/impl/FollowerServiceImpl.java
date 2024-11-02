@@ -39,8 +39,6 @@ public class FollowerServiceImpl implements FollowerService{
         return followerList.stream().map(follower -> {
             GithubFollowers githubFollowers = new GithubFollowers();
             githubFollowers.setLogin(follower.getFollowerLogin());
-            githubFollowers.setAvatarUrl(follower.getFollowerAvatarUrl());
-            githubFollowers.setId(follower.getFollowerId());
             return githubFollowers;
         }).collect(Collectors.toList());
     }
@@ -56,8 +54,6 @@ public class FollowerServiceImpl implements FollowerService{
                 follower.setUpdateTime(LocalDateTime.now());
                 follower.setFollowerLogin(githubFollowers.getLogin());
                 follower.setFollowingLogin(login);
-                follower.setFollowerAvatarUrl(githubFollowers.getAvatarUrl());
-                follower.setFollowerId(githubFollowers.getId());
                 followerMapper.updateById(follower);
                 return;
             }
@@ -73,11 +69,12 @@ public class FollowerServiceImpl implements FollowerService{
     @Override
     public List<GithubFollowing> readFollowing2GithubFollowing(String login) {
         List<Follower> followerList = followerMapper.selectList(Wrappers.lambdaQuery(Follower.class).eq(Follower::getFollowerLogin, login));
+        if(ObjectUtils.isEmpty(followerList)){
+            return null;
+        }
         return followerList.stream().map(follower -> {
             GithubFollowing githubFollowing = new GithubFollowing();
             githubFollowing.setLogin(follower.getFollowingLogin());
-            githubFollowing.setAvatarUrl(follower.getFollowingAvatarUrl());
-            githubFollowing.setId(follower.getFollowingId());
             return githubFollowing;
         }).collect(Collectors.toList());
     }
@@ -90,8 +87,6 @@ public class FollowerServiceImpl implements FollowerService{
             Follower follower = followerMapper.selectOne(Wrappers.lambdaQuery(Follower.class).eq(Follower::getFollowerLogin, login).eq(Follower::getFollowingLogin,githubFollowing.getLogin()));
             if(ObjectUtils.isNotEmpty(follower)){
                 // 更新
-                follower.setFollowingId(githubFollowing.getId());
-                follower.setFollowingAvatarUrl(githubFollowing.getAvatarUrl());
                 follower.setFollowingLogin(githubFollowing.getLogin());
                 follower.setFollowerLogin(login);
                 follower.setUpdateTime(LocalDateTime.now());

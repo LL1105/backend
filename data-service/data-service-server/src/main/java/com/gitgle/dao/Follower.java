@@ -41,26 +41,6 @@ public class Follower implements Serializable {
      */
     private LocalDateTime updateTime;
 
-    /**
-     * 
-     */
-    private Integer followerId;
-
-    /**
-     * 
-     */
-    private Integer followingId;
-
-    /**
-     * 
-     */
-    private String followerAvatarUrl;
-
-    /**
-     * 
-     */
-    private String followingAvatarUrl;
-
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }
