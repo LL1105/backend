@@ -100,9 +100,9 @@ public class RefreshRepoJob {
                         }
                     }
                     GithubRepos repos = reposService.readRepos2GithubRepos(githubRepos.getOwnerLogin(), githubRepos.getRepoName());
-                    if(githubRepos.equals(repos)){
-                        continue;
-                    }
+//                    if(githubRepos.equals(repos)){
+//                        continue;
+//                    }
                     // 异步写库
                     CompletableFuture.runAsync(()->{
                         reposService.writeGithubRepos2Repos(githubRepos);
