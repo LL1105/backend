@@ -50,9 +50,4 @@ public interface GithubRepoService {
      * 分页获取排序后的仓库
      */
     RpcResult<PageRepoResponse> getReposOrderByStar(Integer page, Integer size);
-
-    /**
-     * 根据仓库id查询仓库详情
-     */
-    RpcResult<GithubRepos> getRepoById(Integer repoId);
 }

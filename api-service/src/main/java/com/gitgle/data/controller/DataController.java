@@ -73,9 +73,9 @@ public class DataController {
         return Result.Success(hotDomainEvent.getData());
     }
 
-    @GetMapping("/repo/{id}")
-    public Result<GithubRepos> getRepoById(@PathVariable(value = "id") Integer repoId){
-        RpcResult<GithubRepos> repoById = githubRepoService.getRepoById(repoId);
+    @GetMapping("/repo")
+    public Result<GithubRepos> getRepoById(String repoOwner, String repoName){
+        RpcResult<GithubRepos> repoById = githubRepoService.getRepoByOwnerAndRepoName(repoOwner, repoName);
         if(!RpcResultCode.SUCCESS.equals(repoById.getCode())){
             return Result.Failed();
         }
