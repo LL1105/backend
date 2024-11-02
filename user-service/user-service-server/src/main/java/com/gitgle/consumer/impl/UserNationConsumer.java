@@ -1,7 +1,9 @@
 package com.gitgle.consumer.impl;
 
 import com.alibaba.fastjson2.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.gitgle.constant.RedisConstant;
 import com.gitgle.constant.RpcResultCode;
 import com.gitgle.consumer.KafkaConsumer;
 import com.gitgle.consumer.message.NationMessage;
@@ -16,6 +18,8 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -28,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
@@ -37,6 +42,9 @@ public class UserNationConsumer implements KafkaConsumer {
     private static final String TOPIC = "UserNation";
 
     private static final String GROUP_ID = "UserNation";
+
+    @Resource
+    private RedissonClient redissonClient;
 
     @Resource
     GithubUserMapper githubUserMapper;
@@ -90,31 +98,42 @@ public class UserNationConsumer implements KafkaConsumer {
     public void processMessage(String message){
         log.info("UserNationMessage::{}", message);
         NationMessage nationMessage = JSONObject.parseObject(message, NationMessage.class);
-        GithubUser githubUser = githubUserMapper.selectById(nationMessage.getLogin());
-        if(githubUser == null) {
-            //插入
-            GithubUser user = new GithubUser();
-            BeanUtils.copyProperties(nationMessage, user);
-            user.setNationConfidence(BigDecimal.valueOf(nationMessage.getConfidence()));
-            //更新头像
-            RpcResult<com.gitgle.response.GithubUser> githubUserRpcResult = githubUserService.getUserByLogin(user.getLogin());
-            if(githubUserRpcResult.getCode().equals(RpcResultCode.SUCCESS)) {
-                user.setAvatar(githubUserRpcResult.getData().getAvatarUrl());
-            }
-            CompletableFuture.runAsync(() -> {
-                githubUserMapper.insert(user);
-            });
-        } else {
-            //异步刷新数据库
-            UpdateWrapper<GithubUser> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("login", nationMessage.getLogin())
-                    .set("nation", nationMessage.getNation())
-                    .set("nation_confidence", nationMessage.getConfidence())
-                    .set("nation_english", nationMessage.getNationEnglish());
-            CompletableFuture.runAsync(() -> {
-                githubUserMapper.update(null, updateWrapper);
-            });
-        }
+        String login = nationMessage.getLogin();
 
+        RLock lock = redissonClient.getLock(RedisConstant.REFRESH_NATION_LOCK + login);
+        try {
+            lock.lock(5, TimeUnit.SECONDS);
+
+            //先查询存不存在
+            QueryWrapper<GithubUser> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("login", nationMessage.getLogin());
+            List<GithubUser> githubUsers = githubUserMapper.selectList(queryWrapper);
+
+            if(githubUsers == null) {
+                //不存在则新增，并填入头像url
+                GithubUser user = new GithubUser();
+                BeanUtils.copyProperties(nationMessage, user);
+                user.setNationConfidence(BigDecimal.valueOf(nationMessage.getConfidence()));
+                //更新头像
+                RpcResult<com.gitgle.response.GithubUser> githubUserRpcResult = githubUserService.getUserByLogin(user.getLogin());
+                if(githubUserRpcResult.getCode().equals(RpcResultCode.SUCCESS)) {
+                    user.setAvatar(githubUserRpcResult.getData().getAvatarUrl());
+                }
+                githubUserMapper.insert(user);
+            } else {
+                //存在则直接更新
+                UpdateWrapper<GithubUser> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.eq("login", nationMessage.getLogin())
+                        .set("nation", nationMessage.getNation())
+                        .set("nation_confidence", nationMessage.getConfidence())
+                        .set("nation_english", nationMessage.getNationEnglish());
+                githubUserMapper.update(null, updateWrapper);
+            }
+
+        } catch (Exception e) {
+            log.error("Refresh nation error: {}", e.getMessage());
+        } finally {
+            lock.unlock();
+        }
     }
 }
