@@ -2,8 +2,11 @@ package com.gitgle.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
+import com.gitgle.constant.RedisConstant;
 import com.gitgle.constant.RpcResultCode;
 import com.gitgle.dao.Domain;
+import com.gitgle.job.HotDomainJob;
 import com.gitgle.request.GithubRequest;
 import com.gitgle.response.*;
 import com.gitgle.result.RpcResult;
@@ -12,6 +15,7 @@ import com.gitgle.utils.SparkApiUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -27,11 +31,7 @@ import java.util.concurrent.ConcurrentMap;
 @Slf4j
 public class RpcDomainServiceImpl implements RpcDomainService {
 
-    @Resource
-    private SparkApiUtils sparkApiUtils;
-
-    @Resource
-    private DomainService domainService;
+    private static final Integer HOT_DOMAIN_COUNT = 15;
 
     @DubboReference
     private GithubRepoService githubProjectService;
@@ -39,8 +39,8 @@ public class RpcDomainServiceImpl implements RpcDomainService {
     @DubboReference
     private GithubCommitService githubCommitService;
 
-    @DubboReference
-    private GithubRepoService getGithubProjectService;
+    @Resource
+    private RedisTemplate redisTemplate;
 
     @Resource
     private DomainCalculationService domainCalculationService;
@@ -64,23 +64,25 @@ public class RpcDomainServiceImpl implements RpcDomainService {
     public RpcResult<HotDomainResponse> getHotDomain() {
         RpcResult<HotDomainResponse> hotDomainResponseRpcResult = new RpcResult<>();
         HotDomainResponse hotDomainResponse = new HotDomainResponse();
-        List<HotDomain> hotDomainList = new ArrayList<>();
-        HotDomain hotDomain = new HotDomain();
-        hotDomain.setDeveloperTotal(199999);
-        hotDomain.setDomain("后端开发");
-        hotDomainList.add(hotDomain);
-        HotDomain hotDomain2 = new HotDomain();
-        hotDomain2.setDeveloperTotal(99999);
-        hotDomain2.setDomain("机器学习");
-        hotDomainList.add(hotDomain2);
+        List<HotDomain> hotDomainList = redisTemplate.opsForList().range(RedisConstant.HOT_DOMAIN, 0, HOT_DOMAIN_COUNT);
+        if(ObjectUtils.isNotEmpty(hotDomainList)){
+            hotDomainResponse.setHotDomainList(hotDomainList);
+            hotDomainResponseRpcResult.setData(hotDomainResponse);
+            hotDomainResponseRpcResult.setCode(RpcResultCode.SUCCESS);
+            return hotDomainResponseRpcResult;
+        }
+        hotDomainList = new ArrayList<>();
         hotDomainResponse.setHotDomainList(hotDomainList);
         hotDomainResponseRpcResult.setData(hotDomainResponse);
         hotDomainResponseRpcResult.setCode(RpcResultCode.SUCCESS);
         return hotDomainResponseRpcResult;
     }
 
+    @Resource
+    private HotDomainJob hotDomainJob;
     @Override
     public RpcResult<HotDomainEventResponse> getHotDomainEvent(String domain) {
+        hotDomainJob.refreshHotDomain();
         return null;
     }
 

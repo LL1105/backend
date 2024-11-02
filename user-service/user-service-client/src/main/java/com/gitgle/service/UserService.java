@@ -2,6 +2,7 @@ package com.gitgle.service;
 
 import cn.dev33.satoken.util.SaResult;
 import com.gitgle.result.Result;
+import com.gitgle.result.RpcResult;
 import com.gitgle.service.req.*;
 
 
@@ -34,7 +35,10 @@ public interface UserService {
 
     Result changePassword(ChangePasswordReq req);
 
-
+    /**
+     * 根据领域id获取用户数量
+     */
+    RpcResult<Long> getUserCountInDomain(Integer domainId);
 
 
 }

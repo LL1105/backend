@@ -35,4 +35,6 @@ public class RedisConstant {
     public static String REFRESH_TALENTRANK_LOCK = "refresh:talentrank:lock";
 
     public static String GITHUB_REPO_LANGUAGE_LOCK = "github:repo:language:lock:";
+
+    public static String HOT_DOMAIN = "hot:domain";
 }
