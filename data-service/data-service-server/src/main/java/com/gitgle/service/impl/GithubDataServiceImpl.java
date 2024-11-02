@@ -2,6 +2,7 @@ package com.gitgle.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.gitgle.constant.RedisConstant;
 import com.gitgle.constant.RpcResultCode;
 import com.gitgle.response.GithubDataResponse;
@@ -58,7 +59,7 @@ public class GithubDataServiceImpl implements GithubDataService {
         return CompletableFuture.supplyAsync(()->{
             try{
                 Integer githubCommitTatal = redisTemplate.opsForValue().get(RedisConstant.GITHUB_COMMIT_TOTAL);
-                if(Objects.nonNull(githubCommitTatal)){
+                if(ObjectUtils.isNotEmpty(githubCommitTatal)){
                     return githubCommitTatal;
                 }
                 Map<String, String> params = new HashMap<>();
@@ -84,7 +85,7 @@ public class GithubDataServiceImpl implements GithubDataService {
         return CompletableFuture.supplyAsync(()->{
             try{
                 Integer githubUserTotal = redisTemplate.opsForValue().get(RedisConstant.GITHUB_USER_TOTAL);
-                if(Objects.nonNull(githubUserTotal)){
+                if(ObjectUtils.isNotEmpty(githubUserTotal)){
                     return githubUserTotal;
                 }
                 githubUserTotal = githubApiRequestUtils.getGithubUserTotal();
@@ -101,7 +102,7 @@ public class GithubDataServiceImpl implements GithubDataService {
         return CompletableFuture.supplyAsync(()->{
             try{
                 Integer githubCodeTotal = redisTemplate.opsForValue().get(RedisConstant.GITHUB_CODE_TOTAL);
-                if(Objects.nonNull(githubCodeTotal)){
+                if(ObjectUtils.isNotEmpty(githubCodeTotal)){
                     return githubCodeTotal;
                 }
                 Map<String, String> params = new HashMap<>();
@@ -126,7 +127,7 @@ public class GithubDataServiceImpl implements GithubDataService {
         return CompletableFuture.supplyAsync(()->{
             try{
                 Integer githubRepoTotal = redisTemplate.opsForValue().get(RedisConstant.GITHUB_REPO_TOTAL);
-                if(Objects.nonNull(githubRepoTotal)){
+                if(ObjectUtils.isNotEmpty(githubRepoTotal)){
                     return githubRepoTotal;
                 }
                 Map<String, String> params = new HashMap<>();
