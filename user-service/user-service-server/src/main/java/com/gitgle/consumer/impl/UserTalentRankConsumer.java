@@ -18,6 +18,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -30,6 +31,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Component
 @Slf4j
+@Order(1)
 public class UserTalentRankConsumer implements KafkaConsumer {
 
     private static final String TOPIC = "UserTalentRank";
