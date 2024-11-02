@@ -15,6 +15,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -26,6 +27,7 @@ import java.util.Properties;
 
 @Component
 @Slf4j
+@Order(2)
 public class DomainConsumer implements KafkaConsumer {
 
     private static final String TOPIC = "Domain";
@@ -96,6 +98,7 @@ public class DomainConsumer implements KafkaConsumer {
             domainDto.setDomain(userDomainBase.getDomain());
             domainDto.setConfidence(Double.valueOf(userDomainBase.getConfidence()));
             domainDto.setLogin(message);
+            domainDtoList.add(domainDto);
         }
         kafkaProducer.sendMessage(JSON.toJSONString(domainDtoList), USER_DOMAIN_TOPIC);
     }

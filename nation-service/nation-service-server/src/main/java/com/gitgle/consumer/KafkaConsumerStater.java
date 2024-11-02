@@ -1,6 +1,7 @@
 package com.gitgle.consumer;
 
 import com.gitgle.config.CKafkaConfigurer;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -12,9 +13,11 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 @Order(2)
+@Slf4j
 public class KafkaConsumerStater implements CommandLineRunner {
 
     @Resource
@@ -57,7 +60,12 @@ public class KafkaConsumerStater implements CommandLineRunner {
                     "org.apache.kafka.common.serialization.StringDeserializer");
             props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
                     "org.apache.kafka.common.serialization.StringDeserializer");
-            kafkaConsumer.consumer(props);
+            CompletableFuture.runAsync(()->{
+                kafkaConsumer.consumer(props);
+            }).exceptionally(e->{
+                log.error("KafkaConsumerStater Exception: {}", e);
+                return null;
+            });
         }
     }
 }
