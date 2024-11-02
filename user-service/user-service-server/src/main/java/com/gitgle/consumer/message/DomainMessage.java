@@ -10,6 +10,8 @@ public class DomainMessage implements Serializable {
 
     private String login;
 
+    private Integer domainId;
+
     private String domain;
 
     private BigDecimal confidence;

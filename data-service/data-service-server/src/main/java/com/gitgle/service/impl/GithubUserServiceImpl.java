@@ -147,7 +147,7 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
             CompletableFuture.runAsync(()->{
                 userService.writeGithubUser2User(githubUserList);
             }).exceptionally(ex -> {
-                log.error("Github User Write Exception: {}", ex.getMessage());
+                log.error("Github User Write Exception: {}", ex);
                 return null;
             });
             githubUserRpcResult.setData(githubUser);

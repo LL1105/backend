@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.fasterxml.jackson.databind.util.BeanUtil;
+import com.gitgle.constant.RedisConstant;
 import com.gitgle.constant.RpcResultCode;
 import com.gitgle.consumer.KafkaConsumer;
 import com.gitgle.consumer.message.TalentRankMessage;
@@ -17,6 +18,8 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -28,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
@@ -43,6 +47,9 @@ public class UserTalentRankConsumer implements KafkaConsumer {
 
     @DubboReference
     GithubUserService githubUserService;
+
+    @Resource
+    RedissonClient redissonClient;
 
     @Override
     public void consumer(Properties props) {
@@ -91,28 +98,32 @@ public class UserTalentRankConsumer implements KafkaConsumer {
         log.info("UserTalentRankMessage::{}", message);
         TalentRankMessage talentRankMessage = JSONObject.parseObject(message, TalentRankMessage.class);
         String login = talentRankMessage.getLogin();
-        GithubUser githubUser = githubUserMapper.selectById(login);
-        if(githubUser == null) {
-            //插入
-            GithubUser user = new GithubUser();
-            BeanUtils.copyProperties(talentRankMessage, user);
-            //更新头像
-            RpcResult<com.gitgle.response.GithubUser> githubUserRpcResult = githubUserService.getUserByLogin(user.getLogin());
-            if(githubUserRpcResult.getCode().equals(RpcResultCode.SUCCESS)) {
-                user.setAvatar(githubUserRpcResult.getData().getAvatarUrl());
-            }
-            CompletableFuture.runAsync(() -> {
+        RLock lock = redissonClient.getLock(RedisConstant.REFRESH_TALENTRANK_LOCK + login);
+        try {
+            lock.lock(5, TimeUnit.SECONDS);
+            QueryWrapper<GithubUser> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("login", login);
+            List<GithubUser> githubUsers = githubUserMapper.selectList(queryWrapper);
+            if(githubUsers == null) {
+                //插入
+                GithubUser user = new GithubUser();
+                BeanUtils.copyProperties(talentRankMessage, user);
+                //更新头像
+                RpcResult<com.gitgle.response.GithubUser> githubUserRpcResult = githubUserService.getUserByLogin(user.getLogin());
+                if(githubUserRpcResult.getCode().equals(RpcResultCode.SUCCESS)) {
+                    user.setAvatar(githubUserRpcResult.getData().getAvatarUrl());
+                }
                 githubUserMapper.insert(user);
-            });
-        } else {
-            //更新Rank
-            UpdateWrapper<GithubUser> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("login", talentRankMessage.getLogin()).set("talent_rank", talentRankMessage.getTalentRank());
-            CompletableFuture.runAsync(() -> {
+            } else {
+                //更新Rank
+                UpdateWrapper<GithubUser> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.eq("login", talentRankMessage.getLogin()).set("talent_rank", talentRankMessage.getTalentRank());
                 githubUserMapper.update(null, updateWrapper);
-            });
+            }
+        } catch (Exception e) {
+            log.error("Refresh talentRank error: {}", e.getMessage());
+        } finally {
+            lock.unlock();
         }
-
-
     }
 }

@@ -4,18 +4,26 @@ import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.fasterxml.jackson.databind.util.BeanUtil;
+import com.gitgle.constant.RedisConstant;
+import com.gitgle.constant.RpcResultCode;
 import com.gitgle.consumer.KafkaConsumer;
 import com.gitgle.consumer.message.DomainMessage;
 import com.gitgle.entity.Domain;
 import com.gitgle.entity.GithubUser;
 import com.gitgle.entity.UserDomain;
 import com.gitgle.mapper.DomainMapper;
+import com.gitgle.mapper.GithubUserMapper;
 import com.gitgle.mapper.UserDomainMapper;
+import com.gitgle.result.RpcResult;
+import com.gitgle.service.GithubUserService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
@@ -28,6 +36,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
@@ -43,8 +52,18 @@ public class UserDomainConsumer implements KafkaConsumer {
 
     @Resource
     DomainMapper DomainMapper;
+
     @Autowired
     private DomainMapper domainMapper;
+
+    @Resource
+    RedissonClient redissonClient;
+
+    @Resource
+    GithubUserMapper githubUserMapper;
+
+    @DubboReference
+    GithubUserService githubUserService;
 
     @Override
     public void consumer(Properties props) {
@@ -93,22 +112,40 @@ public class UserDomainConsumer implements KafkaConsumer {
     public void processMessage(String message) {
         log.info("UserDomainMessage::{}", message);
         List<DomainMessage> domainMessages = JSON.parseArray(message, DomainMessage.class);
-        //异步插入到数据库
-        for (DomainMessage domainMessage : domainMessages) {
-            //取出DomainId
-            String domain = domainMessage.getDomain();
-            QueryWrapper<Domain> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("domain", domain);
-            Domain selectOne = domainMapper.selectOne(queryWrapper);
-            Integer domainId = selectOne.getId();
+        String login = "";
+        if(!domainMessages.isEmpty()) {
+            login = domainMessages.get(0).getLogin();
+        }
 
+        RLock lock = redissonClient.getLock(RedisConstant.REFRESH_DOMAIN_LOCK + login);
+        try {
+            lock.lock(5, TimeUnit.SECONDS);
+            QueryWrapper<GithubUser> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("login", login);
+            GithubUser githubUser = githubUserMapper.selectOne(queryWrapper);
+            //表中不存在则新增
+            if(githubUser == null) {
+                GithubUser user = new GithubUser();
+                user.setLogin(login);
+                //填充头像
+                RpcResult<com.gitgle.response.GithubUser> userByLogin = githubUserService.getUserByLogin(login);
+                if(userByLogin.getCode().equals(RpcResultCode.SUCCESS)) {
+                    user.setAvatar(userByLogin.getData().getAvatarUrl());
+                }
+                githubUserMapper.insert(user);
+            }
+        } catch (Exception e) {
+            log.error("Refresh domain error: {}", e.getMessage());
+        } finally {
+            lock.unlock();
+        }
+
+        for (DomainMessage domainMessage : domainMessages) {
             UserDomain userDomain = new UserDomain();
             BeanUtils.copyProperties(domainMessage, userDomain);
-            userDomain.setDomainId(domainId);
-            CompletableFuture.runAsync(() -> {
-                userDomainMapper.insert(userDomain);
-            });
+            userDomainMapper.insert(userDomain);
         }
+
 
     }
 }
