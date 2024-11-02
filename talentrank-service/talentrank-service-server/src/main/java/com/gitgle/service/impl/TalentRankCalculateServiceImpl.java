@@ -67,7 +67,7 @@ public class TalentRankCalculateServiceImpl implements TalentRankCalculateServic
         for(Map.Entry<String, String> githubRepo : githubRepoMap.entrySet()){
             try {
                 CompletableFuture<BigDecimal> projectImportance = CompletableFuture.
-                        supplyAsync(() -> new BigDecimal(calculateProjectImportance(owner, githubRepo.getKey())));
+                        supplyAsync(() -> new BigDecimal(calculateProjectImportance(githubRepo.getValue(), githubRepo.getKey())));
                 CompletableFuture<BigDecimal> contribution = CompletableFuture.
                         supplyAsync(() -> new BigDecimal(calculateContribution(githubRepo.getValue(), githubRepo.getKey(), owner)));
                 CompletableFuture.allOf(projectImportance, contribution).join();

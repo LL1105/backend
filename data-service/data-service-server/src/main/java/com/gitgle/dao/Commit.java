@@ -39,7 +39,7 @@ public class Commit implements Serializable {
     /**
      * 
      */
-    private String reposId;
+    private Integer reposId;
 
     /**
      * 
