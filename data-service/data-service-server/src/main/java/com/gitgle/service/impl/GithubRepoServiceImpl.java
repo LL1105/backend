@@ -9,10 +9,7 @@ import com.gitgle.convert.GithubRepoConvert;
 import com.gitgle.request.GithubRequest;
 import com.gitgle.response.*;
 import com.gitgle.result.RpcResult;
-import com.gitgle.service.ContributorService;
-import com.gitgle.service.GithubRepoService;
-import com.gitgle.service.RepoContentService;
-import com.gitgle.service.ReposService;
+import com.gitgle.service.*;
 import com.gitgle.utils.GithubApiRequestUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
@@ -41,6 +38,9 @@ public class GithubRepoServiceImpl implements GithubRepoService {
 
     @Resource
     private RepoContentService repoContentService;
+
+    @Resource
+    private RepoLanguageService repoLanguageService;
 
     @Resource
     private RedisTemplate redisTemplate;
@@ -154,7 +154,19 @@ public class GithubRepoServiceImpl implements GithubRepoService {
     public RpcResult<GithubLanguagesResponse> getRepoLanguages(String owner, String repoName) {
         RpcResult<GithubLanguagesResponse> githubLanguagesResponseRpcResult = new RpcResult<>();
         try {
+            // 先查库
+            Map<String, Integer> repoLanguages = repoLanguageService.readRepoLanguages(repoName, owner);
+            if(ObjectUtils.isNotEmpty(repoLanguages)){
+                GithubLanguagesResponse githubLanguagesResponse = new GithubLanguagesResponse();
+                githubLanguagesResponse.setLanguagesMap(repoLanguages);
+                githubLanguagesResponseRpcResult.setData(githubLanguagesResponse);
+                githubLanguagesResponseRpcResult.setCode(RpcResultCode.SUCCESS);
+                return githubLanguagesResponseRpcResult;
+            }
             GithubLanguagesResponse githubLanguagesResponse = githubApiRequestUtils.listRepoLanguages(owner, repoName);
+            CompletableFuture.runAsync(()->{
+                repoLanguageService.writeRepoLanguages(owner, repoName, githubLanguagesResponse.getLanguagesMap());
+            });
             githubLanguagesResponseRpcResult.setData(githubLanguagesResponse);
             githubLanguagesResponseRpcResult.setCode(RpcResultCode.SUCCESS);
             return githubLanguagesResponseRpcResult;

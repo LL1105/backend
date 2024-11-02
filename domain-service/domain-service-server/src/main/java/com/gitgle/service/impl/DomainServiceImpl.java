@@ -1,5 +1,6 @@
 package com.gitgle.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.gitgle.dao.Domain;
 import com.gitgle.mapper.DomainMapper;
@@ -27,7 +28,7 @@ public class DomainServiceImpl implements DomainService {
     @Override
     public Integer getDomainId(String domain) {
         Domain domainOne = domainMapper.selectOne(Wrappers.lambdaQuery(Domain.class).select(Domain::getId).eq(Domain::getDomain, domain));
-        if(Objects.nonNull(domainOne)){
+        if(ObjectUtils.isNotEmpty(domainOne)){
             return domainOne.getId();
         }
         return 0;

@@ -22,7 +22,7 @@ public class SparkApiUtils {
 
     private static final String MODEL = "4.0Ultra";
 
-    private static final String APPID = "32bccb4c";
+    private static final String APPID = "dcbef00a";
 
     private static final String CONTENT_TYPE_KEY = "Content-Type";
 
@@ -30,7 +30,7 @@ public class SparkApiUtils {
 
     private static final String AUTHORIZATION_KEY = "Authorization";
 
-    private static final String AUTHORIZATION = "Bearer StCpnKKpegTzyzNfNMjX:BowKkiuifiyExMOSxkcG";
+    private static final String AUTHORIZATION = "Bearer ooxqYNVbtqhwKYGnpNtc:pFRrcnsutDbXQNQAsqLq";
 
     public Response doRequest(String content) throws IOException {
         SparkRequest sparkRequest = new SparkRequest();

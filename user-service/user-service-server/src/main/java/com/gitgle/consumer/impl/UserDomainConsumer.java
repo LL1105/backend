@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.databind.util.BeanUtil;
 import com.gitgle.constant.RedisConstant;
 import com.gitgle.constant.RpcResultCode;
@@ -31,6 +32,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -142,8 +144,15 @@ public class UserDomainConsumer implements KafkaConsumer {
         }
 
         for (DomainMessage domainMessage : domainMessages) {
+            List<UserDomain> userDomains = userDomainMapper.selectList(Wrappers.lambdaQuery(UserDomain.class).select(UserDomain::getId).eq(UserDomain::getDomain, domainMessage.getDomain()).eq(UserDomain::getLogin, domainMessage.getLogin()));
+            if(ObjectUtils.isNotEmpty(userDomains)){
+                userDomainMapper.deleteBatchIds(userDomains);
+            }
             UserDomain userDomain = new UserDomain();
-            BeanUtils.copyProperties(domainMessage, userDomain);
+            userDomain.setDomainId(domainMessage.getDomainId());
+            userDomain.setDomain(domainMessage.getDomain());
+            userDomain.setConfidence(Double.valueOf(domainMessage.getConfidence().toString()));
+            userDomain.setLogin(domainMessage.getLogin());
             userDomainMapper.insert(userDomain);
         }
 
