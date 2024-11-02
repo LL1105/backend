@@ -7,7 +7,7 @@
 
     <select id="searchByCondition" resultType="com.gitgle.service.resp.SearchUser">
 
-        SELECT DISTINCT github_user.login, avatar, talent_rank from github_user
+        SELECT DISTINCT github_user.login, avatar, talent_rank, domain.domian, nation, location from github_user
         LEFT JOIN user_domain on github_user.login=user_domain.login
         LEFT JOIN domain on domain.id = user_domain.domain_id
         <where>
