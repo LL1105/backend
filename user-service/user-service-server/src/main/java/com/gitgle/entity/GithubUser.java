@@ -32,12 +32,6 @@ public class GithubUser implements Serializable {
      */
     private String avatar;
 
-    /**
-     *
-     */
-    private String nationId;
-
-
     private BigDecimal talentRank;
 
     private String nation;

@@ -227,12 +227,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     }
 
     @Override
-    public Result conditionCheckRank(Integer size, Integer current, RankReq req) {
-        List<RankResp> rankResps = userMapper.selectUsersCondition(current, size, req);
-        return Result.Success(rankResps);
-    }
-
-    @Override
     public Result search(Integer page, Integer size, SearchReq searchReq) {
         Integer current = (page - 1) * size;
         SearchResp resp = new SearchResp();
