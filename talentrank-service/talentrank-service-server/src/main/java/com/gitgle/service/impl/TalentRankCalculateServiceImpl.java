@@ -44,7 +44,10 @@ public class TalentRankCalculateServiceImpl implements TalentRankCalculateServic
         BigDecimal projectImportance = new BigDecimal(projectImportanceStarter);
         BigDecimal starsCount = new BigDecimal(githubRepos.getStarsCount());
         BigDecimal forksCount = new BigDecimal(githubRepos.getForksCount());
-        projectImportance.add(starsCount.multiply(new BigDecimal(starWeight))).add(forksCount.multiply(new BigDecimal(forkWeight)));
+        starsCount = starsCount.multiply(new BigDecimal(starWeight));
+        forksCount = forksCount.multiply(new BigDecimal(forkWeight));
+        projectImportance = projectImportance.add(starsCount);
+        projectImportance = projectImportance.add(forksCount);
         log.debug("projectImportance:{}", projectImportance);
         return projectImportance.toString();
     }
@@ -73,7 +76,7 @@ public class TalentRankCalculateServiceImpl implements TalentRankCalculateServic
                 CompletableFuture.allOf(projectImportance, contribution).join();
                 talentRank = talentRank.add(projectImportance.get().multiply(contribution.get()));
             }catch (Exception e){
-                log.error("TalentRank计算出错:{}", e);
+                log.error("TalentRank计算过程出错,login:{}--->:{}", owner, e.getMessage());
             }
         }
         return talentRank.toString();
@@ -98,6 +101,7 @@ public class TalentRankCalculateServiceImpl implements TalentRankCalculateServic
                 authorContribution = new BigDecimal(githubContributor.getContributions());
             }
         }
-        return String.valueOf(authorContribution.divide(totalContribution, 5, BigDecimal.ROUND_HALF_UP));
+        authorContribution = authorContribution.divide(totalContribution, 5, BigDecimal.ROUND_HALF_UP);
+        return String.valueOf(authorContribution);
     }
 }
