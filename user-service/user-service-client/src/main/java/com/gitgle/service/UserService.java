@@ -23,8 +23,6 @@ public interface UserService {
     //登出
     SaResult logout();
 
-    Result conditionCheckRank(Integer size, Integer current, RankReq req);
-
     //搜索用户
     Result search(Integer page, Integer size, SearchReq searchReq);
 
