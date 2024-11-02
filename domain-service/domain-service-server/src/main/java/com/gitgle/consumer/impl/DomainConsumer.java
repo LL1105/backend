@@ -17,6 +17,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.core.annotation.Order;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -45,6 +46,9 @@ public class DomainConsumer implements KafkaConsumer {
 
     @Resource
     private DomainService domainService;
+
+    @Resource
+    private ThreadPoolTaskExecutor domainThreadPoolTask;
 
     @Override
     public void consumer(Properties props) {
@@ -90,19 +94,21 @@ public class DomainConsumer implements KafkaConsumer {
     }
 
     public void processMessage(String message){
-        DomainResponse domainResponse = domainCalculationService.calculationDomain(message);
-        List<DomainDto> domainDtoList = new ArrayList<>();
-        for(UserDomainBase userDomainBase: domainResponse.getUserDomainBaseList()){
-            Integer domainId = domainService.getDomainId(userDomainBase.getDomain());
-            DomainDto domainDto = new DomainDto();
-            domainDto.setDomainId(domainId);
-            domainDto.setDomain(userDomainBase.getDomain());
-            domainDto.setConfidence(Double.valueOf(userDomainBase.getConfidence()));
-            domainDto.setLogin(message);
-            domainDtoList.add(domainDto);
-        }
-        if(ObjectUtils.isNotEmpty(domainDtoList)){
-            kafkaProducer.sendMessage(JSON.toJSONString(domainDtoList), USER_DOMAIN_TOPIC);
-        }
+        domainThreadPoolTask.submit(()->{
+            DomainResponse domainResponse = domainCalculationService.calculationDomain(message);
+            List<DomainDto> domainDtoList = new ArrayList<>();
+            for(UserDomainBase userDomainBase: domainResponse.getUserDomainBaseList()){
+                Integer domainId = domainService.getDomainId(userDomainBase.getDomain());
+                DomainDto domainDto = new DomainDto();
+                domainDto.setDomainId(domainId);
+                domainDto.setDomain(userDomainBase.getDomain());
+                domainDto.setConfidence(Double.valueOf(userDomainBase.getConfidence()));
+                domainDto.setLogin(message);
+                domainDtoList.add(domainDto);
+            }
+            if(ObjectUtils.isNotEmpty(domainDtoList)){
+                kafkaProducer.sendMessage(JSON.toJSONString(domainDtoList), USER_DOMAIN_TOPIC);
+            }
+        });
     }
 }
