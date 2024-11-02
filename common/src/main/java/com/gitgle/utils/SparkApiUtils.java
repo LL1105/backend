@@ -30,7 +30,7 @@ public class SparkApiUtils {
 
     private static final String AUTHORIZATION_KEY = "Authorization";
 
-    private static final String AUTHORIZATION = "Bearer Yzg5ZmNlYTZkNTUwZDM2NDRhMjI4ZTE1";
+    private static final String AUTHORIZATION = "Bearer ooxqYNVbtqhwKYGnpNtc:pFRrcnsutDbXQNQAsqLq";
 
     public Response doRequest(String content) throws IOException {
         SparkRequest sparkRequest = new SparkRequest();

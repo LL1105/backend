@@ -1,6 +1,7 @@
 package com.gitgle.consumer.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.gitgle.consumer.KafkaConsumer;
 import com.gitgle.dto.DomainDto;
 import com.gitgle.produce.KafkaProducer;
@@ -100,6 +101,8 @@ public class DomainConsumer implements KafkaConsumer {
             domainDto.setLogin(message);
             domainDtoList.add(domainDto);
         }
-        kafkaProducer.sendMessage(JSON.toJSONString(domainDtoList), USER_DOMAIN_TOPIC);
+        if(ObjectUtils.isNotEmpty(domainDtoList)){
+            kafkaProducer.sendMessage(JSON.toJSONString(domainDtoList), USER_DOMAIN_TOPIC);
+        }
     }
 }
