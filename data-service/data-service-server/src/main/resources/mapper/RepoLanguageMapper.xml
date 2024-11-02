@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gitgle.mapper.RepoLanguageMapper">
+
+    <resultMap id="BaseResultMap" type="com.gitgle.dao.RepoLanguage">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="repoName" column="repo_name" jdbcType="VARCHAR"/>
+            <result property="repoOwner" column="repo_owner" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="language" column="language" jdbcType="VARCHAR"/>
+            <result property="languageTotal" column="language_total" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,repo_name,repo_owner,
+        create_time,update_time,language,
+        language_total
+    </sql>
+</mapper>
