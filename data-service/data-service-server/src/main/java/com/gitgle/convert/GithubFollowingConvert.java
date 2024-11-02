@@ -10,16 +10,12 @@ public class GithubFollowingConvert {
 
     public static GithubFollowing convert(JSONObject item){
         GithubFollowing githubFollowing = new GithubFollowing();
-        githubFollowing.setId(item.getInteger("id"));
         githubFollowing.setLogin(item.getString("login"));
-        githubFollowing.setAvatarUrl(item.getString("avatar_url"));
         return githubFollowing;
     }
 
     public static Follower convert2Following(GithubFollowing githubFollowing, String login){
         Follower follower = new Follower();
-        follower.setFollowingId(githubFollowing.getId());
-        follower.setFollowingAvatarUrl(githubFollowing.getAvatarUrl());
         follower.setFollowingLogin(githubFollowing.getLogin());
         follower.setFollowerLogin(login);
         follower.setCreateTime(LocalDateTime.now());
