@@ -9,7 +9,7 @@
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
             <result property="authorLogin" column="author_login" jdbcType="VARCHAR"/>
-            <result property="reposId" column="repos_id" jdbcType="VARCHAR"/>
+            <result property="reposId" column="repos_id" jdbcType="INTEGER"/>
             <result property="reposName" column="repos_name" jdbcType="VARCHAR"/>
             <result property="reposOwner" column="repos_owner" jdbcType="VARCHAR"/>
             <result property="commitDateTime" column="commit_date_time" jdbcType="VARCHAR"/>

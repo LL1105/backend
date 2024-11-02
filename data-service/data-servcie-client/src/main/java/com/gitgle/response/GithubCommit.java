@@ -12,7 +12,7 @@ public class GithubCommit implements Serializable {
 
     private String sha;
 
-    private String reposId;
+    private Integer reposId;
 
     private String reposName;
 
