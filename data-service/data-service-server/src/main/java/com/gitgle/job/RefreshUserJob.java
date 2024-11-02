@@ -65,7 +65,7 @@ public class RefreshUserJob {
                     if(Objects.isNull(user)){
                         kafkaProducer.sendMessage(githubUser.getLogin(), "Domain");
                     }
-                    if (!githubUser.equals(user)) {
+//                    if (!githubUser.equals(user)) {
                         final GithubUser finalGithubUser = githubUser;
                         // 异步入库
                         CompletableFuture.runAsync(() -> {
@@ -79,7 +79,7 @@ public class RefreshUserJob {
                         } else {
                             kafkaProducer.sendMessage(githubUser.getLogin(), "UserNation");
                         }
-                    }
+//                    }
                 } catch (IOException e) {
                     log.error("Github User Exception: {}", e.getMessage());
                 }
