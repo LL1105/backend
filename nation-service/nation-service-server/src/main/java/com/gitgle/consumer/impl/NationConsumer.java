@@ -90,20 +90,17 @@ public class NationConsumer implements KafkaConsumer {
     }
 
     public void processMessage(String message) {
-        CompletableFuture.runAsync(() -> {
-            NationResponse nationResponse = new NationResponse();
-            for (int i = 0; i < NATION_RETRY_COUNT; i++) {
-                nationResponse = nationCalculationService.calculateNation(message);
-                if(ObjectUtils.isNotEmpty(nationResponse) && StringUtils.isNotEmpty(nationResponse.getNation())){
-                    NationDto nationDto = new NationDto();
-                    nationDto.setNation(nationResponse.getNation());
-                    nationDto.setLogin(message);
-                    nationDto.setNationEnglish(nationResponse.getNationEnglish());
-                    nationDto.setConfidence(nationResponse.getConfidence());
-                    kafkaProducer.sendMessage(JSON.toJSONString(nationDto), USER_NATION_TOPIC);
-                    break;
-                }
+        for (int i = 0; i < NATION_RETRY_COUNT; i++) {
+            NationResponse nationResponse = nationCalculationService.calculateNation(message);
+            if (ObjectUtils.isNotEmpty(nationResponse) && StringUtils.isNotEmpty(nationResponse.getNation())) {
+                NationDto nationDto = new NationDto();
+                nationDto.setNation(nationResponse.getNation());
+                nationDto.setLogin(message);
+                nationDto.setNationEnglish(nationResponse.getNationEnglish());
+                nationDto.setConfidence(nationResponse.getConfidence());
+                kafkaProducer.sendMessage(JSON.toJSONString(nationDto), USER_NATION_TOPIC);
+                break;
             }
-        });
+        }
     }
 }
