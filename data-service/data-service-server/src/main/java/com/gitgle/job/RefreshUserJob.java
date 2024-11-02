@@ -1,6 +1,7 @@
 package com.gitgle.job;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.gitgle.constant.RedisConstant;
 import com.gitgle.produce.KafkaProducer;
 import com.gitgle.response.GithubUser;
@@ -10,7 +11,6 @@ import com.gitgle.utils.GithubApiRequestUtils;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -51,7 +51,7 @@ public class RefreshUserJob {
         log.info("执行刷新User任务...");
         // 从Redis中获取热门用户列表
         List<Integer> githubAccountIdList = redisTemplate.opsForList().range(RedisConstant.GITHUB_ACCOUNT_ID, 0, REFRESH_USES_PER_SIZE);
-        if (Objects.isNull(githubAccountIdList)) {
+        if (ObjectUtils.isEmpty(githubAccountIdList)) {
             return;
         }
         // 提交线程池刷新
