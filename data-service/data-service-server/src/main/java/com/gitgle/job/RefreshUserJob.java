@@ -3,6 +3,7 @@ package com.gitgle.job;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.gitgle.constant.RedisConstant;
+import com.gitgle.dto.NationDto;
 import com.gitgle.produce.KafkaProducer;
 import com.gitgle.response.GithubUser;
 import com.gitgle.response.GithubUserResponse;
@@ -73,13 +74,10 @@ public class RefreshUserJob {
                             writeGithubUser.add(finalGithubUser);
                             userService.writeGithubUser2User(writeGithubUser);
                         });
-                        // 如果用户没有设置location，发送给Nation推测，否则发给user-service
-                        if (StringUtils.isNotEmpty(githubUser.getLogin())) {
-                            kafkaProducer.sendMessage(githubUser.getLogin(), "Nation");
-                        } else {
-                            kafkaProducer.sendMessage(githubUser.getLogin(), "UserNation");
-                        }
-//                    }
+                    NationDto nationDto = new NationDto();
+                    nationDto.setLogin(githubUser.getLogin());
+                    nationDto.setLocation(githubUser.getLocation());
+                    kafkaProducer.sendMessage(JSON.toJSONString(nationDto), "Nation");
                 } catch (IOException e) {
                     log.error("Github User Exception: {}", e.getMessage());
                 }

@@ -117,6 +117,7 @@ public class UserNationConsumer implements KafkaConsumer {
                 user.setLogin(nationMessage.getLogin());
                 user.setNationEnglish(nationMessage.getNationEnglish());
                 user.setNationConfidence(BigDecimal.valueOf(nationMessage.getConfidence()));
+                user.setLocation(nationMessage.getLocation());
                 //更新头像
                 RpcResult<com.gitgle.response.GithubUser> githubUserRpcResult = githubUserService.getUserByLogin(user.getLogin());
                 if(githubUserRpcResult.getCode().equals(RpcResultCode.SUCCESS)) {
@@ -129,7 +130,8 @@ public class UserNationConsumer implements KafkaConsumer {
                 updateWrapper.eq("login", nationMessage.getLogin())
                         .set("nation", nationMessage.getNation())
                         .set("nation_confidence", nationMessage.getConfidence())
-                        .set("nation_english", nationMessage.getNationEnglish());
+                        .set("nation_english", nationMessage.getNationEnglish())
+                                .set("location", nationMessage.getLocation());
                 githubUserMapper.update(null, updateWrapper);
             }
 

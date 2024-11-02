@@ -40,6 +40,8 @@ public class GithubUser implements Serializable {
 
     private String nationEnglish;
 
+    private String location;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }
