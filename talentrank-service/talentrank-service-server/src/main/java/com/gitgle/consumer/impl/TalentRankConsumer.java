@@ -11,6 +11,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -35,6 +36,9 @@ public class TalentRankConsumer implements KafkaConsumer {
 
     @Resource
     private TalentRankCalculateService talentRankCalculateService;
+
+    @Resource
+    private ThreadPoolTaskExecutor talentRankThreadPoolTaskExecutor;
 
     @Override
     public void consumer(Properties props) {
@@ -74,11 +78,13 @@ public class TalentRankConsumer implements KafkaConsumer {
         }
     }
 
-    public void processMessage(String message){
-        String TalentRank = talentRankCalculateService.calculateTalentRank(message);
-        TalentRankDto talentRankDto = new TalentRankDto();
-        talentRankDto.setTalentRank(TalentRank);
-        talentRankDto.setLogin(message);
-        kafkaProducer.sendMessage(JSON.toJSONString(talentRankDto), USER_TALENT_RANK_TOPIC);
+    public void processMessage(String message) {
+        talentRankThreadPoolTaskExecutor.submit(() -> {
+            String TalentRank = talentRankCalculateService.calculateTalentRank(message);
+            TalentRankDto talentRankDto = new TalentRankDto();
+            talentRankDto.setTalentRank(TalentRank);
+            talentRankDto.setLogin(message);
+            kafkaProducer.sendMessage(JSON.toJSONString(talentRankDto), USER_TALENT_RANK_TOPIC);
+        });
     }
 }

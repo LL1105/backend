@@ -19,6 +19,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.core.annotation.Order;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -47,6 +48,9 @@ public class NationConsumer implements KafkaConsumer {
 
     @Resource
     private NationCalculationService nationCalculationService;
+
+    @Resource
+    private ThreadPoolTaskExecutor nationThreadPool;
 
     @Override
     public void consumer(Properties props) {
@@ -92,17 +96,19 @@ public class NationConsumer implements KafkaConsumer {
     }
 
     public void processMessage(String message) {
-        for (int i = 0; i < NATION_RETRY_COUNT; i++) {
-            NationResponse nationResponse = nationCalculationService.calculateNation(message);
-            if (ObjectUtils.isNotEmpty(nationResponse) && StringUtils.isNotEmpty(nationResponse.getNation())) {
-                NationDto nationDto = new NationDto();
-                nationDto.setNation(nationResponse.getNation());
-                nationDto.setLogin(message);
-                nationDto.setNationEnglish(nationResponse.getNationEnglish());
-                nationDto.setConfidence(nationResponse.getConfidence());
-                kafkaProducer.sendMessage(JSON.toJSONString(nationDto), USER_NATION_TOPIC);
-                break;
+        nationThreadPool.submit(()->{
+            for (int i = 0; i < NATION_RETRY_COUNT; i++) {
+                NationResponse nationResponse = nationCalculationService.calculateNation(message);
+                if (ObjectUtils.isNotEmpty(nationResponse) && StringUtils.isNotEmpty(nationResponse.getNation())) {
+                    NationDto nationDto = new NationDto();
+                    nationDto.setNation(nationResponse.getNation());
+                    nationDto.setLogin(message);
+                    nationDto.setNationEnglish(nationResponse.getNationEnglish());
+                    nationDto.setConfidence(nationResponse.getConfidence());
+                    kafkaProducer.sendMessage(JSON.toJSONString(nationDto), USER_NATION_TOPIC);
+                    break;
+                }
             }
-        }
+        });
     }
 }
