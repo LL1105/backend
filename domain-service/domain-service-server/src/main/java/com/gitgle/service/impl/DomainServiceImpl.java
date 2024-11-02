@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -25,6 +26,10 @@ public class DomainServiceImpl implements DomainService {
 
     @Override
     public Integer getDomainId(String domain) {
-        return domainMapper.selectOne(Wrappers.lambdaQuery(Domain.class).eq(Domain::getDomain, domain)).getId();
+        Domain domainOne = domainMapper.selectOne(Wrappers.lambdaQuery(Domain.class).select(Domain::getId).eq(Domain::getDomain, domain));
+        if(Objects.nonNull(domainOne)){
+            return domainOne.getId();
+        }
+        return 0;
     }
 }
