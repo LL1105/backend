@@ -1,5 +1,6 @@
 package com.gitgle.consumer.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.gitgle.consumer.KafkaConsumer;
 import com.gitgle.dto.TalentRankDto;
 import com.gitgle.produce.KafkaProducer;
@@ -78,6 +79,6 @@ public class TalentRankConsumer implements KafkaConsumer {
         TalentRankDto talentRankDto = new TalentRankDto();
         talentRankDto.setTalentRank(TalentRank);
         talentRankDto.setLogin(message);
-        kafkaProducer.sendMessage(talentRankDto.toString(), USER_TALENT_RANK_TOPIC);
+        kafkaProducer.sendMessage(JSON.toJSONString(talentRankDto), USER_TALENT_RANK_TOPIC);
     }
 }
