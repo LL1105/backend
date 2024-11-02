@@ -15,4 +15,6 @@ public class NationMessage implements Serializable {
 
     private Double confidence;
 
+    private String location;
+
 }
