@@ -60,11 +60,9 @@ public class KafkaConsumerStater implements CommandLineRunner {
                     "org.apache.kafka.common.serialization.StringDeserializer");
             props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
                     "org.apache.kafka.common.serialization.StringDeserializer");
-            CompletableFuture.runAsync(()->{
-                kafkaConsumer.consumer(props);
-            }).exceptionally(e->{
-                log.error("KafkaConsumerStater Exception: {}", e);
-                return null;
-            });        }
+            Thread thread = new Thread(() -> kafkaConsumer.consumer(props));
+            thread.setDaemon(true);
+            thread.start();
+        }
     }
 }
