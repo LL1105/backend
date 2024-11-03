@@ -25,7 +25,7 @@ jobs:
             gateway-service/target/gateway-service.jar
         run: |
           for jar in ${JARS}; do
-            scp "$jar" "${{ secrets.SSH_USER }}@${{ secrets.HOST }}:gitgle/"
+            sshpass -p "${{secrets.SSH_PASSWORD}}" scp -r "$jar" "${{ secrets.SSH_USER }}@${{ secrets.HOST }}:gitgle/"
           done
       - name: 停止之前运行的jar包
         if: always()
