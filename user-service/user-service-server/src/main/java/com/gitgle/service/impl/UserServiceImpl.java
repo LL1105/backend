@@ -1,6 +1,7 @@
 package com.gitgle.service.impl;
 
 
+import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
@@ -94,6 +95,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
 
     @Override
     public String getRank(Integer userId) {
+        //test ci
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", userId);
         User user = userMapper.selectOne(queryWrapper);
@@ -237,24 +239,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         Integer current = (page - 1) * size;
 
         List<SearchUser> searchList = githubUserMapper.searchByCondition(current, size, searchReq);
-        for (SearchUser searchUser : searchList) {
-            List<String> domains = new ArrayList<>();
-            //组装login所在的领域
-            String userLogin = searchUser.getLogin();
-            QueryWrapper<UserDomain> userDomainQueryWrapper = new QueryWrapper<>();
-            userDomainQueryWrapper.eq("login", userLogin);
-            List<UserDomain> userDomains = userDomainMapper.selectList(userDomainQueryWrapper);
-            for (UserDomain userDomain : userDomains) {
-                domains.add(userDomain.getDomain());
-            }
-            searchUser.setDomains(domains);
-        }
+//        for (SearchUser searchUser : searchList) {
+//            List<String> domains = new ArrayList<>();
+//            //组装login所在的领域
+//            String userLogin = searchUser.getLogin();
+//            QueryWrapper<UserDomain> userDomainQueryWrapper = new QueryWrapper<>();
+//            userDomainQueryWrapper.eq("login", userLogin);
+//            List<UserDomain> userDomains = userDomainMapper.selectList(userDomainQueryWrapper);
+//            for (UserDomain userDomain : userDomains) {
+//                domains.add(userDomain.getDomain());
+//            }
+//            searchUser.setDomains(domains);
+//        }
         //查全部条数
-        Integer count = searchList.size();
+        Integer count = githubUserMapper.searchCount(searchReq);
         resp.setSearchUsers(searchList);
         resp.setPage(page);
         resp.setPageSize(size);
-        resp.setTotalPage(Math.round(((count / size) + 0.5)));
+        resp.setTotalPage((long) Math.round(((count / size) + 0.5)));
         return Result.Success(resp);
     }
 
