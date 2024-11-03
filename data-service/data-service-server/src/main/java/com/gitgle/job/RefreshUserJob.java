@@ -5,8 +5,8 @@ import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.gitgle.constant.RedisConstant;
 import com.gitgle.dto.NationDto;
 import com.gitgle.produce.KafkaProducer;
-import com.gitgle.response.GithubUser;
-import com.gitgle.response.GithubUserResponse;
+import com.gitgle.response.*;
+import com.gitgle.service.ContributorService;
 import com.gitgle.service.UserService;
 import com.gitgle.utils.GithubApiRequestUtils;
 import com.xxl.job.core.context.XxlJobHelper;
@@ -31,7 +31,10 @@ public class RefreshUserJob {
     private KafkaProducer kafkaProducer;
 
     @Resource
-    private RedisTemplate<String, Integer> redisTemplate;
+    private RedisTemplate redisTemplate;
+
+    @Resource
+    private ContributorService contributorService;
 
     @Resource
     private GithubApiRequestUtils githubApiRequestUtils;
@@ -43,6 +46,29 @@ public class RefreshUserJob {
 
     @Resource
     private ThreadPoolTaskExecutor refreshUserTaskExecutor;
+
+    @XxlJob("refreshUserByHotRepo")
+    public void refreshByHotRepo() {
+        String param = XxlJobHelper.getJobParam();
+        Integer hotRepoCount = Integer.valueOf(param);
+        List<GithubRepoRank> githubRepoRankList = redisTemplate.opsForList().range(RedisConstant.GITHUB_REPO_RANK, 0, hotRepoCount);
+        for(GithubRepoRank githubRepos : githubRepoRankList){
+            try{
+                Map<String, String> params = new HashMap<>();
+                GithubContributorResponse githubContributorResponse = githubApiRequestUtils.listRepoContributors(githubRepos.getOwnerLogin(), githubRepos.getRepoName(), params);
+                CompletableFuture.runAsync(()->{
+                    contributorService.writeGithubContributor2Contributor(githubContributorResponse.getGithubContributorList());
+                });
+                for(GithubContributor githubContributor : githubContributorResponse.getGithubContributorList()){
+                    kafkaProducer.sendMessage(githubContributor.getLogin(), "Domain");
+                    kafkaProducer.sendMessage(githubContributor.getLogin(), "TalentRank");
+                    kafkaProducer.sendMessage(githubContributor.getLogin(), "Nation");
+                }
+            }catch (IOException e){
+                log.error("Github Contributor Exception: {}", e.getMessage());
+            }
+        }
+    }
 
     /**
      * 刷新用户信息

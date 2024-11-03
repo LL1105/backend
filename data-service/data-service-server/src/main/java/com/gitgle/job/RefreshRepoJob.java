@@ -48,12 +48,14 @@ public class RefreshRepoJob {
 
     @XxlJob("refreshRepoByStar")
     public void refreshByStar(){
-        String[] params = XxlJobHelper.getJobParam().split(",");
+//        String[] params = XxlJobHelper.getJobParam().split(",");
+//        Integer starsUpperLimit = 0;
+//        if(params.length==2){
+//            starsUpperLimit = Integer.valueOf(params[1]);
+//        }
+//        Integer starsFloorLimit = Integer.valueOf(params[0]);
+        Integer starsFloorLimit = 10000;
         Integer starsUpperLimit = 0;
-        if(params.length==2){
-            starsUpperLimit = Integer.valueOf(params[1]);
-        }
-        Integer starsFloorLimit = Integer.valueOf(params[0]);
         if(redisTemplate.hasKey(RedisConstant.GITHUB_REPO_RANK)){
             redisTemplate.delete(RedisConstant.GITHUB_REPO_RANK);
         }
@@ -110,6 +112,7 @@ public class RefreshRepoJob {
                     Map<String, String> param = new HashMap<>();
                     // 刷新仓库贡献者
                     GithubContributorResponse githubContributorResponse = githubApiRequestUtils.listRepoContributors(githubRepos.getOwnerLogin(), githubRepos.getRepoName(), param);
+
                     // 计算仓库贡献总值
                     Integer totalContributions = 0;
                     for(GithubContributor githubContributor : githubContributorResponse.getGithubContributorList()){

@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.gitgle.dao.Contributor;
 import com.gitgle.response.GithubContributor;
 
+import java.time.LocalDateTime;
+
 public class GithubContributorConvert {
 
     public static GithubContributor convert(JSONObject item,String repoName, String repoOwner){
@@ -24,5 +26,17 @@ public class GithubContributorConvert {
         githubContributor.setContributions(contributor.getContributions());
         githubContributor.setId(contributor.getContributorId());
         return githubContributor;
+    }
+
+    public static Contributor convert2Contributor(GithubContributor item){
+        Contributor contributor = new Contributor();
+        contributor.setContributorId(item.getId());
+        contributor.setContributions(item.getContributions());
+        contributor.setRepoName(item.getRepoName());
+        contributor.setRepoOwner(item.getRepoOwner());
+        contributor.setLogin(item.getLogin());
+        contributor.setCreateTime(LocalDateTime.now());
+        contributor.setUpdateTime(LocalDateTime.now());
+        return contributor;
     }
 }
