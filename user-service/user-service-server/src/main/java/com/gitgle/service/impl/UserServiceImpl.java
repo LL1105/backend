@@ -33,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.ibatis.annotations.Param;
+import org.apache.kafka.common.protocol.types.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -45,6 +46,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -229,16 +232,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
 
     @Override
     public Result search(Integer page, Integer size, SearchReq searchReq) {
-        Integer current = (page - 1) * size;
         SearchResp resp = new SearchResp();
 
+        Integer current = (page - 1) * size;
+
         List<SearchUser> searchList = githubUserMapper.searchByCondition(current, size, searchReq);
+        for (SearchUser searchUser : searchList) {
+            List<String> domains = new ArrayList<>();
+            //组装login所在的领域
+            String userLogin = searchUser.getLogin();
+            QueryWrapper<UserDomain> userDomainQueryWrapper = new QueryWrapper<>();
+            userDomainQueryWrapper.eq("login", userLogin);
+            List<UserDomain> userDomains = userDomainMapper.selectList(userDomainQueryWrapper);
+            for (UserDomain userDomain : userDomains) {
+                domains.add(userDomain.getDomain());
+            }
+            searchUser.setDomains(domains);
+        }
         //查全部条数
-        Integer count = githubUserMapper.searchCount(searchReq);
+        Integer count = searchList.size();
         resp.setSearchUsers(searchList);
         resp.setPage(page);
         resp.setPageSize(size);
-        resp.setTotalPage((long) Math.round(((count / size) + 0.5)));
+        resp.setTotalPage(Math.round(((count / size) + 0.5)));
         return Result.Success(resp);
     }
 
