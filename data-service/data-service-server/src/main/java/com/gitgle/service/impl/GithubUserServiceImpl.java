@@ -10,6 +10,7 @@ import com.gitgle.constant.RpcResultCode;
 import com.gitgle.dao.Commit;
 import com.gitgle.dao.Organization;
 import com.gitgle.dao.User;
+import com.gitgle.job.RefreshRepoJob;
 import com.gitgle.job.RefreshUserJob;
 import com.gitgle.mapper.UserMapper;
 import com.gitgle.produce.KafkaProducer;
@@ -161,15 +162,11 @@ public class GithubUserServiceImpl implements com.gitgle.service.GithubUserServi
     }
 
     @Resource
-    private RefreshUserJob refreshUserJob;
+    private RefreshRepoJob refreshRepoJob;
 
     @Override
     public RpcResult<GithubUser> listUserByFollowers() {
-        try {
-            log.info("GithubUser总数:{}", githubApiRequestUtils.getGithubUserTotal());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        refreshRepoJob.refreshByStar();
         return null;
     }
 }

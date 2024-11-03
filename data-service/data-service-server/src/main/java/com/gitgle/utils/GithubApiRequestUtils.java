@@ -264,6 +264,7 @@ public class GithubApiRequestUtils {
         GithubContributorResponse githubContributorResponse = new GithubContributorResponse();
         List<GithubContributor> githubContributorList = new ArrayList<>();
         params.put("per_page", "100");
+        params.put("anon", "false");
         Integer page = 1;
         while (true) {
             params.put("page", String.valueOf(page));
