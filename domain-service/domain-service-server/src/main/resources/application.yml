@@ -14,6 +14,10 @@ spring:
     nacos:
       discovery:
         enabled: false
+  redis:
+    host: 49.232.232.203
+    password: gitgle_1024
+    port: 6379
 
 dubbo:
   provider:
@@ -35,3 +39,15 @@ dubbo:
 kafka:
   bootstrap-servers: ckafka-9jnjx2m9.ap-beijing.ckafka.tencentcloudmq.com:50002
   sasl-jaas-config: /etc/ckafka_client_jaas.conf
+
+xxl:
+  job:
+    admin:
+      addresses: http://49.232.232.203:2222/xxl-job-admin
+    accessToken: dasj2nd81jf9asjdkl5jk234
+    executor:
+      logretentiondays: 7
+      port: 9091
+      ip: 49.232.232.203
+      logpath: ./log
+      appname: ${spring.application.name}
