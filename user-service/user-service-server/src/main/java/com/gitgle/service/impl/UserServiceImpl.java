@@ -14,10 +14,8 @@ import com.gitgle.constant.RedisConstant;
 import com.gitgle.constant.RpcResultCode;
 import com.gitgle.entity.Domain;
 import com.gitgle.entity.Nation;
-import com.gitgle.mapper.DomainMapper;
-import com.gitgle.mapper.GithubUserMapper;
-import com.gitgle.mapper.NationMapper;
-import com.gitgle.mapper.UserMapper;
+import com.gitgle.entity.UserDomain;
+import com.gitgle.mapper.*;
 import com.gitgle.response.*;
 import com.gitgle.result.Result;
 import com.gitgle.entity.User;
@@ -59,6 +57,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
 
     @Resource
     UserMapper userMapper;
+
+    @Resource
+    private UserDomainMapper userDomainMapper;
 
     @Resource
     JavaMailSender mailSender;
@@ -321,6 +322,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         updateWrapper.eq("id", user.getId()).set("password", Md5Util.md5(newPassword, Md5Util.md5Key));
         userMapper.update(null, updateWrapper);
         return Result.Success();
+    }
+
+    @Override
+    public RpcResult<Long> getUserCountInDomain(Integer domainId) {
+        RpcResult<Long> result = new RpcResult<>();
+        try{
+            Long userCount = userDomainMapper.selectCount(Wrappers.lambdaQuery(UserDomain.class).select(UserDomain::getId).eq(UserDomain::getDomainId, domainId));
+            result.setCode(RpcResultCode.SUCCESS);
+            result.setData(userCount);
+            return result;
+        }catch (Exception e){
+            result.setCode(RpcResultCode.FAILED);
+            return result;
+        }
     }
 
 }

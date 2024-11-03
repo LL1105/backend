@@ -66,7 +66,6 @@ public class UserTalentRankConsumer implements KafkaConsumer {
             while (true) {
                 try {
                     ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
-
                     if (records.isEmpty()) {
                         // 没有新消息时休眠一段时间
                         Thread.sleep(100); // 休眠 100 毫秒

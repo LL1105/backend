@@ -7,13 +7,7 @@ import java.io.Serializable;
 @Data
 public class NationDto implements Serializable {
 
-    private String nation;
-
-    private String login;
-
-    private String nationEnglish;
-
     private String location;
 
-    private Double confidence;
+    private String login;
 }

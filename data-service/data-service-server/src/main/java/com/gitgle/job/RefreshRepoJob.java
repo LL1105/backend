@@ -110,6 +110,7 @@ public class RefreshRepoJob {
                     Map<String, String> param = new HashMap<>();
                     // 刷新仓库贡献者
                     GithubContributorResponse githubContributorResponse = githubApiRequestUtils.listRepoContributors(githubRepos.getOwnerLogin(), githubRepos.getRepoName(), param);
+
                     // 计算仓库贡献总值
                     Integer totalContributions = 0;
                     for(GithubContributor githubContributor : githubContributorResponse.getGithubContributorList()){
@@ -128,12 +129,20 @@ public class RefreshRepoJob {
                         CompletableFuture.runAsync(()->{
                             contributorService.writeGithubContributor2Contributor(githubContributorResponse.getGithubContributorList());
                         });
-                        kafkaProducer.sendMessage(githubRepos.getOwnerLogin(), "TalentRank");
+                        for(GithubContributor githubContributor : githubContributorResponse.getGithubContributorList()){
+                            kafkaProducer.sendMessage(githubContributor.getLogin(), "Domain");
+                            kafkaProducer.sendMessage(githubContributor.getLogin(), "TalentRank");
+                            kafkaProducer.sendMessage(githubContributor.getLogin(), "Nation");
+                        }
                         continue;
                     }
                     // 如果仓库指标不一致，则发送消息
                     if(!githubRepos.getStarsCount().equals(repos.getStarsCount()) || !githubRepos.getForksCount().equals(repos.getForksCount()) || !githubRepos.getIssueCount().equals(repos.getIssueCount())){
-                        kafkaProducer.sendMessage(githubRepos.getOwnerLogin(), "TalentRank");
+                        for(GithubContributor githubContributor : githubContributorResponse.getGithubContributorList()){
+                            kafkaProducer.sendMessage(githubContributor.getLogin(), "Domain");
+                            kafkaProducer.sendMessage(githubContributor.getLogin(), "TalentRank");
+                            kafkaProducer.sendMessage(githubContributor.getLogin(), "Nation");
+                        }
                     }
                 }
             } catch (IOException e) {

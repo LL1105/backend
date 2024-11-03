@@ -16,6 +16,7 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -38,7 +39,6 @@ public class NationCalculationServiceImpl implements NationCalculationService {
 
     @Override
     public NationResponse calculateNation(String login) {
-        NationResponse nationResponse = new NationResponse();
         try {
             Map<String, Integer> relationshipLocationSet = new ConcurrentHashMap<>();
             // 异步并行获取关注列表
@@ -60,21 +60,46 @@ public class NationCalculationServiceImpl implements NationCalculationService {
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append(relationshipLocationSet);
             stringBuilder.append("\n");
-            String question = "根据上面[]中的github开发者的Follower和Following的地区信息，请你为我推测出这个开发所在的国家或者地区，并给出置信度，你只需要给我返回你推测出的国家或地区的中文名、英文名以及置信度，并用-分隔（例如：中国-China-0.55),请特别注意，不要返回我需要的信息以外的信息，这将导致重大错误";
+            String question = "根据上面[]中的github开发者的Follower和Following的地区信息，请你为我推测出这个开发所在的国家或者地区，并给出置信度，你只需要给我返回你推测出的国家或地区的中文名、英文名(英文名需要全称)以及置信度，并用-分隔（例如：中国-China-0.55),请特别注意，不要返回我需要的信息以外的信息，这将导致重大错误";
             stringBuilder.append(question);
             Response response = sparkApiUtils.doRequest(stringBuilder.toString());
             if (!response.isSuccessful()) {
                 throw new RuntimeException("请求spark api失败");
             }
-            JSONObject responseBody = JSON.parseObject(response.body().string());
-            String content = responseBody.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content");
-            log.info("Spark Response Content: {}", content);
-            String[] nationArray = content.split("-");
-            nationResponse.setNation(nationArray[0]);
-            nationResponse.setNationEnglish(nationArray[1]);
-            nationResponse.setConfidence(Double.valueOf(nationArray[2]));
-            return nationResponse;
+            return response2NationResponse(response);
         } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public NationResponse response2NationResponse(Response response) throws IOException {
+        NationResponse nationResponse = new NationResponse();
+        JSONObject responseBody = JSON.parseObject(response.body().string());
+        String content = responseBody.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content");
+        log.info("Spark Response Content: {}", content);
+        String[] nationArray = content.split("-");
+        nationResponse.setNation(nationArray[0]);
+        nationResponse.setNationEnglish(nationArray[1]);
+        nationResponse.setConfidence(Double.valueOf(nationArray[2]));
+        return nationResponse;
+    }
+
+    @Override
+    public NationResponse getNationByLocation(String location) {
+        try {
+            String question = ":根据上面这个Location信息，请你为我推测出这个Location所在的国家或者地区，并给出置信度，你只需要给我返回你推测出的国家或地区的中文名、英文名(英文名需要全称)以及置信度，并用-分隔（例如：中国-China-0.55),请特别注意，不要返回我需要的信息以外的信息，这将导致重大错误";
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("Location:");
+            stringBuilder.append(location);
+            stringBuilder.append("\n");
+            stringBuilder.append(question);
+            Response response = sparkApiUtils.doRequest(stringBuilder.toString());
+            if (!response.isSuccessful()) {
+                throw new RuntimeException("请求spark api失败");
+            }
+            return response2NationResponse(response);
+        }catch (Exception e){
+            log.error("推测开发者国家或地区失败：{}", e.getMessage());
             return null;
         }
     }

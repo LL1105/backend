@@ -1,6 +1,7 @@
 package com.gitgle.consumer.impl;
 
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.gitgle.constant.RpcResultCode;
@@ -97,10 +98,18 @@ public class NationConsumer implements KafkaConsumer {
 
     public void processMessage(String message) {
         nationThreadPool.submit(()->{
+            NationDto nationDto = new NationDto();
+            JSONObject jsonObject = JSON.parseObject(message);
+            nationDto.setLocation(jsonObject.getString("location"));
+            nationDto.setLogin(jsonObject.getString("login"));
             for (int i = 0; i < NATION_RETRY_COUNT; i++) {
-                NationResponse nationResponse = nationCalculationService.calculateNation(message);
+                NationResponse nationResponse = null;
+                if(StringUtils.isNotEmpty(nationDto.getLocation())){
+                    nationResponse = nationCalculationService.getNationByLocation(nationDto.getLocation());
+                }else {
+                    nationResponse = nationCalculationService.calculateNation(message);
+                }
                 if (ObjectUtils.isNotEmpty(nationResponse) && StringUtils.isNotEmpty(nationResponse.getNation())) {
-                    NationDto nationDto = new NationDto();
                     nationDto.setNation(nationResponse.getNation());
                     nationDto.setLogin(message);
                     nationDto.setNationEnglish(nationResponse.getNationEnglish());

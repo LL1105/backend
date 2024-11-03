@@ -1,5 +1,6 @@
 package com.gitgle.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.gitgle.constant.RpcResultCode;
 import com.gitgle.request.GithubRequest;
@@ -37,7 +38,7 @@ public class TalentRankCalculateServiceImpl implements TalentRankCalculateServic
         // 获取项目信息
         RpcResult<GithubRepos> githubReposResponseRpcResult = githubProjectService.getRepoByOwnerAndRepoName(owner, repoName);
         if(!RpcResultCode.SUCCESS.equals(githubReposResponseRpcResult.getCode())) {
-            return "0";
+            return "1";
         }
         GithubRepos githubRepos = githubReposResponseRpcResult.getData();
         // 根据star数和fork数计算项目重要度
@@ -85,7 +86,7 @@ public class TalentRankCalculateServiceImpl implements TalentRankCalculateServic
     @Override
     public String calculateContribution(String repoOwner, String repoName, String author) {
         if(StringUtils.isEmpty(repoOwner) || StringUtils.isEmpty(repoName) || StringUtils.isEmpty(author)){
-            return "1";
+            return "0";
         }
         // 获取该仓库贡献度
         RpcResult<GithubContributorResponse> githubContributorResponseRpcResult = githubProjectService.listRepoContributors(repoOwner, repoName);
@@ -101,7 +102,10 @@ public class TalentRankCalculateServiceImpl implements TalentRankCalculateServic
                 authorContribution = new BigDecimal(githubContributor.getContributions());
             }
         }
-        authorContribution = authorContribution.divide(totalContribution, 5, BigDecimal.ROUND_HALF_UP);
-        return String.valueOf(authorContribution);
+        if(ObjectUtils.isNotEmpty(authorContribution)){
+            authorContribution = authorContribution.divide(totalContribution, 5, BigDecimal.ROUND_HALF_UP);
+            return String.valueOf(authorContribution);
+        }
+        return "0";
     }
 }

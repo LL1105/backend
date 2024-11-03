@@ -10,6 +10,7 @@ import com.gitgle.mapper.ContributorMapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,7 +34,7 @@ public class ContributorServiceImpl implements ContributorService{
                 contributorMapper.update(contributor, Wrappers.lambdaUpdate(Contributor.class).eq(Contributor::getContributorId, item.getId()));
                 continue;
             }
-            contributorMapper.insert(contributor);
+            contributorMapper.insert(GithubContributorConvert.convert2Contributor(item));
         }
     }
 

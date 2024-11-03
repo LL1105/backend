@@ -6,4 +6,6 @@ public interface NationCalculationService {
 
     NationResponse calculateNation(String login);
 
+    NationResponse getNationByLocation(String location);
+
 }
