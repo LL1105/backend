@@ -50,7 +50,7 @@ public class SaTokenConfigure {
                     ServerWebExchange exchange = SaReactorSyncHolder.getContext();
                     exchange.getResponse().getHeaders().set("Content-Type", "application/json; charset=utf-8");
 //                    return new ResultJsonUtil().fail(e.getMessage());
-                    return SaResult.error(e.getMessage());
+                    return SaResult.get(401, e.getMessage(), null);
                 })
                 .setBeforeAuth(obj -> {
                     // ---------- 设置跨域响应头 ----------
