@@ -26,7 +26,13 @@ jobs:
       - name: 确定修改的文件
         id: modified_files
         run: |
-          echo "modified_files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})" >> $GITHUB_ENV
+          # 检查 github.event.before 是否是一个有效的提交
+          if git rev-parse --verify ${{ github.event.before }} >/dev/null 2>&1; then
+            echo "modified_files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})" >> $GITHUB_ENV
+          else
+            # 如果不是有效的提交，使用 HEAD~ 作为比较基准
+            echo "modified_files=$(git diff --name-only HEAD~ ${{ github.sha }})" >> $GITHUB_ENV
+          fi
 
       - name: 设置JAR环境变量
         run: |
@@ -150,20 +156,19 @@ jobs:
         uses: fifsky/ssh-action@master
         with:
           command: |
-            cd gitgle
-            java -jar data-service.jar
+            java -jar /gitgle/data-service.jar
             sleep 6
-            java -jar talentrank-service.jar
+            java -jar /gitgle/talentrank-service.jar
             sleep 6            
-            java -jar nation-service.jar
+            java -jar /gitgle/nation-service.jar
             sleep 6 
-            java -jar user-service.jar
+            java -jar /gitgle/user-service.jar
             sleep 6
-            java -jar domain-service.jar
+            java -jar /gitgle/domain-service.jar
             sleep 6
-            java -jar api-service.jar
+            java -jar /gitgle/api-service.jar
             sleep 6
-            java -jar gateway-service.jar
+            java -jar /gitgle/gateway-service.jar
           host: ${{ secrets.HOST }}
           user: ${{ secrets.SSH_USER }}
           pass: ${{ secrets.SSH_PASSWORD }}

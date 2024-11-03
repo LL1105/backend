@@ -95,7 +95,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
 
     @Override
     public String getRank(Integer userId) {
-        //test ci
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", userId);
         User user = userMapper.selectOne(queryWrapper);
