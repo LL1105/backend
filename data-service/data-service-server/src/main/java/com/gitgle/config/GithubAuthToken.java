@@ -4,6 +4,7 @@ import com.gitgle.constant.RedisConstant;
 import io.netty.util.internal.ObjectUtil;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -23,7 +24,8 @@ public class GithubAuthToken {
     @Getter
     private List<String> list;
 
-    @Resource
+    @Autowired
+    @Qualifier("stringRedisTemplate")
     private StringRedisTemplate stringRedisTemplate;
 
     @PostConstruct
