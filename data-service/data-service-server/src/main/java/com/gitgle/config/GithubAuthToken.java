@@ -2,6 +2,7 @@ package com.gitgle.config;
 
 import com.gitgle.constant.RedisConstant;
 import io.netty.util.internal.ObjectUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,7 @@ public class GithubAuthToken {
 
     private List<String> list;
 
-    @Resource
+    @Autowired
     StringRedisTemplate redisTemplate;
 
     public List<String> getList() {
