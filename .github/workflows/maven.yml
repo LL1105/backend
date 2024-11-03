@@ -13,20 +13,16 @@ jobs:
           java-version: 1.8
       - name: 生成jar包
         run: mvn clean install
-      - name: 在服务器上部署jar包
         env:
           JARS: >-
-            data-service/data-service-server/target/data-service.jar
-            talentrank-service/talentrank-service-server/target/talentrank-service.jar
-            nation-service/nation-service-server/target/nation-service.jar
-            user-service/user-service-server/target/user-service.jar
-            domain-service/domain-service-server/target/domain-service.jar
-            api-service/target/api-service.jar
-            gateway-service/target/gateway-service.jar
-        run: |
-          for jar in ${JARS}; do
-            sshpass -p "${{secrets.SSH_PASSWORD}}" scp -r "$jar" "${{ secrets.SSH_USER }}@${{ secrets.HOST }}:gitgle/"
-          done
+            data-service.jar
+            talentrank-service.jar
+            nation-service.jar
+            user-service.jar
+            domain-service.jar
+            api-service.jar
+            gateway-service.jar
+
       - name: 停止之前运行的jar包
         if: always()
         uses: fifsky/ssh-action@master
@@ -40,6 +36,70 @@ jobs:
           user: ${{ secrets.SSH_USER }}
           pass: ${{ secrets.SSH_PASSWORD }}
           args: "-tt"
+
+      - name: 上传Data服务
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: data-service/data-service-server/target/data-service.jar
+          remote: gitgle/data-service.jar
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+
+      - name: 上传talentRank服务
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: talentrank-service/talentrank-service-server/target/talentrank-service.jar
+          remote: gitgle/talentrank-service.jar
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+
+      - name: 上传Nation服务
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: nation-service/nation-service-server/target/nation-service.jar
+          remote: gitgle/nation-service.jar
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+
+      - name: 上传User服务
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: user-service/user-service-server/target/user-service.jar
+          remote: gitgle/user-service.jar
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+
+      - name: 上传Domain服务
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: domain-service/domain-service-server/target/domain-service.jar
+          remote: gitgle/domain-service.jar
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+
+      - name: 上传Api服务
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: api-service/target/api-service.jar
+          remote: gitgle/api-service.jar
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+
+      - name: 上传Gateway服务
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: gateway-service/target/gateway-service.jar
+          remote: gitgle/gateway-service.jar
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+
       - name: 按顺序运行jar包
         if: always()
         uses: fifsky/ssh-action@master
