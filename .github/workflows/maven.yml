@@ -1,5 +1,8 @@
+name: build
+on: [push, pull_request]
+
 jobs:
-  compile:
+  build:
     runs-on: ubuntu-latest
     name: Running Java ${{ matrix.java }} compile
     steps:
