@@ -90,7 +90,7 @@ public class DomainCalculationServiceImpl implements DomainCalculationService {
             domainResponse.setUserDomainBaseList(userDomainBaseList);
             return domainResponse;
         } catch (Exception e) {
-            log.error("推测开发者领域失败：{}", e);
+            log.error("推测开发者领域失败：{}", e.getMessage());
             return null;
         }
     }
