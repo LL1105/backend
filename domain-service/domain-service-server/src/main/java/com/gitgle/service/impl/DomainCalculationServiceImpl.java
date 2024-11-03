@@ -53,10 +53,11 @@ public class DomainCalculationServiceImpl implements DomainCalculationService {
             CompletableFuture<String> userReposReadme = getUserReposReadme(githubRepoMap);
             // 获取仓库语言
             CompletableFuture<String> repoLanguages = getRepoLanguages(githubRepoMap);
+            CompletableFuture.allOf(userReposReadme, repoLanguages);
             StringBuilder description = new StringBuilder();
             description.append(userReposReadme.get());
             description.append(repoLanguages.get());
-            String question = "根据以上信息，请你分析该信息对应的开发者的专业领域和编程语言,并从下列领域名词中选择出来(你的回答必须在下列名词中，你不能回答不包含于下列的答案)，同时你需要计算每个名词的置信度，你只需要给我按格式返回选择的领域和置信度(你必须尽可能精确的预测），用|符分隔（例如：|后端开发|0.77|Java|0.88|）：";
+            String question = "根据以上信息，请你分析该信息对应的开发者的专业领域和编程语言,并从下列领域名词中选择出来(你的回答必须在下列名词中，你不能回答不包含于下列的答案)，同时你需要计算每个名词的置信度，你只需要给我按格式返回选择的领域和置信度(不要给出其他任何提示信息），用|符分隔（例如：|后端开发|0.77|Java|0.88|）：";
             List<Domain> domainList = domainService.readAllDomain();
             description.append("\n");
             description.append(question);
