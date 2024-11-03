@@ -111,7 +111,6 @@ public class NationConsumer implements KafkaConsumer {
                 }
                 if (ObjectUtils.isNotEmpty(nationResponse) && StringUtils.isNotEmpty(nationResponse.getNation())) {
                     nationDto.setNation(nationResponse.getNation());
-                    nationDto.setLogin(message);
                     nationDto.setNationEnglish(nationResponse.getNationEnglish());
                     nationDto.setConfidence(nationResponse.getConfidence());
                     kafkaProducer.sendMessage(JSON.toJSONString(nationDto), USER_NATION_TOPIC);
