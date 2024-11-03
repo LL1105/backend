@@ -18,8 +18,8 @@ public class GithubAuthToken {
 
     private List<String> list;
 
-    @Autowired
-    StringRedisTemplate redisTemplate;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     public List<String> getList() {
         return list;
@@ -27,7 +27,7 @@ public class GithubAuthToken {
 
     public void setList(List<String> list) {
         if(ObjectUtils.isEmpty(list)) {
-            list = redisTemplate.opsForList().range(RedisConstant.GITHUB_TOKEN, 0, -1);
+            list = stringRedisTemplate.opsForList().range(RedisConstant.GITHUB_TOKEN, 0, -1);
         }
         this.list = list;
     }
