@@ -12,8 +12,8 @@ public class ThreadPoolConfig {
     @Bean
     public ThreadPoolTaskExecutor domainThreadPoolTask(){
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(8);
-        executor.setMaxPoolSize(16);
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(2);
         executor.setQueueCapacity(1000);
         executor.setThreadNamePrefix("domain-calculate-");
         executor.setWaitForTasksToCompleteOnShutdown(true);

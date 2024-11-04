@@ -20,9 +20,9 @@ public class SparkApiUtils {
     @Resource
     private OkHttpClient httpClient;
 
-    private static final String MODEL = "4.0Ultra";
+    private static final String MODEL = "generalv3.5";
 
-    private static final String APPID = "5645e836";
+    private static final String APPID = "2b596475";
 
     private static final String CONTENT_TYPE_KEY = "Content-Type";
 
@@ -30,7 +30,7 @@ public class SparkApiUtils {
 
     private static final String AUTHORIZATION_KEY = "Authorization";
 
-    private static final String AUTHORIZATION = "Bearer tvrGiGwUpHFVUMKHLpUx:aHtksSjjVZxeSgNjiyaM";
+    private static final String AUTHORIZATION = "Bearer TLKNYLeBUSVdTPDzYytF:PQSSFZLlmYkMtxCoQoWY";
 
     public Response doRequest(String content) throws IOException {
         SparkRequest sparkRequest = new SparkRequest();
