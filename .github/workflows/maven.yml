@@ -23,47 +23,47 @@ jobs:
 #            api-service.jar
 #            gateway-service.jar
 
-      - name: 确定修改的文件
-        id: modified_files
-        run: |
-          # 检查 github.event.before 是否是一个有效的提交
-          if git rev-parse --verify ${{ github.event.before }} >/dev/null 2>&1; then
-            echo "modified_files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})" >> $GITHUB_ENV
-          else
-            # 如果不是有效的提交，使用 HEAD~ 作为比较基准
-            echo "modified_files=$(git diff --name-only HEAD~ ${{ github.sha }})" >> $GITHUB_ENV
-          fi
-
-      - name: 设置JAR环境变量
-        run: |
-          jars=""
-          for file in ${{ env.modified_files }}; do
-            dir_name=$(basename $(dirname "$file"))
-            case $dir_name in
-              data-service)
-                jars+="data-service.jar "
-                ;;
-              talentrank-service)
-                jars+="talentrank-service.jar "
-                ;;
-              nation-service)
-                jars+="nation-service.jar "
-                ;;
-              user-service)
-                jars+="user-service.jar "
-                ;;
-              domain-service)
-                jars+="domain-service.jar "
-                ;;
-              api-service)
-                jars+="api-service.jar "
-                ;;
-              gateway-service)
-                jars+="gateway-service.jar "
-                ;;
-            esac
-          done
-          echo "JARS=$jars" >> $GITHUB_ENV
+#      - name: 确定修改的文件
+#        id: modified_files
+#        run: |
+#          # 检查 github.event.before 是否是一个有效的提交
+#          if git rev-parse --verify ${{ github.event.before }} >/dev/null 2>&1; then
+#            echo "modified_files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})" >> $GITHUB_ENV
+#          else
+#            # 如果不是有效的提交，使用 HEAD~ 作为比较基准
+#            echo "modified_files=$(git diff --name-only HEAD~ ${{ github.sha }})" >> $GITHUB_ENV
+#          fi
+#
+#      - name: 设置JAR环境变量
+#        run: |
+#          jars=""
+#          for file in ${{ env.modified_files }}; do
+#            dir_name=$(basename $(dirname "$file"))
+#            case $dir_name in
+#              data-service)
+#                jars+="data-service.jar "
+#                ;;
+#              talentrank-service)
+#                jars+="talentrank-service.jar "
+#                ;;
+#              nation-service)
+#                jars+="nation-service.jar "
+#                ;;
+#              user-service)
+#                jars+="user-service.jar "
+#                ;;
+#              domain-service)
+#                jars+="domain-service.jar "
+#                ;;
+#              api-service)
+#                jars+="api-service.jar "
+#                ;;
+#              gateway-service)
+#                jars+="gateway-service.jar "
+#                ;;
+#            esac
+#          done
+#          echo "JARS=$jars" >> $GITHUB_ENV
 
       - name: 停止之前运行的jar包
         if: always()
@@ -81,75 +81,69 @@ jobs:
           pass: ${{ secrets.SSH_PASSWORD }}
           args: "-tt"
 
-      - name: 上传Data服务
-        if: contains(env.JARS, 'data-service.jar')
-        uses: garygrossgarten/github-action-scp@release
-        with:
-          local: data-service/data-service-server/target/data-service.jar
-          remote: gitgle/data-service.jar
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-
-      - name: 上传talentRank服务
-        if: contains(env.JARS, 'talentrank-service.jar')
-        uses: garygrossgarten/github-action-scp@release
-        with:
-          local: talentrank-service/talentrank-service-server/target/talentrank-service.jar
-          remote: gitgle/talentrank-service.jar
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-
-      - name: 上传Nation服务
-        if: contains(env.JARS, 'nation-service.jar')
-        uses: garygrossgarten/github-action-scp@release
-        with:
-          local: nation-service/nation-service-server/target/nation-service.jar
-          remote: gitgle/nation-service.jar
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-
-      - name: 上传User服务
-        if: contains(env.JARS, 'user-service.jar')
-        uses: garygrossgarten/github-action-scp@release
-        with:
-          local: user-service/user-service-server/target/user-service.jar
-          remote: gitgle/user-service.jar
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-
-      - name: 上传Domain服务
-        if: contains(env.JARS, 'domain-service.jar')
-        uses: garygrossgarten/github-action-scp@release
-        with:
-          local: domain-service/domain-service-server/target/domain-service.jar
-          remote: gitgle/domain-service.jar
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-
-      - name: 上传Api服务
-        if: contains(env.JARS, 'api-service.jar')
-        uses: garygrossgarten/github-action-scp@release
-        with:
-          local: api-service/target/api-service.jar
-          remote: gitgle/api-service.jar
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-
-      - name: 上传Gateway服务
-        if: contains(env.JARS, 'gateway-service.jar')
-        uses: garygrossgarten/github-action-scp@release
-        with:
-          local: gateway-service/target/gateway-service.jar
-          remote: gitgle/gateway-service.jar
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
+#      需要重新上传哪个包，就解开那块的注释
+#      - name: 上传Data服务
+#        uses: garygrossgarten/github-action-scp@release
+#        with:
+#          local: data-service/data-service-server/target/data-service.jar
+#          remote: gitgle/data-service.jar
+#          host: ${{ secrets.HOST }}
+#          username: ${{ secrets.SSH_USER }}
+#          password: ${{ secrets.SSH_PASSWORD }}
+#
+#      - name: 上传talentRank服务
+#        uses: garygrossgarten/github-action-scp@release
+#        with:
+#          local: talentrank-service/talentrank-service-server/target/talentrank-service.jar
+#          remote: gitgle/talentrank-service.jar
+#          host: ${{ secrets.HOST }}
+#          username: ${{ secrets.SSH_USER }}
+#          password: ${{ secrets.SSH_PASSWORD }}
+#
+#      - name: 上传Nation服务
+#        uses: garygrossgarten/github-action-scp@release
+#        with:
+#          local: nation-service/nation-service-server/target/nation-service.jar
+#          remote: gitgle/nation-service.jar
+#          host: ${{ secrets.HOST }}
+#          username: ${{ secrets.SSH_USER }}
+#          password: ${{ secrets.SSH_PASSWORD }}
+#
+#      - name: 上传User服务
+#        uses: garygrossgarten/github-action-scp@release
+#        with:
+#          local: user-service/user-service-server/target/user-service.jar
+#          remote: gitgle/user-service.jar
+#          host: ${{ secrets.HOST }}
+#          username: ${{ secrets.SSH_USER }}
+#          password: ${{ secrets.SSH_PASSWORD }}
+#
+#      - name: 上传Domain服务
+#        uses: garygrossgarten/github-action-scp@release
+#        with:
+#          local: domain-service/domain-service-server/target/domain-service.jar
+#          remote: gitgle/domain-service.jar
+#          host: ${{ secrets.HOST }}
+#          username: ${{ secrets.SSH_USER }}
+#          password: ${{ secrets.SSH_PASSWORD }}
+#
+#      - name: 上传Api服务
+#        uses: garygrossgarten/github-action-scp@release
+#        with:
+#          local: api-service/target/api-service.jar
+#          remote: gitgle/api-service.jar
+#          host: ${{ secrets.HOST }}
+#          username: ${{ secrets.SSH_USER }}
+#          password: ${{ secrets.SSH_PASSWORD }}
+#
+#      - name: 上传Gateway服务
+#        uses: garygrossgarten/github-action-scp@release
+#        with:
+#          local: gateway-service/target/gateway-service.jar
+#          remote: gitgle/gateway-service.jar
+#          host: ${{ secrets.HOST }}
+#          username: ${{ secrets.SSH_USER }}
+#          password: ${{ secrets.SSH_PASSWORD }}
 
       - name: 按顺序运行jar包
         if: always()

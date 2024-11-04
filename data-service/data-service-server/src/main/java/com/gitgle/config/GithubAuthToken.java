@@ -24,9 +24,8 @@ public class GithubAuthToken {
     @Getter
     private List<String> list;
 
-    @Autowired
-    @Qualifier("stringRedisTemplate")
-    private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    StringRedisTemplate stringRedisTemplate;
 
     @PostConstruct
     public void init() {
