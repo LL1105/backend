@@ -15,5 +15,5 @@ public interface GithubUserMapper extends BaseMapper<GithubUser> {
 
     List<SearchUser> searchByCondition(int current, int size, SearchReq req);
 
-    Integer searchCount(SearchReq searchReq);
+    Integer searchCount(@Param("req") SearchReq searchReq);
 }

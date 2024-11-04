@@ -4,16 +4,13 @@ package com.gitgle.service.impl;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gitgle.constant.RedisConstant;
 import com.gitgle.constant.RpcResultCode;
-import com.gitgle.entity.Domain;
 import com.gitgle.entity.Nation;
 import com.gitgle.entity.UserDomain;
 import com.gitgle.mapper.*;
@@ -33,25 +30,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
-import org.apache.ibatis.annotations.Param;
-import org.apache.kafka.common.protocol.types.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -237,10 +227,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     }
 
     @Override
-    public Result search(Integer page, Integer size, SearchReq searchReq) {
-        if(StringUtils.isBlank(searchReq.getDomain())
-                && StringUtils.isBlank(searchReq.getNation())
-                && StringUtils.isBlank(searchReq.getLogin())){
+    public Result search(Integer page, Integer size, SearchReq req) {
+        if(StringUtils.isBlank(req.getDomain())
+                && StringUtils.isBlank(req.getNation())
+                && StringUtils.isBlank(req.getLogin())){
             Set<SearchUser> searchResps = redisTemplate.opsForZSet().range(RedisConstant.GITHUB_USER_RANK, 0, 50);
             if(ObjectUtils.isNotEmpty(searchResps)){
                 SearchResp resp = new SearchResp();
@@ -257,28 +247,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
 
         Integer current = (page - 1) * size;
 
-        List<SearchUser> searchList = githubUserMapper.searchByCondition(current, size, searchReq);
-        for (SearchUser searchUser : searchList) {
-            List<String> domains = new ArrayList<>();
-            //组装login所在的领域
-            String userLogin = searchUser.getLogin();
-            QueryWrapper<UserDomain> userDomainQueryWrapper = new QueryWrapper<>();
-            userDomainQueryWrapper.eq("login", userLogin);
-            List<UserDomain> userDomains = userDomainMapper.selectList(userDomainQueryWrapper);
-            for (UserDomain userDomain : userDomains) {
-                domains.add(userDomain.getDomain());
-            }
-            searchUser.setDomains(domains);
-        }
+        List<SearchUser> searchList = githubUserMapper.searchByCondition(current, size, req);
+
         //查全部条数
-        Integer count = searchList.size();
+        Integer count = githubUserMapper.searchCount(req);
         resp.setSearchUsers(searchList);
         resp.setPage(page);
         resp.setPageSize(size);
         resp.setTotalPage((long) Math.round(((count / size) + 0.5)));
-        if(StringUtils.isBlank(searchReq.getDomain())
-                && StringUtils.isBlank(searchReq.getNation())
-                && StringUtils.isBlank(searchReq.getLogin())){
+
+        if(StringUtils.isBlank(req.getDomain())
+                && StringUtils.isBlank(req.getNation())
+                && StringUtils.isBlank(req.getLogin())){
             for(SearchUser searchUser: searchList){
                 redisTemplate.opsForZSet().add(RedisConstant.GITHUB_USER_RANK, searchUser, -1*(Double.parseDouble(searchUser.getTalentRank())));
                 redisTemplate.opsForZSet().removeRange(RedisConstant.GITHUB_USER_RANK, 50, -1);
