@@ -17,8 +17,8 @@ public class GithubRepoContentConvert {
         githubReposContent.setSize(responseBody.getInteger("size"));
         byte[] decodedBytes = Base64.decodeBase64(responseBody.getString("content"));
         String content = new String(decodedBytes);
-        if(content.length() > 1000){
-            content = content.substring(0, 1000);
+        if(content.length() > 300){
+            content = content.substring(0, 300);
         }
         githubReposContent.setRepoName(githubRequest.getRepoName());
         githubReposContent.setRepoOwner(githubRequest.getOwner());

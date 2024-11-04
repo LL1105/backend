@@ -99,14 +99,38 @@ if [ "$SERVICE_NAME" == "all" ]; then
     nohup java -DDUBBO_IP_TO_REGISTRY="49.232.232.203" -jar "data-service.jar" > "$LOG_DIR/data-service.jar.log" 2>&1 &
 
     # 等待 data-service 启动完成
-    sleep 5 # 这里可以根据需要调整等待时间
+    sleep 10 # 这里可以根据需要调整等待时间
 
-    for jar in *.jar; do
-        if [ "\$jar" != "data-service.jar" ]; then
-            echo "启动 \$jar..."
-            nohup java -DDUBBO_IP_TO_REGISTRY="49.232.232.203" -jar "\$jar" > "$LOG_DIR/\$jar.log" 2>&1 &
-        fi
-    done
+    echo "启动 talentrank-service..."
+    nohup java -DDUBBO_IP_TO_REGISTRY="49.232.232.203" -jar "talentrank-service.jar" > "$LOG_DIR/talentrank-service.jar.log" 2>&1 &
+    sleep 10 # 这里可以根据需要调整等待时间
+
+    echo "启动 nation-service..."
+    nohup java -DDUBBO_IP_TO_REGISTRY="49.232.232.203" -jar "nation-service.jar" > "$LOG_DIR/nation-service.jar.log" 2>&1 &
+    sleep 10 # 这里可以根据需要调整等待时间
+
+    echo "启动 user-service..."
+    nohup java -DDUBBO_IP_TO_REGISTRY="49.232.232.203" -jar "user-service.jar" > "$LOG_DIR/user-service.jar.log" 2>&1 &
+    sleep 10 # 这里可以根据需要调整等待时间
+
+    echo "启动 domain-service..."
+    nohup java -DDUBBO_IP_TO_REGISTRY="49.232.232.203" -jar "domain-service.jar" > "$LOG_DIR/domain-service.jar.log" 2>&1 &
+    sleep 10 # 这里可以根据需要调整等待时间
+
+    echo "启动 api-service..."
+        nohup java -DDUBBO_IP_TO_REGISTRY="49.232.232.203" -jar "api-service.jar" > "$LOG_DIR/api-service.jar.log" 2>&1 &
+        sleep 10 # 这里可以根据需要调整等待时间
+
+    echo "启动 gateway-service..."
+    nohup java -DDUBBO_IP_TO_REGISTRY="49.232.232.203" -jar "gateway-service.jar" > "$LOG_DIR/gateway-service.jar.log" 2>&1 &
+    sleep 10 # 这里可以根据需要调整等待时间
+
+#    for jar in *.jar; do
+#        if [ "\$jar" != "data-service.jar" ]; then
+#            echo "启动 \$jar..."
+#            nohup java -DDUBBO_IP_TO_REGISTRY="49.232.232.203" -jar "\$jar" > "$LOG_DIR/\$jar.log" 2>&1 &
+#        fi
+#    done
 else
     echo "启动 \$SERVICE_NAME..."
     nohup java -DDUBBO_IP_TO_REGISTRY="49.232.232.203" -jar "$JAR_NAME" > "$LOG_DIR/\$SERVICE_NAME.log" 2>&1 &
