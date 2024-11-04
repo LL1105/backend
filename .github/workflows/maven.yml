@@ -150,19 +150,26 @@ jobs:
         uses: fifsky/ssh-action@master
         with:
           command: |
-            java -jar /gitgle/data-service.jar
+            nohup java -jar /gitble/data-service.jar > /dev/null 2>&1 &
+            disown
             sleep 6
-            java -jar /gitgle/talentrank-service.jar
-            sleep 6            
-            java -jar /gitgle/nation-service.jar
-            sleep 6 
-            java -jar /gitgle/user-service.jar
+            nohup java -jar /gitble/talentrank-service.jar > /dev/null 2>&1 &
+            disown
             sleep 6
-            java -jar /gitgle/domain-service.jar
+            nohup java -jar /gitble/nation-service.jar > /dev/null 2>&1 &
+            disown
             sleep 6
-            java -jar /gitgle/api-service.jar
+            nohup java -jar /gitble/user-service.jar > /dev/null 2>&1 &
+            disown
             sleep 6
-            java -jar /gitgle/gateway-service.jar
+            nohup java -jar /gitble/domain-service.jar > /dev/null 2>&1 &
+            disown
+            sleep 6
+            nohup java -jar /gitble/api-service.jar > /dev/null 2>&1 &
+            disown
+            sleep 6
+            nohup java -jar /gitble/gateway-service.jar > /dev/null 2>&1 &
+            disown
           host: ${{ secrets.HOST }}
           user: ${{ secrets.SSH_USER }}
           pass: ${{ secrets.SSH_PASSWORD }}
