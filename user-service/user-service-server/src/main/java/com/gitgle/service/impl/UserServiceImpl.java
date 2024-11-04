@@ -253,8 +253,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
                 return Result.Success(resp);
             }
         }
-        List<Domain> domains = domainMapper.selectList(Wrappers.lambdaQuery(Domain.class).like(Domain::getDomain, searchReq.getDomain()));
-        Integer current = (page - 1) * size;
         SearchResp resp = new SearchResp();
 
         Integer current = (page - 1) * size;
