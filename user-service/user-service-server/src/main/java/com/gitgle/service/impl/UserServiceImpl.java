@@ -7,6 +7,7 @@ import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -28,8 +29,8 @@ import com.gitgle.service.GithubUserService;
 import com.gitgle.service.req.*;
 import com.gitgle.service.resp.*;
 import com.gitgle.utils.Md5Util;
-import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.ibatis.annotations.Param;
@@ -37,17 +38,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @DubboService
@@ -87,6 +90,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
 
     @DubboReference
     GithubRepoService githubRepoService;
+
+    @Resource
+    private RedisTemplate redisTemplate;
 
 
     @Override
@@ -229,6 +235,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
 
     @Override
     public Result search(Integer page, Integer size, SearchReq searchReq) {
+        if(StringUtils.isBlank(searchReq.getDomain())
+                && StringUtils.isBlank(searchReq.getNation())
+                && StringUtils.isBlank(searchReq.getLogin())){
+            Set<SearchUser> searchResps = redisTemplate.opsForZSet().range(RedisConstant.GITHUB_USER_RANK, 0, 50);
+            if(ObjectUtils.isNotEmpty(searchResps)){
+                SearchResp resp = new SearchResp();
+                List<SearchUser> searchUserList = searchResps.stream().collect(Collectors.toList());
+                //查全部条数
+                resp.setSearchUsers(searchUserList);
+                resp.setPage(page);
+                resp.setPageSize(size);
+                resp.setTotalPage((long) Math.round(((searchUserList.size() / size) + 0.5)));
+                return Result.Success(resp);
+            }
+        }
+        List<Domain> domains = domainMapper.selectList(Wrappers.lambdaQuery(Domain.class).like(Domain::getDomain, searchReq.getDomain()));
         Integer current = (page - 1) * size;
         SearchResp resp = new SearchResp();
 
@@ -239,6 +261,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         resp.setPage(page);
         resp.setPageSize(size);
         resp.setTotalPage((long) Math.round(((count / size) + 0.5)));
+        if(StringUtils.isBlank(searchReq.getDomain())
+                && StringUtils.isBlank(searchReq.getNation())
+                && StringUtils.isBlank(searchReq.getLogin())){
+            for(SearchUser searchUser: searchList){
+                redisTemplate.opsForZSet().add(RedisConstant.GITHUB_USER_RANK, searchUser, -1*(Double.parseDouble(searchUser.getTalentRank())));
+                redisTemplate.opsForZSet().removeRange(RedisConstant.GITHUB_USER_RANK, 50, -1);
+            }
+            redisTemplate.expire(RedisConstant.GITHUB_USER_RANK, 3, TimeUnit.DAYS);
+        }
         return Result.Success(resp);
     }
 

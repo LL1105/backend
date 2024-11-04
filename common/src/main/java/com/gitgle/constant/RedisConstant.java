@@ -14,6 +14,8 @@ public class RedisConstant {
 
     public static String GITHUB_CODE_TOTAL = "github:code:total";
 
+    public static String GITHUB_USER_RANK = "github:user:rank";
+
     public static String GITHUB_REPO_RANK = "github:repo:rank";
 
     public static String GITHUB_USER_LOCK = "github:user:lock:";
