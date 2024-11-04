@@ -228,24 +228,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
 
     @Override
     public Result search(Integer page, Integer size, SearchReq req) {
-        if(StringUtils.isBlank(req.getDomain())
-                && StringUtils.isBlank(req.getNation())
-                && StringUtils.isBlank(req.getLogin())){
-            Set<SearchUser> searchResps = redisTemplate.opsForZSet().range(RedisConstant.GITHUB_USER_RANK, 0, 50);
-            if(ObjectUtils.isNotEmpty(searchResps)){
-                SearchResp resp = new SearchResp();
-                List<SearchUser> searchUserList = searchResps.stream().collect(Collectors.toList());
-                //查全部条数
-                resp.setSearchUsers(searchUserList);
-                resp.setPage(page);
-                resp.setPageSize(size);
-                resp.setTotalPage((long) Math.round(((searchUserList.size() / size) + 0.5)));
-                return Result.Success(resp);
-            }
-        }
-        SearchResp resp = new SearchResp();
 
         Integer current = (page - 1) * size;
+        String cacheKey = RedisConstant.GITHUB_USER_RANK + page + ":" + size;
+
+        if(StringUtils.isBlank(req.getDomain()) && StringUtils.isBlank(req.getNation()) && StringUtils.isBlank(req.getLogin())) {
+
+                SearchResp cacheData = (SearchResp) redisTemplate.opsForValue().get(cacheKey);
+                if(cacheData != null) {
+                    return  Result.Success(cacheData);
+                }
+        }
+
+        SearchResp resp = new SearchResp();
 
         List<SearchUser> searchList = githubUserMapper.searchByCondition(current, size, req);
 
@@ -256,15 +251,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         resp.setPageSize(size);
         resp.setTotalPage((long) Math.round(((count / size) + 0.5)));
 
-        if(StringUtils.isBlank(req.getDomain())
-                && StringUtils.isBlank(req.getNation())
-                && StringUtils.isBlank(req.getLogin())){
-            for(SearchUser searchUser: searchList){
-                redisTemplate.opsForZSet().add(RedisConstant.GITHUB_USER_RANK, searchUser, -1*(Double.parseDouble(searchUser.getTalentRank())));
-                redisTemplate.opsForZSet().removeRange(RedisConstant.GITHUB_USER_RANK, 50, -1);
-            }
-            redisTemplate.expire(RedisConstant.GITHUB_USER_RANK, 3, TimeUnit.DAYS);
+        // 将响应对象存入Redis缓存，只缓存前五页的数据
+        if (StringUtils.isBlank(req.getDomain()) && StringUtils.isBlank(req.getNation()) && StringUtils.isBlank(req.getLogin())) {
+            redisTemplate.opsForValue().set(cacheKey, resp, 3, TimeUnit.DAYS);
         }
+
         return Result.Success(resp);
     }
 
