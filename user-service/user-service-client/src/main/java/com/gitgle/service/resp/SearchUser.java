@@ -3,6 +3,7 @@ package com.gitgle.service.resp;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 public class SearchUser implements Serializable {
@@ -13,7 +14,7 @@ public class SearchUser implements Serializable {
 
     private String talentRank;
 
-    private String domain;
+    private List<String> domains;
 
     private String nation;
 

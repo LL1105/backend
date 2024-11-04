@@ -28,6 +28,7 @@ public class SaTokenConfigure {
                 .addExclude("/data/**")
                 .addExclude("/user/nation")
                 .addExclude("/user/search")
+                .addExclude("/user/detail")
                 // 鉴权方法：每次访问进入
                 .setAuth(obj -> {
                     // 登录校验 -- 拦截所有路由，并排除/user/doLogin 用于开放登录
@@ -49,7 +50,7 @@ public class SaTokenConfigure {
                     ServerWebExchange exchange = SaReactorSyncHolder.getContext();
                     exchange.getResponse().getHeaders().set("Content-Type", "application/json; charset=utf-8");
 //                    return new ResultJsonUtil().fail(e.getMessage());
-                    return SaResult.error(e.getMessage());
+                    return SaResult.get(401, e.getMessage(), null);
                 })
                 .setBeforeAuth(obj -> {
                     // ---------- 设置跨域响应头 ----------

@@ -1,0 +1,55 @@
+name: build
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Running Java ${{ matrix.java }} compile
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: 生成jar包
+        run: mvn clean install
+      - name: 在服务器上部署jar包
+        env:
+          JARS: >-
+            data-service/data-service-server/target/data-service.jar
+            talentrank-service/talentrank-service-server/target/talentrank-service.jar
+            nation-service/nation-service-server/target/nation-service.jar
+            user-service/user-service-server/target/user-service.jar
+            domain-service/domain-service-server/target/domain-service.jar
+            api-service/target/api-service.jar
+            gateway-service/target/gateway-service.jar
+        run: |
+          for jar in ${JARS}; do
+            scp "$jar" "${{ secrets.SSH_USER }}:${{ secrets.HOST }}:gitgle/"
+          done
+      - name: 停止之前运行的jar包
+        if: always()
+        uses: fifsky/ssh-action@master
+        with:
+          command: |
+            # 停止所有匹配的Java进程
+            for jar in ${{ env.JARS }}; do
+              pkill -f "gitgle/$jar"
+            done
+          host: ${{ secrets.HOST }}
+          user: ${{ secrets.SSH_USER }}
+          pass: ${{ secrets.SSH_PASSWORD }}
+          args: "-tt"
+      - name: 按顺序运行jar包
+        if: always()
+        uses: fifsky/ssh-action@master
+        with:
+          command: |
+            for jar in ${{ env.JARS }}; do
+              java -jar "gitgle/$jar" &
+              sleep 6
+            done
+          host: ${{ secrets.HOST }}
+          user: ${{ secrets.SSH_USER }}
+          pass: ${{ secrets.SSH_PASSWORD }}
+          args: "-tt"
