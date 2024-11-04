@@ -39,4 +39,6 @@ public class RedisConstant {
     public static String GITHUB_REPO_LANGUAGE_LOCK = "github:repo:language:lock:";
 
     public static String HOT_DOMAIN = "hot:domain";
+
+    public static String GITHUB_TOKEN = "github:token";
 }
