@@ -36,9 +36,7 @@ public class HotDomainJob {
     @XxlJob("refresh-hot-domain")
     public void refreshHotDomain() {
         List<Domain> domainList = domainService.readAllDomain();
-        PriorityQueue<HotDomain> priorityQueue = new PriorityQueue<>(15, (h1, h2) -> {
-            return Long.compare(h2.getDeveloperTotal(), h1.getDeveloperTotal()); // 假设按热度降序排列
-        });
+        PriorityQueue<HotDomain> priorityQueue = new PriorityQueue<>(15, Comparator.comparingLong(HotDomain::getDeveloperTotal));
         for(Domain domain: domainList){
             RpcResult<Long> userCountInDomain = userService.getUserCountInDomain(domain.getId());
             if(!RpcResultCode.SUCCESS.equals(userCountInDomain.getCode())){
@@ -53,6 +51,6 @@ public class HotDomainJob {
                 priorityQueue.poll();
             }
         }
-        redisTemplate.opsForList().rightPushAll(RedisConstant.HOT_DOMAIN, priorityQueue);
+        redisTemplate.opsForList().leftPushAll(RedisConstant.HOT_DOMAIN, priorityQueue);
     }
 }
