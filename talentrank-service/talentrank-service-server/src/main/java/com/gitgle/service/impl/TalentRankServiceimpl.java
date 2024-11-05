@@ -27,7 +27,7 @@ public class TalentRankServiceimpl implements TalentRankService {
             rpcResult.setData(talentRank);
             return rpcResult;
         }catch (Exception e){
-            log.error("获取开发者talentrank失败:{}",e.getMessage());
+            log.error("获取开发者TalentRank失败:{}",e.getMessage());
             rpcResult.setCode(RpcResultCode.FAILED);
             return rpcResult;
         }

@@ -7,6 +7,8 @@ import java.io.Serializable;
 @Data
 public class NationResponse implements Serializable {
 
+    private String location;
+
     private String nation;
 
     private String nationEnglish;
