@@ -327,6 +327,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         if(StringUtils.isNotEmpty(req.getDomain())){
             // 先模糊匹配领域
             List<Domain> domains = domainMapper.selectList(Wrappers.lambdaQuery(Domain.class).like(Domain::getDomain, req.getDomain()));
+            if(ObjectUtils.isEmpty(domains)){
+                setSearchRespParams(resp, Long.valueOf(page), Long.valueOf(size), 1L, searchUserList);
+                return Result.Success(resp);
+            }
             // 分也查询用户领域
             Page<UserDomain> userDomainByDomainId = userDomainService.pageUserDomainByDomainId(domains.stream().map(Domain::getId).collect(Collectors.toList()), page, size);
             // 遍历查询用户
