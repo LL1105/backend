@@ -11,9 +11,9 @@ public class SearchResp implements Serializable {
 
     private Long totalPage;
 
-    private Integer page;
+    private Long page;
 
-    private Integer pageSize;
+    private Long pageSize;
 
     private List<SearchUser> searchUsers;
 

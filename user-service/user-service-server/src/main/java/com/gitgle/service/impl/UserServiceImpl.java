@@ -8,9 +8,12 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.gitgle.constant.RedisConstant;
 import com.gitgle.constant.RpcResultCode;
+import com.gitgle.convert.GithubUserConvert;
+import com.gitgle.entity.Domain;
 import com.gitgle.entity.Nation;
 import com.gitgle.entity.UserDomain;
 import com.gitgle.mapper.*;
@@ -20,6 +23,7 @@ import com.gitgle.entity.User;
 
 import com.gitgle.result.RpcResult;
 import com.gitgle.service.*;
+import com.gitgle.service.UserDomainService;
 import com.gitgle.service.req.*;
 import com.gitgle.service.resp.*;
 import com.gitgle.utils.Md5Util;
@@ -234,37 +238,106 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         return SaResult.error("退出失败");
     }
 
+    @Resource
+    private UserDomainService userDomainService;
+
     @Override
     public Result search(Integer page, Integer size, SearchReq req) {
-
-        Integer current = (page - 1) * size;
-        String cacheKey = RedisConstant.GITHUB_USER_RANK + page + ":" + size;
-
-        if(StringUtils.isBlank(req.getDomain()) && StringUtils.isBlank(req.getNation()) && StringUtils.isBlank(req.getLogin())) {
-
-                Object cacheData = redisTemplate.opsForValue().get(cacheKey);
-                if(cacheData != null) {
-                    return  Result.Success(cacheData);
-                }
+        // 如果没有查询条件则走缓存
+        if(is2SearchUserCache(req, page)){
+            Set<SearchUser> searchResps = redisTemplate.opsForZSet().range(RedisConstant.GITHUB_USER_RANK, 0, 50);
+            if(ObjectUtils.isNotEmpty(searchResps)){
+                SearchResp resp = new SearchResp();
+                List<SearchUser> searchUserList = searchResps.stream().collect(Collectors.toList());
+                //查全部条数
+                setSearchRespParams(resp, Long.valueOf(page), Long.valueOf(size), Math.round(((searchUserList.size() / size) + 0.5)), searchUserList);
+                return Result.Success(resp);
+            }
         }
-
         SearchResp resp = new SearchResp();
+        List<SearchUser> searchUserList = new ArrayList<>();
+        // 如果开发者login不为空，则根据login查询用户
+        if(StringUtils.isNotEmpty(req.getLogin())){
+            com.gitgle.entity.GithubUser githubUser = githubUserMapper.selectOne(Wrappers.lambdaQuery(com.gitgle.entity.GithubUser.class).eq(com.gitgle.entity.GithubUser::getLogin, req.getLogin()));
+            if(ObjectUtils.isEmpty(githubUser)){
+                setSearchRespParams(resp, Long.valueOf(page), Long.valueOf(size), 1L, searchUserList);
+                return Result.Success(resp);
+            }
+            SearchUser searchUser = GithubUserConvert.convert2SearchUser(githubUser, userDomainService.
+                    getUserDomainByLogin(githubUser.getLogin()).stream().
+                    map(UserDomain::getDomain).collect(Collectors.toList()));
+            searchUserList.add(searchUser);
+            setSearchRespParams(resp, Long.valueOf(page), Long.valueOf(size), 1L, searchUserList);
+            return Result.Success(resp);
+        }
+        // 如果领域搜索条件不为空，则查询领域下的用户
+        if(StringUtils.isNotEmpty(req.getDomain())){
+            // 先模糊匹配领域
+            List<Domain> domains = domainMapper.selectList(Wrappers.lambdaQuery(Domain.class).like(Domain::getDomain, req.getDomain()));
+            // 分也查询用户领域
+            Page<UserDomain> userDomainByDomainId = userDomainService.pageUserDomainByDomainId(domains.stream().map(Domain::getId).collect(Collectors.toList()), page, size);
+            // 遍历查询用户
+            for(UserDomain userDomain: userDomainByDomainId.getRecords()){
+                com.gitgle.entity.GithubUser githubUser = githubUserMapper.selectOne(Wrappers.lambdaQuery(com.gitgle.entity.GithubUser.class).eq(com.gitgle.entity.GithubUser::getLogin, userDomain.getLogin()));
+                // 根据Nation 过滤
+                if(ObjectUtils.isEmpty(githubUser) ||
+                        (StringUtils.isNotEmpty(req.getNation())
+                                && !req.getNation().equals(githubUser.getNation()))){
+                    continue;
+                }
+                SearchUser searchUser = GithubUserConvert.convert2SearchUser(githubUser, userDomainService.
+                        getUserDomainByLogin(githubUser.getLogin()).stream().
+                        map(UserDomain::getDomain).collect(Collectors.toList()));
+                searchUserList.add(searchUser);
+            }
+            setSearchRespParams(resp, userDomainByDomainId.getCurrent(), userDomainByDomainId.getSize(),
+                    Math.round(((searchUserList.size() / size) + 0.5)), searchUserList);
+        }else if(StringUtils.isNotEmpty(req.getNation())){
+            // 如果国家不为空，则查询该国家下的用户
+            Page<com.gitgle.entity.GithubUser> githubUserPage = new Page<>(page, size);
+            Page<com.gitgle.entity.GithubUser> githubUserPage1 = githubUserMapper.selectPage(githubUserPage,
+                    Wrappers.lambdaQuery(com.gitgle.entity.GithubUser.class)
+                            .eq(com.gitgle.entity.GithubUser::getNation, req.getNation())
+                            .orderBy(true, false, com.gitgle.entity.GithubUser::getTalentRank));
+            searchUserList = githubUserPage1.getRecords().stream().map(githubUser ->
+                    GithubUserConvert.convert2SearchUser(githubUser, userDomainService.
+                            getUserDomainByLogin(githubUser.getLogin()).stream().
+                            map(UserDomain::getDomain).collect(Collectors.toList()))).collect(Collectors.toList());
+            setSearchRespParams(resp, githubUserPage1.getCurrent(), githubUserPage1.getSize(),
+                    githubUserPage1.getPages(), searchUserList);
+        }else {
+            // 条件都为空，则查询全部用户
+            Page<com.gitgle.entity.GithubUser> githubUserPage = new Page<>(page, size);
+            Page<com.gitgle.entity.GithubUser> githubUserPage1 = githubUserMapper.selectPage(githubUserPage, Wrappers.lambdaQuery(com.gitgle.entity.GithubUser.class).orderBy(true, false, com.gitgle.entity.GithubUser::getTalentRank));
+            searchUserList = githubUserPage1.getRecords().stream().map(githubUser ->
+                    GithubUserConvert.convert2SearchUser(githubUser, userDomainService.
+                    getUserDomainByLogin(githubUser.getLogin()).stream().
+                    map(UserDomain::getDomain).collect(Collectors.toList()))).collect(Collectors.toList());
+            setSearchRespParams(resp, githubUserPage1.getCurrent(), githubUserPage1.getSize(),
+                    githubUserPage1.getPages(), searchUserList);
+        }
+        if(is2SearchUserCache(req, page)){
+            for(SearchUser searchUser: searchUserList){
+                redisTemplate.opsForZSet().add(RedisConstant.GITHUB_USER_RANK, searchUser, -1*(Double.parseDouble(searchUser.getTalentRank())));
+                redisTemplate.opsForZSet().removeRange(RedisConstant.GITHUB_USER_RANK, 50, -1);
+            }
+            redisTemplate.expire(RedisConstant.GITHUB_USER_RANK, 3, TimeUnit.DAYS);
+        }
+        return Result.Success(resp);
+    }
 
-        List<SearchUser> searchList = githubUserMapper.searchByCondition(current, size, req);
+    private Boolean is2SearchUserCache(SearchReq req, Integer page){
+        return StringUtils.isBlank(req.getDomain())
+                && StringUtils.isBlank(req.getNation())
+                && StringUtils.isBlank(req.getLogin())
+                && page <= 2;
+    }
 
-        //查全部条数
-        Integer count = githubUserMapper.searchCount(req);
-        resp.setSearchUsers(searchList);
+    private void setSearchRespParams(SearchResp resp, Long page, Long size, Long total, List<SearchUser> searchUsers){
         resp.setPage(page);
         resp.setPageSize(size);
-        resp.setTotalPage((long) Math.round(((count / size) + 0.5)));
-
-        // 将响应对象存入Redis缓存
-        if (StringUtils.isBlank(req.getDomain()) && StringUtils.isBlank(req.getNation()) && StringUtils.isBlank(req.getLogin())) {
-            redisTemplate.opsForValue().set(cacheKey, resp, 3, TimeUnit.DAYS);
-        }
-
-        return Result.Success(resp);
+        resp.setTotalPage(total);
+        resp.setSearchUsers(searchUsers);
     }
 
     @Override
