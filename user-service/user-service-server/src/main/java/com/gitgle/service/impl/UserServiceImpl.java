@@ -251,7 +251,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         resp.setPageSize(size);
         resp.setTotalPage((long) Math.round(((count / size) + 0.5)));
 
-        // 将响应对象存入Redis缓存，只缓存前五页的数据
+        // 将响应对象存入Redis缓存
         if (StringUtils.isBlank(req.getDomain()) && StringUtils.isBlank(req.getNation()) && StringUtils.isBlank(req.getLogin())) {
             redisTemplate.opsForValue().set(cacheKey, resp, 3, TimeUnit.DAYS);
         }
