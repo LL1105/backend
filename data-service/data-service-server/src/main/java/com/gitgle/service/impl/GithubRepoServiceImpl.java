@@ -111,7 +111,20 @@ public class GithubRepoServiceImpl implements GithubRepoService {
         RpcResult<GithubReposResponse> githubReposResponseRpcResult = new RpcResult<>();
         Map<String, String> queryParams = new HashMap<>();
         try {
+            List<GithubRepos> githubReposList = reposService.getReposByLogin(owner);
+            if(ObjectUtils.isNotEmpty(githubReposList)){
+                GithubReposResponse githubReposResponse = new GithubReposResponse();
+                githubReposResponse.setGithubProjectList(githubReposList);
+                githubReposResponseRpcResult.setData(githubReposResponse);
+                githubReposResponseRpcResult.setCode(RpcResultCode.SUCCESS);
+                return githubReposResponseRpcResult;
+            }
             GithubReposResponse githubReposResponse = githubApiRequestUtils.listUserRepos(owner, queryParams);
+            CompletableFuture.runAsync(()->{
+                for(GithubRepos githubRepos: githubReposResponse.getGithubProjectList()){
+                    reposService.writeGithubRepos2Repos(githubRepos);
+                }
+            });
             githubReposResponseRpcResult.setData(githubReposResponse);
             githubReposResponseRpcResult.setCode(RpcResultCode.SUCCESS);
             return githubReposResponseRpcResult;

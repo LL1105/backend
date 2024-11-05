@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -103,6 +104,15 @@ public class ReposServiceImpl implements ReposService{
             return GithubRepoConvert.convert(repos);
         }
         return null;
+    }
+
+    @Override
+    public List<GithubRepos> getReposByLogin(String owner) {
+        List<Repos> reposList = reposMapper.selectList(Wrappers.lambdaQuery(Repos.class).eq(Repos::getOwnerlogin, owner));
+        if(ObjectUtils.isNotEmpty(reposList)){
+            return reposList.stream().map(GithubRepoConvert::convert).collect(Collectors.toList());
+        }
+        return Collections.emptyList();
     }
 }
 
