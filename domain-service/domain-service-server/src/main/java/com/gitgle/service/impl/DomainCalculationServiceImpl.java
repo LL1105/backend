@@ -70,7 +70,6 @@ public class DomainCalculationServiceImpl implements DomainCalculationService {
             okhttp3.Response response = sparkApiUtils.doRequest(description.toString());
             JSONObject responseBody = JSON.parseObject(response.body().string());
             String content = responseBody.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content");
-            log.info("Spark Response Content: {}", content);
             List<UserDomainBase> userDomainBaseList = new ArrayList<>();
             String[] domainArray = content.split("\\|");
             for(int i=0;i<domainArray.length;i++){
@@ -116,7 +115,7 @@ public class DomainCalculationServiceImpl implements DomainCalculationService {
                         }
                     }
                 } catch (Exception e) {
-                    log.error("Error fetching languages for repo {}: {}", entry.getKey(), e.getMessage());
+                    log.error("获取仓库语言失败，仓库：{}，语言：{}", entry.getKey(), e.getMessage());
                 }
             }
             languages.append(repoLanguagesMap);
