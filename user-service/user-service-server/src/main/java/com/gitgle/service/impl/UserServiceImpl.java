@@ -99,6 +99,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     @Resource
     private RedisTemplate redisTemplate;
 
+    @Resource
+    private UserDomainService userDomainService;
+
+    @Resource
+    private RpcDomainService rpcDomainService;
+
 
     @Override
     public String getRank(Integer userId) {
@@ -288,14 +294,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         return SaResult.error("退出失败");
     }
 
-    @Resource
-    private UserDomainService userDomainService;
-
     @Override
     public Result search(Integer page, Integer size, SearchReq req) {
         // 如果没有查询条件则走缓存
         if(is2SearchUserCache(req, page)){
-            Set<SearchUser> searchResps = redisTemplate.opsForZSet().range(RedisConstant.GITHUB_USER_RANK, (page-1)*size, page*size);
+            Set<SearchUser> searchResps = redisTemplate.opsForZSet().range(RedisConstant.GITHUB_USER_RANK, (page-1)*size, page*size-1);
             if(ObjectUtils.isNotEmpty(searchResps)){
                 SearchResp resp = new SearchResp();
                 List<SearchUser> searchUserList = searchResps.stream().collect(Collectors.toList());
@@ -324,6 +327,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         if(StringUtils.isNotEmpty(req.getDomain())){
             // 先模糊匹配领域
             List<Domain> domains = domainMapper.selectList(Wrappers.lambdaQuery(Domain.class).like(Domain::getDomain, req.getDomain()));
+            if(ObjectUtils.isEmpty(domains)){
+                setSearchRespParams(resp, Long.valueOf(page), Long.valueOf(size), 1L, searchUserList);
+                return Result.Success(resp);
+            }
             // 分也查询用户领域
             Page<UserDomain> userDomainByDomainId = userDomainService.pageUserDomainByDomainId(domains.stream().map(Domain::getId).collect(Collectors.toList()), page, size);
             // 遍历查询用户
@@ -437,12 +444,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         if(!RpcResultCode.SUCCESS.equals(userByLogin.getCode())){
             return Result.Failed("获取用户详细信息失败");
         }
+        QueryWrapper<com.gitgle.entity.GithubUser> githubUserQueryWrapper = new QueryWrapper<>();
+        githubUserQueryWrapper.eq("login", login);
+        com.gitgle.entity.GithubUser githubUser = githubUserMapper.selectOne(githubUserQueryWrapper);
         GithubUser data = userByLogin.getData();
-        resp.setGithubUser(data);
+        resp.setGithubUser(GithubUserConvert.convert2GithubUserResp(data, githubUser,
+                userDomainService.getUserDomainByLogin(login).stream().map(UserDomain::getDomain).collect(Collectors.toList())));
         CompletableFuture.runAsync(()->{
-            QueryWrapper<com.gitgle.entity.GithubUser> githubUserQueryWrapper = new QueryWrapper<>();
-            githubUserQueryWrapper.eq("login", data.getLogin());
-            com.gitgle.entity.GithubUser githubUser = githubUserMapper.selectOne(githubUserQueryWrapper);
             if(StringUtils.isBlank(githubUser.getAvatar())){
                 githubUser.setAvatar(data.getAvatarUrl());
             }
