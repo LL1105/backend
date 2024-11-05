@@ -242,7 +242,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
 
         if(StringUtils.isBlank(req.getDomain()) && StringUtils.isBlank(req.getNation()) && StringUtils.isBlank(req.getLogin())) {
 
-                SearchResp cacheData = (SearchResp) redisTemplate.opsForValue().get(cacheKey);
+                Object cacheData = redisTemplate.opsForValue().get(cacheKey);
                 if(cacheData != null) {
                     return  Result.Success(cacheData);
                 }
