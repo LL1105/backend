@@ -97,7 +97,7 @@ public class UserTalentRankConsumer implements KafkaConsumer {
         log.info("UserTalentRankMessage::{}", message);
         TalentRankMessage talentRankMessage = JSONObject.parseObject(message, TalentRankMessage.class);
         String login = talentRankMessage.getLogin();
-        RLock lock = redissonClient.getLock(RedisConstant.REFRESH_TALENTRANK_LOCK + login);
+        RLock lock = redissonClient.getLock(RedisConstant.REFRESH_USER_LOCK + login);
         try {
             lock.lock(5, TimeUnit.SECONDS);
             QueryWrapper<GithubUser> queryWrapper = new QueryWrapper<>();

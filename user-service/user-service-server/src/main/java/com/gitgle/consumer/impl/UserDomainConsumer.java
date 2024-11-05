@@ -120,7 +120,7 @@ public class UserDomainConsumer implements KafkaConsumer {
             login = domainMessages.get(0).getLogin();
         }
 
-        RLock lock = redissonClient.getLock(RedisConstant.REFRESH_DOMAIN_LOCK + login);
+        RLock lock = redissonClient.getLock(RedisConstant.REFRESH_USER_LOCK + login);
         try {
             lock.lock(5, TimeUnit.SECONDS);
             QueryWrapper<GithubUser> queryWrapper = new QueryWrapper<>();

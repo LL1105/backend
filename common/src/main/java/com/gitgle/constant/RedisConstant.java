@@ -30,11 +30,7 @@ public class RedisConstant {
 
     public static String GITHUB_FOLLOWING_LOCK = "github:following:lock:";
 
-    public static String REFRESH_NATION_LOCK = "refresh:nation:lock:";
-
-    public static String REFRESH_DOMAIN_LOCK = "refresh:domain:lock:";
-
-    public static String REFRESH_TALENTRANK_LOCK = "refresh:talentrank:lock";
+    public static String REFRESH_USER_LOCK = "refresh:user:lock:";
 
     public static String GITHUB_REPO_LANGUAGE_LOCK = "github:repo:language:lock:";
 
