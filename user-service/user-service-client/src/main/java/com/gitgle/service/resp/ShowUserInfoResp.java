@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 public class ShowUserInfoResp implements Serializable {
 
-    GithubUser githubUser;
+    GithubUserResp githubUser;
 
     List<GithubRepos> githubReposList;
 }

@@ -99,6 +99,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     @Resource
     private RedisTemplate redisTemplate;
 
+    @Resource
+    private UserDomainService userDomainService;
+
+    @Resource
+    private RpcDomainService rpcDomainService;
+
 
     @Override
     public String getRank(Integer userId) {
@@ -237,9 +243,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         if(!isLogin) return SaResult.ok();
         return SaResult.error("退出失败");
     }
-
-    @Resource
-    private UserDomainService userDomainService;
 
     @Override
     public Result search(Integer page, Integer size, SearchReq req) {
@@ -387,12 +390,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         if(!RpcResultCode.SUCCESS.equals(userByLogin.getCode())){
             return Result.Failed("获取用户详细信息失败");
         }
+        QueryWrapper<com.gitgle.entity.GithubUser> githubUserQueryWrapper = new QueryWrapper<>();
+        githubUserQueryWrapper.eq("login", login);
+        com.gitgle.entity.GithubUser githubUser = githubUserMapper.selectOne(githubUserQueryWrapper);
         GithubUser data = userByLogin.getData();
-        resp.setGithubUser(data);
+        resp.setGithubUser(GithubUserConvert.convert2GithubUserResp(data, githubUser,
+                userDomainService.getUserDomainByLogin(login).stream().map(UserDomain::getDomain).collect(Collectors.toList())));
         CompletableFuture.runAsync(()->{
-            QueryWrapper<com.gitgle.entity.GithubUser> githubUserQueryWrapper = new QueryWrapper<>();
-            githubUserQueryWrapper.eq("login", data.getLogin());
-            com.gitgle.entity.GithubUser githubUser = githubUserMapper.selectOne(githubUserQueryWrapper);
             if(StringUtils.isBlank(githubUser.getAvatar())){
                 githubUser.setAvatar(data.getAvatarUrl());
             }
