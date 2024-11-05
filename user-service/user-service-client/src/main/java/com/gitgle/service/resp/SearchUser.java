@@ -14,7 +14,7 @@ public class SearchUser implements Serializable {
 
     private String talentRank;
 
-    private String domains;
+    private List<String> domains;
 
     private String nation;
 
