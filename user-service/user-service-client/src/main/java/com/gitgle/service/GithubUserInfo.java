@@ -6,13 +6,14 @@ import com.gitgle.response.GithubUser;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 public class GithubUserInfo implements Serializable {
 
     private GithubUser githubUser;
 
-    private GithubFollowingResponse githubFollowing;
+    private List<GithubUser> githubFollowing;
 
-    private GithubFollowersResponse githubFollowers;
+    private List<GithubUser> githubFollowers;
 }

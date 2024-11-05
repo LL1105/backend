@@ -144,11 +144,31 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         }
 
         if(followers.getCode().equals(RpcResultCode.SUCCESS)) {
-            info.setGithubFollowers(followers.getData());
+            List<GithubUser> githubUserList = new ArrayList<>();
+            GithubFollowersResponse data = followers.getData();
+            List<GithubFollowers> githubFollowersList = data.getGithubFollowersList();
+            for (GithubFollowers githubFollowers : githubFollowersList) {
+                String followerLogin = githubFollowers.getLogin();
+                RpcResult<GithubUser> userByLogin1 = githubUserService.getUserByLogin(followerLogin);
+                if(userByLogin1.getCode().equals(RpcResultCode.SUCCESS)) {
+                    githubUserList.add(userByLogin1.getData());
+                }
+            }
+            info.setGithubFollowers(githubUserList);
         }
 
         if(following.getCode().equals(RpcResultCode.SUCCESS)) {
-            info.setGithubFollowing(following.getData());
+            List<GithubUser> githubUserList = new ArrayList<>();
+            GithubFollowingResponse data = following.getData();
+            List<GithubFollowing> githubFollowingList = data.getGithubFollowingList();
+            for (GithubFollowing githubFollowing : githubFollowingList) {
+                String githubFollowingLogin = githubFollowing.getLogin();
+                RpcResult<GithubUser> userByLogin1 = githubUserService.getUserByLogin(githubFollowingLogin);
+                if(userByLogin1.getCode().equals(RpcResultCode.SUCCESS)) {
+                    githubUserList.add(userByLogin1.getData());
+                }
+            }
+            info.setGithubFollowing(githubUserList);
         }
         return info;
     }
