@@ -1,5 +1,7 @@
 package com.gitgle.service;
 
+import com.gitgle.result.RpcResult;
+
 public interface TalentRankService {
 
     /**
@@ -7,5 +9,5 @@ public interface TalentRankService {
      * @param developerId 开发者login
      * @return TalentRank得分
      */
-    String getTalentrankByDeveloperId(String developerId);
+    RpcResult<String> getTalentrankByDeveloperId(String developerId);
 }
