@@ -6,10 +6,13 @@
 
 
     <select id="searchByCondition" resultType="com.gitgle.service.resp.SearchUser">
-
-        SELECT DISTINCT github_user.login, avatar, talent_rank, nation, location, nation_english from github_user
-        LEFT JOIN user_domain on github_user.login=user_domain.login
-        LEFT JOIN domain d on d.id = user_domain.domain_id
+        SELECT github_user.login, avatar, talent_rank, nation, location, nation_english, CAST(GROUP_CONCAT(user_domain.domain SEPARATOR ', ') as CHAR(10000)) AS domains
+        FROM
+        github_user
+        LEFT JOIN
+        user_domain ON github_user.login = user_domain.login
+        LEFT JOIN
+        domain d ON d.id = user_domain.domain_id
         <where>
             <if test="req.domain != null and req.domain != ''">
                 AND domain like concat('%', #{req.domain}, '%')
@@ -21,23 +24,25 @@
                 AND nation like concat('%', #{req.nation}, '%')
             </if>
         </where>
+        GROUP BY
+        github_user.login, avatar, talent_rank, nation, location, nation_english
         ORDER BY talent_rank desc
-            LIMIT #{current}, #{size}
+        LIMIT #{current},#{size}
 
     </select>
     <select id="searchCount" resultType="java.lang.Integer">
-        SELECT COUNT(*) from github_user
+        SELECT COUNT(DISTINCT github_user.login) from github_user
         LEFT JOIN user_domain on github_user.login=user_domain.login
         LEFT JOIN domain on domain.id = user_domain.domain_id
         <where>
-            <if test="domain != null and domain != ''">
-                AND domain = #{domain}
+            <if test="req.domain != null and req.domain != ''">
+                AND domain like concat('%', #{req.domain}, '%')
             </if>
-            <if test="login != null and login != ''">
-                AND github_user.login like concat('%', #{login}, '%')
+            <if test="req.login != null and req.login != ''">
+                AND github_user.login like concat('%', #{req.login}, '%')
             </if>
-            <if test="nation != null and nation != ''">
-                AND nation like concat('%', #{nation}, '%')
+            <if test="req.nation != null and req.nation != ''">
+                AND nation like concat('%', #{req.nation}, '%')
             </if>
         </where>
     </select>

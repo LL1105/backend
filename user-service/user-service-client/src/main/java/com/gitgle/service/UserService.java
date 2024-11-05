@@ -25,7 +25,7 @@ public interface UserService {
     SaResult logout();
 
     //搜索用户
-    Result search(Integer page, Integer size, SearchReq searchReq);
+    Result search(Integer page, Integer size, SearchReq req);
 
     Result getNation();
 

@@ -235,54 +235,35 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     }
 
     @Override
-    public Result search(Integer page, Integer size, SearchReq searchReq) {
-        if(StringUtils.isBlank(searchReq.getDomain())
-                && StringUtils.isBlank(searchReq.getNation())
-                && StringUtils.isBlank(searchReq.getLogin())){
-            Set<SearchUser> searchResps = redisTemplate.opsForZSet().range(RedisConstant.GITHUB_USER_RANK, 0, 50);
-            if(ObjectUtils.isNotEmpty(searchResps)){
-                SearchResp resp = new SearchResp();
-                List<SearchUser> searchUserList = searchResps.stream().collect(Collectors.toList());
-                //查全部条数
-                resp.setSearchUsers(searchUserList);
-                resp.setPage(page);
-                resp.setPageSize(size);
-                resp.setTotalPage((long) Math.round(((searchUserList.size() / size) + 0.5)));
-                return Result.Success(resp);
-            }
-        }
-        SearchResp resp = new SearchResp();
+    public Result search(Integer page, Integer size, SearchReq req) {
 
         Integer current = (page - 1) * size;
+        String cacheKey = RedisConstant.GITHUB_USER_RANK + page + ":" + size;
 
-        List<SearchUser> searchList = githubUserMapper.searchByCondition(current, size, searchReq);
-        for (SearchUser searchUser : searchList) {
-            List<String> domains = new ArrayList<>();
-            //组装login所在的领域
-            String userLogin = searchUser.getLogin();
-            QueryWrapper<UserDomain> userDomainQueryWrapper = new QueryWrapper<>();
-            userDomainQueryWrapper.eq("login", userLogin);
-            List<UserDomain> userDomains = userDomainMapper.selectList(userDomainQueryWrapper);
-            for (UserDomain userDomain : userDomains) {
-                domains.add(userDomain.getDomain());
-            }
-            searchUser.setDomains(domains);
+        if(StringUtils.isBlank(req.getDomain()) && StringUtils.isBlank(req.getNation()) && StringUtils.isBlank(req.getLogin())) {
+
+                SearchResp cacheData = (SearchResp) redisTemplate.opsForValue().get(cacheKey);
+                if(cacheData != null) {
+                    return  Result.Success(cacheData);
+                }
         }
+
+        SearchResp resp = new SearchResp();
+
+        List<SearchUser> searchList = githubUserMapper.searchByCondition(current, size, req);
+
         //查全部条数
-        Integer count = searchList.size();
+        Integer count = githubUserMapper.searchCount(req);
         resp.setSearchUsers(searchList);
         resp.setPage(page);
         resp.setPageSize(size);
         resp.setTotalPage((long) Math.round(((count / size) + 0.5)));
-        if(StringUtils.isBlank(searchReq.getDomain())
-                && StringUtils.isBlank(searchReq.getNation())
-                && StringUtils.isBlank(searchReq.getLogin())){
-            for(SearchUser searchUser: searchList){
-                redisTemplate.opsForZSet().add(RedisConstant.GITHUB_USER_RANK, searchUser, -1*(Double.parseDouble(searchUser.getTalentRank())));
-                redisTemplate.opsForZSet().removeRange(RedisConstant.GITHUB_USER_RANK, 50, -1);
-            }
-            redisTemplate.expire(RedisConstant.GITHUB_USER_RANK, 3, TimeUnit.DAYS);
+
+        // 将响应对象存入Redis缓存
+        if (StringUtils.isBlank(req.getDomain()) && StringUtils.isBlank(req.getNation()) && StringUtils.isBlank(req.getLogin())) {
+            redisTemplate.opsForValue().set(cacheKey, resp, 3, TimeUnit.DAYS);
         }
+
         return Result.Success(resp);
     }
 
@@ -328,43 +309,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     public Result showUserInfo(String login) {
         ShowUserInfoResp resp = new ShowUserInfoResp();
         RpcResult<GithubUser> userByLogin = githubUserService.getUserByLogin(login);
-        if(!RpcResultCode.SUCCESS.equals(userByLogin.getCode())){
-            return Result.Failed("获取用户详细信息失败");
-        }
-        GithubUser data = userByLogin.getData();
-        resp.setGithubUser(data);
-        CompletableFuture.runAsync(()->{
-            QueryWrapper<com.gitgle.entity.GithubUser> githubUserQueryWrapper = new QueryWrapper<>();
-            githubUserQueryWrapper.eq("login", data.getLogin());
-            com.gitgle.entity.GithubUser githubUser = githubUserMapper.selectOne(githubUserQueryWrapper);
-            if(StringUtils.isBlank(githubUser.getAvatar())){
-                githubUser.setAvatar(data.getAvatarUrl());
-            }
-            if(ObjectUtils.isEmpty(githubUser.getTalentRank())){
-                RpcResult<String> talentrankByDeveloperId = talentRankService.getTalentrankByDeveloperId(data.getLogin());
-                if(RpcResultCode.SUCCESS.equals(talentrankByDeveloperId.getCode())){
-                    githubUser.setTalentRank(new BigDecimal(talentrankByDeveloperId.getData()));
+        try {
+            if(userByLogin.getCode().equals(RpcResultCode.SUCCESS)) {
+                GithubUser data = userByLogin.getData();
+                resp.setGithubUser(data);
+                RpcResult<GithubReposResponse> rpcResult = githubRepoService.listUserRepos(data.getLogin());
+                //组装开发者的仓库信息
+                if(rpcResult.getCode().equals(RpcResultCode.SUCCESS)) {
+                    GithubReposResponse githubReposResponse = rpcResult.getData();
+                    List<GithubRepos> githubProjectList = githubReposResponse.getGithubProjectList();
+                    resp.setGithubReposList(githubProjectList);
                 }
+                return Result.Success(resp);
             }
-            if(StringUtils.isBlank(githubUser.getNation())){
-                RpcResult<NationResponse> nationByDeveloperId = nationService.getNationByDeveloperId(data.getLogin());
-                if(RpcResultCode.SUCCESS.equals(nationByDeveloperId.getCode())){
-                    githubUser.setNation(nationByDeveloperId.getData().getNation());
-                    githubUser.setNationConfidence(new BigDecimal(nationByDeveloperId.getData().getConfidence()));
-                    githubUser.setNationEnglish(nationByDeveloperId.getData().getNationEnglish());
-                }
-            }
-            githubUserMapper.updateById(githubUser);
-        });
-        RpcResult<GithubReposResponse> rpcResult = githubRepoService.listUserRepos(data.getLogin());
-        //组装开发者的仓库信息
-        if(!RpcResultCode.SUCCESS.equals(rpcResult.getCode())) {
-            return Result.Failed("获取用户仓库失败");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.Failed("详情获取失败");
         }
-        GithubReposResponse githubReposResponse = rpcResult.getData();
-        List<GithubRepos> githubProjectList = githubReposResponse.getGithubProjectList();
-        resp.setGithubReposList(githubProjectList);
-        return Result.Success(resp);
+
+        return Result.Failed("详情获取失败");
     }
 
     @Override
