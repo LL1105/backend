@@ -15,11 +15,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
-* @author maojunjun
-* @description 针对表【contributor】的数据库操作Service实现
-* @createDate 2024-10-30 17:06:38
-*/
 @Service
 public class ContributorServiceImpl implements ContributorService{
 

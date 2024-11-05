@@ -67,15 +67,14 @@ public class GithubDataServiceImpl implements GithubDataService {
                 params.put("page", "1");
                 Response response = githubApiRequestUtils.searchCommits(params);
                 if (!response.isSuccessful()) {
-                    throw new IOException("Github SearchCommit Exception: " + response.body().string());
+                    throw new IOException("Github API 获取总Commit数失败: " + response.body().string());
                 }
                 JSONObject responseBody = JSON.parseObject(response.body().string());
-                log.info("public:{}", responseBody.getInteger("total_count"));
                 githubCommitTatal = Math.abs(responseBody.getInteger("total_count"));
                 redisTemplate.opsForValue().set(RedisConstant.GITHUB_COMMIT_TOTAL, githubCommitTatal, 1, TimeUnit.DAYS);
                 return githubCommitTatal;
             }catch (Exception e){
-                log.error("GetGithubCommitTotal Error{}", e.getMessage());
+                log.error("获取总的Commit数失败：{}", e.getMessage());
                 return 0;
             }
         });
@@ -92,7 +91,7 @@ public class GithubDataServiceImpl implements GithubDataService {
                 redisTemplate.opsForValue().set(RedisConstant.GITHUB_USER_TOTAL, githubUserTotal, 1, TimeUnit.DAYS);
                 return githubUserTotal;
             }catch (Exception e){
-                log.error("GetGithubUserTotal Error: {}", e.getMessage());
+                log.error("获取总的用户数失败: {}", e.getMessage());
                 return 0;
             }
         });
@@ -110,14 +109,14 @@ public class GithubDataServiceImpl implements GithubDataService {
                 params.put("page", "1");
                 Response response = githubApiRequestUtils.searchCode(params);
                 if (!response.isSuccessful()) {
-                    throw new IOException("Github SearchCode Exception: " + response.body().string());
+                    throw new IOException("Github API 获取总的代码数失败: " + response.body().string());
                 }
                 JSONObject responseBody = JSON.parseObject(response.body().string());
                 githubCodeTotal = responseBody.getInteger("total_count");
                 redisTemplate.opsForValue().set(RedisConstant.GITHUB_CODE_TOTAL, githubCodeTotal, 1, TimeUnit.DAYS);
                 return githubCodeTotal;
             }catch (Exception e){
-                log.error("GetGithubCodeTotal Error: {}", e.getMessage());
+                log.error("获取总的代码数失败: {}", e.getMessage());
                 return 0;
             }
         });
@@ -135,14 +134,14 @@ public class GithubDataServiceImpl implements GithubDataService {
                 params.put("page", "1");
                 Response response = githubApiRequestUtils.searchRepos(params);
                 if (!response.isSuccessful()) {
-                    throw new IOException("Github SearchRepo Exception: " + response.body().string());
+                    throw new IOException("Github API 获取总的仓库数失败: " + response.body().string());
                 }
                 JSONObject responseBody = JSON.parseObject(response.body().string());
                 githubRepoTotal = responseBody.getInteger("total_count");
                 redisTemplate.opsForValue().set(RedisConstant.GITHUB_REPO_TOTAL, githubRepoTotal, 1, TimeUnit.DAYS);
                 return githubRepoTotal;
             }catch (Exception e){
-                log.error("GetGithubRepoTotal Error: {}", e.getMessage());
+                log.error("获取总的仓库数失败: {}", e.getMessage());
                 return 0;
             }
         });

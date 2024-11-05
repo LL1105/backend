@@ -6,7 +6,6 @@ import com.gitgle.constant.RedisConstant;
 import com.gitgle.convert.GithubCommitConvert;
 import com.gitgle.dao.Commit;
 import com.gitgle.mapper.CommitMapper;
-import com.gitgle.request.GithubRequest;
 import com.gitgle.response.GithubCommit;
 import com.gitgle.service.CommitService;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +14,6 @@ import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -56,15 +54,6 @@ public class CommitServiceImpl implements CommitService {
         if(ObjectUtils.isEmpty(commitList)){
             return null;
         }
-        return commitList.stream().map(commit -> GithubCommitConvert.convert(commit)).collect(Collectors.toList());
-    }
-
-    @Override
-    public List<GithubCommit> readCommit2GithubCommit(GithubRequest githubRequest) {
-        List<Commit> commitList = commitMapper.selectList(Wrappers.lambdaQuery(Commit.class)
-                .eq(Commit::getAuthorLogin, githubRequest.getAuthor())
-                .eq(Commit::getReposName, githubRequest.getRepoName())
-                .eq(Commit::getReposOwner, githubRequest.getOwner()));
         return commitList.stream().map(commit -> GithubCommitConvert.convert(commit)).collect(Collectors.toList());
     }
 }

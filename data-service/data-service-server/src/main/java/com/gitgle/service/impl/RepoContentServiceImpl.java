@@ -2,8 +2,6 @@ package com.gitgle.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.gitgle.config.RedissonConfig;
 import com.gitgle.constant.RedisConstant;
 import com.gitgle.dao.RepoContent;
 import com.gitgle.response.GithubReposContent;
@@ -18,11 +16,6 @@ import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
-/**
-* @author maojunjun
-* @description 针对表【repo_content】的数据库操作Service实现
-* @createDate 2024-10-29 01:00:43
-*/
 @Service
 @Slf4j
 public class RepoContentServiceImpl implements RepoContentService{
