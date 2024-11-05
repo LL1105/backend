@@ -102,7 +102,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     @Resource
     private UserDomainService userDomainService;
 
-    @Resource
+    @DubboReference
     private RpcDomainService rpcDomainService;
 
 
