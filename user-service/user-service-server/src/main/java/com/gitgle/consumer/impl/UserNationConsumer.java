@@ -101,7 +101,7 @@ public class UserNationConsumer implements KafkaConsumer {
         NationMessage nationMessage = JSONObject.parseObject(message, NationMessage.class);
         String login = nationMessage.getLogin();
 
-        RLock lock = redissonClient.getLock(RedisConstant.REFRESH_NATION_LOCK + login);
+        RLock lock = redissonClient.getLock(RedisConstant.REFRESH_USER_LOCK + login);
         try {
             lock.lock(5, TimeUnit.SECONDS);
 
