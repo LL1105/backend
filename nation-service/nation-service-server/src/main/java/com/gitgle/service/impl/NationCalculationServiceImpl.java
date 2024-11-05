@@ -28,6 +28,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class NationCalculationServiceImpl implements NationCalculationService {
 
+    private static final Double LIMIT_FLOOR_CONFIDENCE = 0.5;
+
     @Resource
     private SparkApiUtils sparkApiUtils;
 
@@ -43,18 +45,10 @@ public class NationCalculationServiceImpl implements NationCalculationService {
             Map<String, Integer> relationshipLocationSet = new ConcurrentHashMap<>();
             // 异步并行获取关注列表
             CompletableFuture<Void> followerFuture = CompletableFuture
-                    .runAsync(() -> fetchLocationDataFromFollowing(login, relationshipLocationSet))
-                    .exceptionally(ex -> {
-                        log.error("获取开发者关注列表失败: {}", ex);
-                        return null;
-                    });
+                    .runAsync(() -> fetchLocationDataFromFollowing(login, relationshipLocationSet));
             // 异步并行获取粉丝列表
             CompletableFuture<Void> followingFuture = CompletableFuture.
-                    runAsync(() -> fetchLocationDataFromFollowers(login, relationshipLocationSet))
-                    .exceptionally(ex -> {
-                        log.error("获取开发者粉丝列表失败: {}", ex);
-                        return null;
-                    });
+                    runAsync(() -> fetchLocationDataFromFollowers(login, relationshipLocationSet));
             // 使用 allOf 等待所有任务完成
             CompletableFuture.allOf(followerFuture, followingFuture).join();
             StringBuilder stringBuilder = new StringBuilder();
@@ -64,10 +58,11 @@ public class NationCalculationServiceImpl implements NationCalculationService {
             stringBuilder.append(question);
             Response response = sparkApiUtils.doRequest(stringBuilder.toString());
             if (!response.isSuccessful()) {
-                throw new RuntimeException("请求spark api失败");
+                throw new RuntimeException("请求Spark API失败");
             }
             return response2NationResponse(response);
         } catch (Exception e) {
+            log.error("根据关系推测开发者国家失败：{}",e.getMessage());
             return null;
         }
     }
@@ -76,14 +71,15 @@ public class NationCalculationServiceImpl implements NationCalculationService {
         NationResponse nationResponse = new NationResponse();
         JSONObject responseBody = JSON.parseObject(response.body().string());
         String content = responseBody.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content");
-        log.info("Spark Response Content: {}", content);
         String[] nationArray = content.split("-");
-        if(Double.valueOf(nationArray[2]) < 0.5){
+        Double confidence = Double.valueOf(nationArray[2]);
+        // 置信度过低，不返回
+        if(confidence < LIMIT_FLOOR_CONFIDENCE){
             return null;
         }
         nationResponse.setNation(nationArray[0]);
         nationResponse.setNationEnglish(nationArray[1]);
-        nationResponse.setConfidence(Double.valueOf(nationArray[2]));
+        nationResponse.setConfidence(confidence);
         return nationResponse;
     }
 
@@ -98,11 +94,11 @@ public class NationCalculationServiceImpl implements NationCalculationService {
             stringBuilder.append(question);
             Response response = sparkApiUtils.doRequest(stringBuilder.toString());
             if (!response.isSuccessful()) {
-                throw new RuntimeException("请求spark api失败");
+                throw new RuntimeException("请求Spark API失败");
             }
             return response2NationResponse(response);
         }catch (Exception e){
-            log.error("推测开发者国家或地区失败：{}", e.getMessage());
+            log.error("根据Location推测国家失败：{}", e.getMessage());
             return null;
         }
     }

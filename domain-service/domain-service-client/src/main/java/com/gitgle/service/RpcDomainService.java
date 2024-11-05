@@ -18,9 +18,4 @@ public interface RpcDomainService {
      * 获取热门领域u
      */
     RpcResult<HotDomainResponse> getHotDomain();
-
-    /**
-     * 获取领域的热门事件
-     */
-    RpcResult<HotDomainEventResponse> getHotDomainEvent(String domain);
 }

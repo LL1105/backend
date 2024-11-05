@@ -21,11 +21,11 @@ import java.util.concurrent.CompletableFuture;
 @Service
 public class TalentRankCalculateServiceImpl implements TalentRankCalculateService {
 
-    private String projectImportanceStarter = "1";
+    private static final String projectImportanceStarter = "1";
 
-    private String starWeight = "0.5";
+    private static final String starWeight = "0.5";
 
-    private String forkWeight = "0.5";
+    private static final String forkWeight = "0.5";
 
     @DubboReference
     private GithubRepoService githubProjectService;
@@ -49,7 +49,6 @@ public class TalentRankCalculateServiceImpl implements TalentRankCalculateServic
         forksCount = forksCount.multiply(new BigDecimal(forkWeight));
         projectImportance = projectImportance.add(starsCount);
         projectImportance = projectImportance.add(forksCount);
-        log.debug("projectImportance:{}", projectImportance);
         return projectImportance.toString();
     }
 
