@@ -1,12 +1,10 @@
 package com.gitgle.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.gitgle.constant.RpcResultCode;
 import com.gitgle.convert.GithubCommitConvert;
-import com.gitgle.request.GithubRequest;
 import com.gitgle.response.GithubCommit;
 import com.gitgle.response.GithubCommitResponse;
 import com.gitgle.result.RpcResult;
@@ -42,9 +40,7 @@ public class GithubCommitServiceImpl implements GithubCommitService {
             // 先读数据库，如果没有再请求github
             List<GithubCommit> githubCommitList = commitService.readCommit2GithubCommit(developerId);
             if(ObjectUtils.isNotEmpty(githubCommitList)){
-                githubCommitResponse.setGithubCommitList(githubCommitList);
-                githubCommitResponseRpcResult.setCode(RpcResultCode.SUCCESS);
-                githubCommitResponseRpcResult.setData(githubCommitResponse);
+                setResponse(githubCommitResponse, githubCommitResponseRpcResult, githubCommitList, RpcResultCode.SUCCESS);
                 return githubCommitResponseRpcResult;
             }
             HashMap<String, String> searchParams = new HashMap<>();
@@ -58,15 +54,14 @@ public class GithubCommitServiceImpl implements GithubCommitService {
                 Response response = githubApiRequestUtils.searchCommits(searchParams);
                 if(!response.isSuccessful()){
                     if(page.equals(1)){
-                        githubCommitResponseRpcResult.setCode(RpcResultCode.Github_RESPONSE_FAILED);
+                        setResponse(githubCommitResponse, githubCommitResponseRpcResult, null, RpcResultCode.Github_RESPONSE_FAILED);
                         return githubCommitResponseRpcResult;
                     }else{
-                        log.error("Github Api Failed In page:{}", page);
+                        log.error("Github Api 根据login查询commit失败，page:{}", page);
                         break;
                     }
                 }
                 JSONObject responseBody = JSON.parseObject(response.body().string());
-                log.info("Github SearchUsers Response: {}", responseBody);
                 for(int i=0; i<responseBody.getJSONArray("items").size(); i++){
                     JSONObject item = responseBody.getJSONArray("items").getJSONObject(i);
                     GithubCommit githubCommit = GithubCommitConvert.convert(item);
@@ -74,9 +69,6 @@ public class GithubCommitServiceImpl implements GithubCommitService {
                     // 异步写库
                     CompletableFuture.runAsync(()-> {
                         commitService.writeGithubCommit2Commit(githubCommit);
-                    }).exceptionally(ex -> {
-                        log.error("Github Commit Write Exception: {}", ex);
-                        return null;
                     });
                 }
                 if(responseBody.getInteger("total_count")<page*100){
@@ -84,77 +76,19 @@ public class GithubCommitServiceImpl implements GithubCommitService {
                 }
                 page++;
             }
-            githubCommitResponse.setGithubCommitList(githubCommitList);
-            githubCommitResponseRpcResult.setData(githubCommitResponse);
-            githubCommitResponseRpcResult.setCode(RpcResultCode.SUCCESS);
+            setResponse(githubCommitResponse, githubCommitResponseRpcResult, githubCommitList, RpcResultCode.SUCCESS);
             return githubCommitResponseRpcResult;
         } catch (IOException e) {
-            log.error("Github SearchUsers Exception: {}", e);
-            githubCommitResponseRpcResult.setCode(RpcResultCode.FAILED);
+            log.error("根据login搜索Commit失败： {}", e.getMessage());
+            setResponse(githubCommitResponse, githubCommitResponseRpcResult, null, RpcResultCode.FAILED);
             return githubCommitResponseRpcResult;
         }
     }
 
-    @Override
-    public RpcResult<GithubCommitResponse> listCommitsByRepoAndAuthor(GithubRequest githubRequest) {
-        RpcResult<GithubCommitResponse> githubCommitResponseRpcResult = new RpcResult<>();
-        GithubCommitResponse githubCommitResponse = new GithubCommitResponse();
-        try {
-            // 先读数据库，如果没有再请求github
-            List<GithubCommit> githubCommitList = commitService.readCommit2GithubCommit(githubRequest);
-            if(ObjectUtils.isNotEmpty(githubCommitList)){
-                githubCommitResponse.setGithubCommitList(githubCommitList);
-                githubCommitResponseRpcResult.setCode(RpcResultCode.SUCCESS);
-                githubCommitResponseRpcResult.setData(githubCommitResponse);
-                return githubCommitResponseRpcResult;
-            }
-            HashMap<String, String> queryParams = new HashMap<>();
-            githubCommitList= new ArrayList<>();
-            queryParams.put("per_page", "100");
-            queryParams.put("author", githubRequest.getAuthor());
-            Integer page = 1;
-            while(true){
-                queryParams.put("page", page.toString());
-                Response response = githubApiRequestUtils.listCommit(githubRequest.getOwner(), githubRequest.getRepoName(), queryParams);
-                if(!response.isSuccessful()){
-                    if(page.equals(1)){
-                        githubCommitResponseRpcResult.setCode(RpcResultCode.Github_RESPONSE_FAILED);
-                        return githubCommitResponseRpcResult;
-                    }else{
-                        log.error("Github Api Failed In page:{}", page);
-                        break;
-                    }
-                }
-                JSONArray responseBody = JSON.parseArray(response.body().string());
-                log.info("Github List Commits Response: {}", responseBody);
-                for(int i=0; i<responseBody.size(); i++){
-                    JSONObject item =responseBody.getJSONObject(i);
-                    GithubCommit githubCommit = new GithubCommit();
-                    githubCommit.setSha(item.getString("sha"));
-                    githubCommit.setAuthorLogin(item.getJSONObject("author").getString("login"));
-                    githubCommit.setCommitDataTime(item.getJSONObject("commit").getJSONObject("committer").getString("date"));
-                    githubCommitList.add(githubCommit);
-                    // 异步写库
-                    CompletableFuture.runAsync(()-> {
-                        commitService.writeGithubCommit2Commit(githubCommit);
-                    }).exceptionally(ex -> {
-                        log.error("Github Commit Write Exception: {}", ex);
-                        return null;
-                    });
-                }
-                if(responseBody.size() < 100){
-                    break;
-                }
-                page++;
-            }
-            githubCommitResponse.setGithubCommitList(githubCommitList);
-            githubCommitResponseRpcResult.setCode(RpcResultCode.SUCCESS);
-            githubCommitResponseRpcResult.setData(githubCommitResponse);
-            return githubCommitResponseRpcResult;
-        } catch (IOException e) {
-            log.info("Github List Commits Exception: {}", e);
-            githubCommitResponseRpcResult.setCode(RpcResultCode.FAILED);
-            return githubCommitResponseRpcResult;
-        }
+    private void setResponse(GithubCommitResponse githubCommitResponse, RpcResult<GithubCommitResponse> githubCommitResponseRpcResult,
+                                    List<GithubCommit> githubCommitList, RpcResultCode rpcResultCode){
+        githubCommitResponse.setGithubCommitList(githubCommitList);
+        githubCommitResponseRpcResult.setCode(rpcResultCode);
+        githubCommitResponseRpcResult.setData(githubCommitResponse);
     }
 }

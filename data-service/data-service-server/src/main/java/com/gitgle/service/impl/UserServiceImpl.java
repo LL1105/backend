@@ -85,15 +85,6 @@ public class UserServiceImpl implements UserService{
             return null;
         }
     }
-
-    @Override
-    public String getLoginByAccountId(Integer githubAccountId) {
-        User user = userMapper.selectOne(Wrappers.lambdaQuery(User.class).eq(User::getAccountId, githubAccountId));
-        if(ObjectUtils.isNotEmpty(user)){
-            return user.getLogin();
-        }
-        return null;
-    }
 }
 
 

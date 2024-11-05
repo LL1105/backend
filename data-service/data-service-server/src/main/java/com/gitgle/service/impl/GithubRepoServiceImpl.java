@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.gitgle.constant.RedisConstant;
 import com.gitgle.constant.RpcResultCode;
 import com.gitgle.convert.GithubRepoContentConvert;
-import com.gitgle.convert.GithubRepoConvert;
 import com.gitgle.request.GithubRequest;
 import com.gitgle.response.*;
 import com.gitgle.result.RpcResult;
@@ -21,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 @DubboService
 @Slf4j
@@ -61,15 +59,12 @@ public class GithubRepoServiceImpl implements GithubRepoService {
             final GithubRepos finalGithubRepos = githubRepos;
             CompletableFuture.runAsync(()->{
                 reposService.writeGithubRepos2Repos(finalGithubRepos);
-            }).exceptionally(ex -> {
-                log.error("Github Write Exception: {}", ex.getMessage());
-                return null;
             });
             githubReposRpcResult.setData(githubRepos);
             githubReposRpcResult.setCode(RpcResultCode.SUCCESS);
             return githubReposRpcResult;
         } catch (IOException e) {
-            log.error("Github getRepo Exception: {}", e.getMessage());
+            log.error("获取仓库信息失败: {}", e.getMessage());
             githubReposRpcResult.setCode(RpcResultCode.FAILED);
             return githubReposRpcResult;
         }
@@ -92,15 +87,12 @@ public class GithubRepoServiceImpl implements GithubRepoService {
             // 异步入库
             CompletableFuture.runAsync(()->{
                 repoContentService.writeGithubReposContent2RepoContent(finalGithubReposContent);
-            }).exceptionally(ex -> {
-                log.error("Github Write Exception: {}", ex.getMessage());
-                return null;
             });
             githubReposContentRpcResult.setData(githubReposContent);
             githubReposContentRpcResult.setCode(RpcResultCode.SUCCESS);
             return githubReposContentRpcResult;
         } catch (IOException e) {
-            log.error("Github GetRepoContent Exception: {}", e.getMessage());
+            log.error("获取仓库文件信息失败: {}", e.getMessage());
             githubReposContentRpcResult.setCode(RpcResultCode.FAILED);
             return githubReposContentRpcResult;
         }
@@ -129,7 +121,7 @@ public class GithubRepoServiceImpl implements GithubRepoService {
             githubReposResponseRpcResult.setCode(RpcResultCode.SUCCESS);
             return githubReposResponseRpcResult;
         } catch (IOException e) {
-            log.info("Github ListUserRepos Exception: {}", e.getMessage());
+            log.info("获取用户的仓库失败: {}", e.getMessage());
             githubReposResponseRpcResult.setCode(RpcResultCode.FAILED);
             return githubReposResponseRpcResult;
         }
@@ -157,7 +149,7 @@ public class GithubRepoServiceImpl implements GithubRepoService {
             githubContributorResponseRpcResult.setCode(RpcResultCode.SUCCESS);
             return githubContributorResponseRpcResult;
         }catch (IOException e){
-            log.error("Github ListRepoContributors Exception: {}", e.getMessage());
+            log.error("获取仓库贡献者失败: {}", e.getMessage());
             githubContributorResponseRpcResult.setCode(RpcResultCode.FAILED);
             return githubContributorResponseRpcResult;
         }
@@ -184,7 +176,7 @@ public class GithubRepoServiceImpl implements GithubRepoService {
             githubLanguagesResponseRpcResult.setCode(RpcResultCode.SUCCESS);
             return githubLanguagesResponseRpcResult;
         } catch (IOException e) {
-            log.error("Github GetRepoLanguages Exception: {}", e.getMessage());
+            log.error("获取仓库语言失败: {}", e.getMessage());
             githubLanguagesResponseRpcResult.setCode(RpcResultCode.FAILED);
             return githubLanguagesResponseRpcResult;
         }

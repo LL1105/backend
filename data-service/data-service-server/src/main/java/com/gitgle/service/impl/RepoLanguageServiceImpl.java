@@ -18,11 +18,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-/**
-* @author maojunjun
-* @description 针对表【repo_language】的数据库操作Service实现
-* @createDate 2024-11-02 21:50:11
-*/
 @Slf4j
 @Service
 public class RepoLanguageServiceImpl implements RepoLanguageService{

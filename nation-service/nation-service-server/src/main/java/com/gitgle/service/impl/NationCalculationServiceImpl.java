@@ -78,6 +78,9 @@ public class NationCalculationServiceImpl implements NationCalculationService {
         String content = responseBody.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content");
         log.info("Spark Response Content: {}", content);
         String[] nationArray = content.split("-");
+        if(Double.valueOf(nationArray[2]) < 0.5){
+            return null;
+        }
         nationResponse.setNation(nationArray[0]);
         nationResponse.setNationEnglish(nationArray[1]);
         nationResponse.setConfidence(Double.valueOf(nationArray[2]));

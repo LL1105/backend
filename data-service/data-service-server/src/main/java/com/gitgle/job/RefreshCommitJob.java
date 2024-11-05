@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.gitgle.constant.RedisConstant;
 import com.gitgle.convert.GithubCommitConvert;
-import com.gitgle.produce.KafkaProducer;
 import com.gitgle.response.GithubCommit;
 import com.gitgle.response.GithubRepoRank;
 import com.gitgle.service.CommitService;
@@ -23,14 +22,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Component
 public class RefreshCommitJob {
-
-    @Resource
-    private KafkaProducer kafkaProducer;
 
     @Resource
     private ThreadPoolTaskExecutor refreshCommitTaskExecutor;

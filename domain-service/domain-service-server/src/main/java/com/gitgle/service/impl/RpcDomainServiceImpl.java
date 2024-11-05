@@ -1,31 +1,25 @@
 package com.gitgle.service.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.gitgle.constant.RedisConstant;
 import com.gitgle.constant.RpcResultCode;
-import com.gitgle.dao.Domain;
 import com.gitgle.job.HotDomainJob;
 import com.gitgle.request.GithubRequest;
 import com.gitgle.response.*;
 import com.gitgle.result.RpcResult;
 import com.gitgle.service.*;
-import com.gitgle.utils.SparkApiUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import javax.annotation.Resource;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 @DubboService
 @Slf4j

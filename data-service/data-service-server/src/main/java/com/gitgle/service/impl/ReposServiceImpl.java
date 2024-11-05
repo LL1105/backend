@@ -98,15 +98,6 @@ public class ReposServiceImpl implements ReposService{
     }
 
     @Override
-    public GithubRepos getRepoByRepoId(Integer repoId) {
-        Repos repos = reposMapper.selectOne(Wrappers.lambdaQuery(Repos.class).eq(Repos::getRepoId, repoId));
-        if(ObjectUtils.isNotEmpty(repos)){
-            return GithubRepoConvert.convert(repos);
-        }
-        return null;
-    }
-
-    @Override
     public List<GithubRepos> getReposByLogin(String owner) {
         List<Repos> reposList = reposMapper.selectList(Wrappers.lambdaQuery(Repos.class).eq(Repos::getOwnerlogin, owner));
         if(ObjectUtils.isNotEmpty(reposList)){
