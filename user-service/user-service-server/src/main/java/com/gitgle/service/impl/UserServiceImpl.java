@@ -245,12 +245,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     public Result search(Integer page, Integer size, SearchReq req) {
         // 如果没有查询条件则走缓存
         if(is2SearchUserCache(req, page)){
-            Set<SearchUser> searchResps = redisTemplate.opsForZSet().range(RedisConstant.GITHUB_USER_RANK, 0, 50);
+            Set<SearchUser> searchResps = redisTemplate.opsForZSet().range(RedisConstant.GITHUB_USER_RANK, (page-1)*size, page*size);
             if(ObjectUtils.isNotEmpty(searchResps)){
                 SearchResp resp = new SearchResp();
                 List<SearchUser> searchUserList = searchResps.stream().collect(Collectors.toList());
-                //查全部条数
-                setSearchRespParams(resp, Long.valueOf(page), Long.valueOf(size), Math.round(((searchUserList.size() / size) + 0.5)), searchUserList);
+                setSearchRespParams(resp, Long.valueOf(page), Long.valueOf(size),
+                        Long.valueOf(redisTemplate.opsForValue().get(RedisConstant.GITHUB_USER_RANK_PAGES).toString()), searchUserList);
                 return Result.Success(resp);
             }
         }
@@ -318,8 +318,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         }
         if(is2SearchUserCache(req, page)){
             for(SearchUser searchUser: searchUserList){
+                redisTemplate.opsForValue().set(RedisConstant.GITHUB_USER_RANK_PAGES, resp.getTotalPage());
+                redisTemplate.expire(RedisConstant.GITHUB_USER_RANK_PAGES, 3, TimeUnit.DAYS);
                 redisTemplate.opsForZSet().add(RedisConstant.GITHUB_USER_RANK, searchUser, -1*(Double.parseDouble(searchUser.getTalentRank())));
-                redisTemplate.opsForZSet().removeRange(RedisConstant.GITHUB_USER_RANK, 50, -1);
+                redisTemplate.opsForZSet().removeRange(RedisConstant.GITHUB_USER_RANK, 60, -1);
             }
             redisTemplate.expire(RedisConstant.GITHUB_USER_RANK, 3, TimeUnit.DAYS);
         }
