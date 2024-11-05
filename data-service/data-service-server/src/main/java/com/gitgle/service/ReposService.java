@@ -24,4 +24,6 @@ public interface ReposService{
     PageRepoResponse pageRepos2GithubRepos(Integer page, Integer size);
 
     GithubRepos getRepoByRepoId(Integer repoId);
+
+    List<GithubRepos> getReposByLogin(String owner);
 }

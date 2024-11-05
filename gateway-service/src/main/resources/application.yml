@@ -8,6 +8,8 @@ spring:
   cloud:
     nacos:
       server-addr: nacos://121.36.79.38:8848
+      discovery:
+        group: gitgle
 
     gateway:
       routes:
