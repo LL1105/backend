@@ -121,27 +121,28 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         User user = userMapper.selectById(loginId.toString());
         if(user != null) {
             UserInfoResp resp = new UserInfoResp();
-            if(!StringUtils.isEmpty(user.getLogin())) {
-                String login = user.getLogin();
-                GithubUserInfo githubUserInfo = getGithubUserInfoBylogin(login);
+            String userLogin = user.getLogin();
+            if(!StringUtils.isEmpty(userLogin)) {
+                Result result = showUserInfo(userLogin);
+                ShowUserInfoResp data = (ShowUserInfoResp) result.getData();
+                GithubUserResp githubUser = data.getGithubUser();
+                GithubUserInfo githubUserInfo = getGithubUserInfoBylogin(userLogin);
+                githubUserInfo.setGithubUser(githubUser);
                 resp.setGithubUserInfo(githubUserInfo);
             }
 
             BeanUtils.copyProperties(user, resp);
+            System.out.println(resp.toString());
             return Result.Success(resp);
         }
         return Result.Failed("用户不存在");
     }
 
     public GithubUserInfo getGithubUserInfoBylogin(String login) {
-        //组装follow和个人信息
+        //组装follow
         GithubUserInfo info = new GithubUserInfo();
-        RpcResult<GithubUser> userByLogin = githubUserService.getUserByLogin(login);
         RpcResult<GithubFollowersResponse> followers = githubFollowingService.getFollowersByDeveloperId(login);
         RpcResult<GithubFollowingResponse> following = githubFollowingService.listUserFollowingByDeveloperId(login);
-        if(userByLogin.getCode().equals(RpcResultCode.SUCCESS)) {
-            info.setGithubUser(userByLogin.getData());
-        }
 
         if(followers.getCode().equals(RpcResultCode.SUCCESS)) {
             List<GithubUser> githubUserList = new ArrayList<>();
