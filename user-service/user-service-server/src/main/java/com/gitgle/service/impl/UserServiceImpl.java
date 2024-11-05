@@ -245,7 +245,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     public Result search(Integer page, Integer size, SearchReq req) {
         // 如果没有查询条件则走缓存
         if(is2SearchUserCache(req, page)){
-            Set<SearchUser> searchResps = redisTemplate.opsForZSet().range(RedisConstant.GITHUB_USER_RANK, (page-1)*size, page*size);
+            Set<SearchUser> searchResps = redisTemplate.opsForZSet().range(RedisConstant.GITHUB_USER_RANK, (page-1)*size, page*size-1);
             if(ObjectUtils.isNotEmpty(searchResps)){
                 SearchResp resp = new SearchResp();
                 List<SearchUser> searchUserList = searchResps.stream().collect(Collectors.toList());
