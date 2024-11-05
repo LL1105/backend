@@ -309,25 +309,43 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     public Result showUserInfo(String login) {
         ShowUserInfoResp resp = new ShowUserInfoResp();
         RpcResult<GithubUser> userByLogin = githubUserService.getUserByLogin(login);
-        try {
-            if(userByLogin.getCode().equals(RpcResultCode.SUCCESS)) {
-                GithubUser data = userByLogin.getData();
-                resp.setGithubUser(data);
-                RpcResult<GithubReposResponse> rpcResult = githubRepoService.listUserRepos(data.getLogin());
-                //组装开发者的仓库信息
-                if(rpcResult.getCode().equals(RpcResultCode.SUCCESS)) {
-                    GithubReposResponse githubReposResponse = rpcResult.getData();
-                    List<GithubRepos> githubProjectList = githubReposResponse.getGithubProjectList();
-                    resp.setGithubReposList(githubProjectList);
-                }
-                return Result.Success(resp);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Result.Failed("详情获取失败");
+        if(!RpcResultCode.SUCCESS.equals(userByLogin.getCode())){
+            return Result.Failed("获取用户详细信息失败");
         }
-
-        return Result.Failed("详情获取失败");
+        GithubUser data = userByLogin.getData();
+        resp.setGithubUser(data);
+        CompletableFuture.runAsync(()->{
+            QueryWrapper<com.gitgle.entity.GithubUser> githubUserQueryWrapper = new QueryWrapper<>();
+            githubUserQueryWrapper.eq("login", data.getLogin());
+            com.gitgle.entity.GithubUser githubUser = githubUserMapper.selectOne(githubUserQueryWrapper);
+            if(StringUtils.isBlank(githubUser.getAvatar())){
+                githubUser.setAvatar(data.getAvatarUrl());
+            }
+            if(ObjectUtils.isEmpty(githubUser.getTalentRank())){
+                RpcResult<String> talentrankByDeveloperId = talentRankService.getTalentrankByDeveloperId(data.getLogin());
+                if(RpcResultCode.SUCCESS.equals(talentrankByDeveloperId.getCode())){
+                    githubUser.setTalentRank(new BigDecimal(talentrankByDeveloperId.getData()));
+                }
+            }
+            if(StringUtils.isBlank(githubUser.getNation())){
+                RpcResult<NationResponse> nationByDeveloperId = nationService.getNationByDeveloperId(data.getLogin());
+                if(RpcResultCode.SUCCESS.equals(nationByDeveloperId.getCode())){
+                    githubUser.setNation(nationByDeveloperId.getData().getNation());
+                    githubUser.setNationConfidence(new BigDecimal(nationByDeveloperId.getData().getConfidence()));
+                    githubUser.setNationEnglish(nationByDeveloperId.getData().getNationEnglish());
+                }
+            }
+            githubUserMapper.updateById(githubUser);
+        });
+        RpcResult<GithubReposResponse> rpcResult = githubRepoService.listUserRepos(data.getLogin());
+        //组装开发者的仓库信息
+        if(!RpcResultCode.SUCCESS.equals(rpcResult.getCode())) {
+            return Result.Failed("获取用户仓库失败");
+        }
+        GithubReposResponse githubReposResponse = rpcResult.getData();
+        List<GithubRepos> githubProjectList = githubReposResponse.getGithubProjectList();
+        resp.setGithubReposList(githubProjectList);
+        return Result.Success(resp);
     }
 
     @Override
