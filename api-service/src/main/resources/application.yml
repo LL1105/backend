@@ -15,6 +15,7 @@ spring:
     nacos:
       discovery:
         server-addr: 121.36.79.38:8848
+        group: ${server.group}
 
 dubbo:
   provider:
