@@ -44,9 +44,7 @@ public class GithubFollowingServiceImpl implements GithubFollowingService {
             // 先查库，没有再github上搜索
             List<GithubFollowers> githubFollowersList = followerService.readFollower2GithubFollowers(developerId);
             if(ObjectUtils.isNotEmpty(githubFollowersList)){
-                githubFollowersResponse.setGithubFollowersList(githubFollowersList);
-                githubFollowersRpcResult.setCode(RpcResultCode.SUCCESS);
-                githubFollowersRpcResult.setData(githubFollowersResponse);
+                setResponse(githubFollowersResponse, githubFollowersRpcResult, RpcResultCode.SUCCESS, githubFollowersList);
                 return githubFollowersRpcResult;
             }
             HashMap<String, String> queryParams = new HashMap<>();
@@ -61,12 +59,11 @@ public class GithubFollowingServiceImpl implements GithubFollowingService {
                         githubFollowersRpcResult.setCode(RpcResultCode.Github_RESPONSE_FAILED);
                         return githubFollowersRpcResult;
                     }else{
-                        log.error("Github Api Failed In page:{}", page);
+                        log.error("Github Api 获取用户粉丝失败，page:{}", page);
                         break;
                     }
                 }
                 JSONArray responseBody = JSON.parseArray(response.body().string());
-                log.info("Github List Follower Response: {}", responseBody);
                 for(int i=0; i<responseBody.size(); i++){
                     JSONObject item =responseBody.getJSONObject(i);
                     GithubFollowers githubFollowers = GithubFollowerConvert.convert(item);
@@ -74,9 +71,6 @@ public class GithubFollowingServiceImpl implements GithubFollowingService {
                     // 异步写库
                     CompletableFuture.runAsync(()-> {
                         followerService.writeGithubFollower2Follower(githubFollowers, developerId);
-                    }).exceptionally(ex -> {
-                        log.error("Github Follower Write Exception: {}", ex);
-                        return null;
                     });
                 }
                 if(responseBody.size() < 100){
@@ -84,12 +78,10 @@ public class GithubFollowingServiceImpl implements GithubFollowingService {
                 }
                 page++;
             }
-            githubFollowersResponse.setGithubFollowersList(githubFollowersList);
-            githubFollowersRpcResult.setCode(RpcResultCode.SUCCESS);
-            githubFollowersRpcResult.setData(githubFollowersResponse);
+            setResponse(githubFollowersResponse, githubFollowersRpcResult, RpcResultCode.SUCCESS, githubFollowersList);
             return githubFollowersRpcResult;
         } catch (IOException e) {
-            log.info("Github GetFollowers Exception: {}", e);
+            log.info("根据login获取用户粉丝失败: {}", e.getMessage());
             githubFollowersRpcResult.setCode(RpcResultCode.FAILED);
             return githubFollowersRpcResult;
         }
@@ -103,9 +95,7 @@ public class GithubFollowingServiceImpl implements GithubFollowingService {
             // 先查库，没有再github上搜索
             List<GithubFollowing> githubFollowingList = followerService.readFollowing2GithubFollowing(developerId);
             if(ObjectUtils.isNotEmpty(githubFollowingList)){
-                githubFollowingResponse.setGithubFollowingList(githubFollowingList);
-                githubFollowingRpcResult.setCode(RpcResultCode.SUCCESS);
-                githubFollowingRpcResult.setData(githubFollowingResponse);
+                setResponse(githubFollowingResponse, githubFollowingRpcResult, RpcResultCode.SUCCESS, githubFollowingList);
                 return githubFollowingRpcResult;
             }
             HashMap<String, String> queryParams = new HashMap<>();
@@ -120,12 +110,11 @@ public class GithubFollowingServiceImpl implements GithubFollowingService {
                         githubFollowingRpcResult.setCode(RpcResultCode.Github_RESPONSE_FAILED);
                         return githubFollowingRpcResult;
                     }else{
-                        log.error("Github Api Failed In page:{}", page);
+                        log.error("Github Api 获取用户关注者失败，page:{}", page);
                         break;
                     }
                 }
                 JSONArray responseBody = JSON.parseArray(response.body().string());
-                log.info("Github List Following Response: {}", responseBody);
                 for(int i=0; i<responseBody.size(); i++){
                     JSONObject item =responseBody.getJSONObject(i);
                     GithubFollowing githubFollowing = GithubFollowingConvert.convert(item);
@@ -133,9 +122,6 @@ public class GithubFollowingServiceImpl implements GithubFollowingService {
                     // 异步写库
                     CompletableFuture.runAsync(()-> {
                         followerService.writeGithubFollowing2Following(githubFollowing,developerId);
-                    }).exceptionally(ex -> {
-                        log.error("Github Follower Write Exception: {}", ex);
-                        return null;
                     });
                 }
                 if(responseBody.size() < 100){
@@ -148,9 +134,23 @@ public class GithubFollowingServiceImpl implements GithubFollowingService {
             githubFollowingRpcResult.setData(githubFollowingResponse);
             return githubFollowingRpcResult;
         } catch (IOException e) {
-            log.info("Github GetFollowing Exception: {}", e);
+            log.info("根据login获取用户关注者失败: {}", e.getMessage());
             githubFollowingRpcResult.setCode(RpcResultCode.FAILED);
             return githubFollowingRpcResult;
         }
+    }
+
+    private void setResponse(GithubFollowersResponse githubFollowersResponse, RpcResult<GithubFollowersResponse> githubFollowersResponseRpcResult,
+                             RpcResultCode rpcResultCode, List<GithubFollowers> githubFollowersList){
+        githubFollowersResponse.setGithubFollowersList(githubFollowersList);
+        githubFollowersResponseRpcResult.setCode(rpcResultCode);
+        githubFollowersResponseRpcResult.setData(githubFollowersResponse);
+    }
+
+    private void setResponse(GithubFollowingResponse githubFollowingResponse, RpcResult<GithubFollowingResponse> githubFollowingResponseRpcResult,
+                             RpcResultCode rpcResultCode, List<GithubFollowing> githubFollowingList){
+        githubFollowingResponse.setGithubFollowingList(githubFollowingList);
+        githubFollowingResponseRpcResult.setCode(rpcResultCode);
+        githubFollowingResponseRpcResult.setData(githubFollowingResponse);
     }
 }

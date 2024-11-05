@@ -1,7 +1,5 @@
 package com.gitgle.service;
 
-import com.gitgle.dao.Contributor;
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.gitgle.response.GithubContributor;
 
 import java.util.List;

@@ -67,10 +67,9 @@ public class GithubApiRequestUtils {
         Response response = httpClient.newCall(buildRequest(url)).execute();
         GithubUserResponse githubUserResponse = new GithubUserResponse();
         if (!response.isSuccessful()) {
-            throw new IOException("Github SearchUsers Exception: " + response.body().string());
+            throw new IOException("Github API 搜索用户失败：" + response.body().string());
         }
         JSONObject responseBody = JSON.parseObject(response.body().string());
-        log.info("Github SearchUsers Response: {}", responseBody);
         List<GithubUser> githubUserList = JSON.parseArray(responseBody.getJSONArray("items").toString(), GithubUser.class);
         githubUserResponse.setGithubUserList(githubUserList);
         return githubUserResponse;
@@ -84,12 +83,10 @@ public class GithubApiRequestUtils {
         buildQueryParams(params, urlBuilder);
         String url = urlBuilder.build().toString();
         Response response = httpClient.newCall(buildRequest(url)).execute();
-        GithubUserResponse githubUserResponse = new GithubUserResponse();
         if (!response.isSuccessful()) {
-            throw new IOException("Github SearchUsers Exception: " + response.body().string());
+            throw new IOException("Github API 获取用户总数失败: " + response.body().string());
         }
         JSONObject responseBody = JSON.parseObject(response.body().string());
-        log.info("Github SearchUsers Response: {}", responseBody);
         return responseBody.getInteger("total_count");
     }
 
@@ -131,10 +128,9 @@ public class GithubApiRequestUtils {
         String url = urlBuilder.build().toString();
         Response response = httpClient.newCall(buildRequest(url)).execute();
         if (!response.isSuccessful()) {
-            throw new IOException("Github GetOneRepo Exception: " + response.body().string());
+            throw new IOException("Github API 获取仓库信息失败： " + response.body().string());
         }
         JSONObject responseBody = JSON.parseObject(response.body().string());
-        log.info("Github GetRepo Response: {}", responseBody);
         return GithubRepoConvert.convert(responseBody);
     }
 
@@ -156,10 +152,9 @@ public class GithubApiRequestUtils {
         String url = urlBuilder.build().toString();
         Response response = httpClient.newCall(buildRequest(url)).execute();
         if (!response.isSuccessful()) {
-            throw new IOException("Github GetRepoContent Exception: " + response.body().string());
+            throw new IOException("Github API 获取仓库文件内容失败: " + response.body().string());
         }
         JSONObject responseBody = JSON.parseObject(response.body().string());
-        log.info("Github GetRepoContent Response: {}", responseBody);
         return responseBody;
     }
 
@@ -201,10 +196,9 @@ public class GithubApiRequestUtils {
         String url = urlBuilder.build().toString();
         Response response = httpClient.newCall(buildRequest(url)).execute();
         if (!response.isSuccessful()) {
-            throw new IOException("Github GetUserByLogin Response: " + response.body().string());
+            throw new IOException("Github API 根据Login获取用户信息失败: " + response.body().string());
         }
         JSONObject responseBody = JSON.parseObject(response.body().string());
-        log.info("Github GetUserByLogin Response: {}", responseBody);
         return JSON.parseObject(responseBody.toString(), GithubUser.class);
     }
 
@@ -216,10 +210,9 @@ public class GithubApiRequestUtils {
         String url = urlBuilder.build().toString();
         Response response = httpClient.newCall(buildRequest(url)).execute();
         if (!response.isSuccessful()) {
-            throw new IOException("Github GetUserByAccountId Response: " + response.body().string());
+            throw new IOException("Github 根据AccountId获取用户信息失败: " + response.body().string());
         }
         JSONObject responseBody = JSON.parseObject(response.body().string());
-        log.info("Github GetUserByAccountId Response: {}", responseBody);
         return JSON.parseObject(responseBody.toString(), GithubUser.class);
     }
 
@@ -238,10 +231,9 @@ public class GithubApiRequestUtils {
             String url = urlBuilder.build().toString();
             Response response = httpClient.newCall(buildRequest(url)).execute();
             if (!response.isSuccessful()) {
-                throw new IOException("Github GetUserRepos Response: " + response.body().string());
+                throw new IOException("Github API 列出用户仓库失败: " + response.body().string());
             }
             JSONArray responseBody = JSON.parseArray(response.body().string());
-            log.info("Github GetUserRepos Response: {}", responseBody);
             for (int i = 0; i < responseBody.size(); i++) {
                 JSONObject item = responseBody.getJSONObject(i);
                 GithubRepos githubRepos = GithubRepoConvert.convert(item);
@@ -272,10 +264,9 @@ public class GithubApiRequestUtils {
             String url = urlBuilder.build().toString();
             Response response = httpClient.newCall(buildRequest(url)).execute();
             if (!response.isSuccessful()) {
-                throw new IOException("Github ListRepoContributors Response: " + response.body().string());
+                throw new IOException("Github API 列出仓库贡献者失败: " + response.body().string());
             }
             JSONArray responseBody = JSON.parseArray(response.body().string());
-            log.info("Github ListRepoContributors Response: {}", responseBody);
             for (int i = 0; i < responseBody.size(); i++) {
                 JSONObject item = responseBody.getJSONObject(i);
                 GithubContributor githubContributor = GithubContributorConvert.convert(item, repoName, owner);
@@ -299,10 +290,9 @@ public class GithubApiRequestUtils {
         String url = urlBuilder.build().toString();
         Response response = httpClient.newCall(buildRequest(url)).execute();
         if (!response.isSuccessful()) {
-            throw new IOException("Github ListRepoLanguages Response: " + response.body().string());
+            throw new IOException("Github API 列出仓库语言失败: " + response.body().string());
         }
         JSONObject responseBody = JSON.parseObject(response.body().string());
-        log.info("Github ListRepoLanguages Response: {}", responseBody);
         Map<String, Integer> githubLanguagesMap = responseBody.getInnerMap().entrySet().stream()
                 .filter(entry -> entry.getValue() instanceof Number) // 过滤出值为数字的键值对
                 .collect(Collectors.toMap(

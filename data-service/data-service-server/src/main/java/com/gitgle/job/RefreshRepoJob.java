@@ -3,14 +3,12 @@ package com.gitgle.job;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.gitgle.constant.RedisConstant;
 import com.gitgle.convert.GithubRepoConvert;
 import com.gitgle.produce.KafkaProducer;
 import com.gitgle.response.*;
 import com.gitgle.service.ContributorService;
 import com.gitgle.service.ReposService;
-import com.gitgle.service.UserService;
 import com.gitgle.utils.GithubApiRequestUtils;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
@@ -48,6 +46,7 @@ public class RefreshRepoJob {
 
     @XxlJob("refreshRepoByStar")
     public void refreshByStar(){
+        log.info("执行刷新Repo任务...");
         String[] params = XxlJobHelper.getJobParam().split(",");
         Integer starsUpperLimit = 0;
         if(params.length==2){
