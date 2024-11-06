@@ -39,4 +39,6 @@ public class RedisConstant {
     public static String GITHUB_TOKEN = "github:token";
 
     public static String GITHUB_USER_RANK_PAGES = "github:user:rank:pages";
+
+    public static String USER_DOMAIN_LOGIN_LOCK = "user:domain:login:lock:";
 }

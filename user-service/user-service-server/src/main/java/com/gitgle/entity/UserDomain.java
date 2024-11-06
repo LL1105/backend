@@ -36,6 +36,8 @@ public class UserDomain implements Serializable {
      */
     private Double confidence;
 
+    private Double talentRank;
+
     /**
      *
      */
