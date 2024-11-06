@@ -6,9 +6,9 @@ spring:
   application:
     name: nation-service
   datasource:
-    url: jdbc:mysql://bj-cynosdbmysql-grp-pro0nh5i.sql.tencentcdb.com:25363/gitgle
-    username: gitgle
-    password: gitgle_1024
+    url: jdbc:mysql://gz-cynosdbmysql-grp-f1gb8yz9.sql.tencentcdb.com:20381/gitgle
+    username: root
+    password: Gitgle_1024
     driver-class-name: com.mysql.jdbc.Driver
   cloud:
     nacos:
