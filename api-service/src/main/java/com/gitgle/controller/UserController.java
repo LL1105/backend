@@ -1,4 +1,4 @@
-package com.gitgle.user.controller;
+package com.gitgle.controller;
 
 
 import cn.dev33.satoken.util.SaResult;
