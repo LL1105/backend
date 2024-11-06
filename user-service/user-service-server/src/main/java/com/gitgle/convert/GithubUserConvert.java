@@ -38,6 +38,7 @@ public class GithubUserConvert {
         githubUserResp.setNationEnglish(githubUser.getNationEnglish());
         githubUserResp.setDomains(domains);
         githubUserResp.setTalentRank(String.valueOf(githubUser.getTalentRank()));
+        githubUserResp.setHtmlUrl(githubUser1.getHtmlUrl());
         return githubUserResp;
     }
 }

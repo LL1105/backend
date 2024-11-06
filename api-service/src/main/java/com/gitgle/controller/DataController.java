@@ -1,4 +1,4 @@
-package com.gitgle.data.controller;
+package com.gitgle.controller;
 
 import com.gitgle.constant.RpcResultCode;
 import com.gitgle.response.*;
@@ -9,11 +9,8 @@ import com.gitgle.service.GithubRepoService;
 import com.gitgle.service.RpcDomainService;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/data")
