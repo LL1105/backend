@@ -25,6 +25,7 @@ dubbo:
   consumer:
     group: ${server.group}
     timeout: 60000
+    check: false
   registry:
     address: nacos://121.36.79.38:8848
     group: ${server.group}
