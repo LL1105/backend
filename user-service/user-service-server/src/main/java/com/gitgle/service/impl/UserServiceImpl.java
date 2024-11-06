@@ -58,37 +58,37 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Resource
-    UserMapper userMapper;
+    private UserMapper userMapper;
 
     @Resource
     private UserDomainMapper userDomainMapper;
 
     @Resource
-    JavaMailSender mailSender;
+    private JavaMailSender mailSender;
 
     @Value("${spring.mail.username}")
     String from;
 
     @Resource
-    StringRedisTemplate stringRedisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
 
     @Resource
-    DomainMapper domainMapper;
+    private DomainMapper domainMapper;
 
     @DubboReference
-    GithubUserService githubUserService;
+    private GithubUserService githubUserService;
 
     @Resource
-    NationMapper nationMapper;
+    private NationMapper nationMapper;
 
     @Resource
-    GithubUserMapper githubUserMapper;
+    private GithubUserMapper githubUserMapper;
 
     @DubboReference
-    GithubFollowingService githubFollowingService;
+    private GithubFollowingService githubFollowingService;
 
     @DubboReference
-    GithubRepoService githubRepoService;
+    private GithubRepoService githubRepoService;
 
     @DubboReference
     private TalentRankService talentRankService;

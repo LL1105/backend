@@ -9,7 +9,5 @@ public interface UserDomainService {
 
     Page<UserDomain> pageUserDomainByDomainId(List<Integer> domainId, Integer page, Integer size);
 
-    List<UserDomain> getUserDomainByLoginAndDomainId(String login, Integer domainId);
-
     List<UserDomain> getUserDomainByLogin(String login);
 }

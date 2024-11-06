@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -23,11 +22,6 @@ public class UserDomainService implements com.gitgle.service.UserDomainService{
         Page<UserDomain> page1 = new Page<>(page, size);
         Page<UserDomain> userDomainPage = userDomainMapper.selectPage(page1, Wrappers.lambdaQuery(UserDomain.class).in(UserDomain::getDomainId, domainId));
         return userDomainPage;
-    }
-
-    @Override
-    public List<UserDomain> getUserDomainByLoginAndDomainId(String login, Integer domainId) {
-        return Collections.emptyList();
     }
 
     @Override
