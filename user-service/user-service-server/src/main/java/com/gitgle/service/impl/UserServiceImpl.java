@@ -132,7 +132,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
             }
 
             BeanUtils.copyProperties(user, resp);
-            System.out.println(resp.toString());
             return Result.Success(resp);
         }
         return Result.Failed("用户不存在");
@@ -251,7 +250,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
             resp.setUserName(user.getUsername());
             resp.setToken(tokenInfo.getTokenValue());
 
-            //补充/更新 github_user表数据
+            //先查github_user表是否存在这个login信息
+            QueryWrapper<com.gitgle.entity.GithubUser> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("login", user.getLogin());
+            com.gitgle.entity.GithubUser selectOne = githubUserMapper.selectOne(queryWrapper);
+            if(selectOne == null) {
+                //新增用户进github_user表
+                com.gitgle.entity.GithubUser githubUser = new com.gitgle.entity.GithubUser();
+                githubUser.setLogin(user.getLogin());
+                githubUserMapper.insert(githubUser);
+            }
+
+            //更新 github_user表数据
             CompletableFuture.runAsync(()->{
                 RpcResult<GithubUser> userByLogin = githubUserService.getUserByLogin(user.getLogin());
                 if(userByLogin.getCode().equals(RpcResultCode.FAILED)) {
