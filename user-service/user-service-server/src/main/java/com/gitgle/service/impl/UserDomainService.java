@@ -1,5 +1,7 @@
 package com.gitgle.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.gitgle.constant.RedisConstant;
@@ -25,10 +27,9 @@ public class UserDomainService implements com.gitgle.service.UserDomainService{
     private RedissonClient redissonClient;
 
     @Override
-    public Page<UserDomain> pageUserDomainByDomainId(List<Integer> domainId, Integer page, Integer size) {
+    public IPage<UserDomain> pageUserDomainByDomainId(List<Integer> domainId, Integer page, Integer size) {
         Page<UserDomain> page1 = new Page<>(page, size);
-        Page<UserDomain> userDomainPage = userDomainMapper.selectPage(page1, Wrappers.lambdaQuery(UserDomain.class).in(UserDomain::getDomainId, domainId).orderBy(true,false,UserDomain::getTalentRank));
-        return userDomainPage;
+        return userDomainMapper.selectMaxTalentRankByLogin(page1);
     }
 
     @Override
