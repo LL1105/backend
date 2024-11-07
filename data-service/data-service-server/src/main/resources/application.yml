@@ -55,3 +55,17 @@ xxl:
       ip: 49.232.232.203
       logpath: ./log
       appname: ${spring.application.name}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+      tags: ${spring.application.name}
+  endpoint:
+    health:
+      show-details: always
