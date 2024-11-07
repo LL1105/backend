@@ -29,7 +29,7 @@ public class UserDomainService implements com.gitgle.service.UserDomainService{
     @Override
     public IPage<UserDomain> pageUserDomainByDomainId(List<Integer> domainId, Integer page, Integer size) {
         Page<UserDomain> page1 = new Page<>(page, size);
-        return userDomainMapper.selectMaxTalentRankByLogin(page1);
+        return userDomainMapper.selectMaxTalentRankByLogin(page1, domainId);
     }
 
     @Override
