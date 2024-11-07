@@ -461,28 +461,36 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         githubUserQueryWrapper.eq("login", login);
         com.gitgle.entity.GithubUser githubUser = githubUserMapper.selectOne(githubUserQueryWrapper);
         GithubUser data = userByLogin.getData();
+        if(ObjectUtils.isEmpty(githubUser)){
+            githubUser = new com.gitgle.entity.GithubUser();
+            githubUser.setLocation(data.getLocation());
+            githubUser.setAvatar(data.getAvatarUrl());
+            githubUser.setLogin(data.getLogin());
+            githubUserMapper.insert(githubUser);
+        }
         resp.setGithubUser(GithubUserConvert.convert2GithubUserResp(data, githubUser,
                 userDomainService.getUserDomainByLogin(login).stream().map(UserDomain::getDomain).collect(Collectors.toList())));
+        final com.gitgle.entity.GithubUser githubUserFinal = githubUser;
         CompletableFuture.runAsync(()->{
             log.info("检查用户信息是否完整,login:{}", login);
-            if(StringUtils.isBlank(githubUser.getAvatar())){
-                githubUser.setAvatar(data.getAvatarUrl());
+            if(StringUtils.isBlank(githubUserFinal.getAvatar())){
+                githubUserFinal.setAvatar(data.getAvatarUrl());
             }
-            if(ObjectUtils.isEmpty(githubUser.getTalentRank())){
+            if(ObjectUtils.isEmpty(githubUserFinal.getTalentRank())){
                 RpcResult<String> talentrankByDeveloperId = talentRankService.getTalentrankByDeveloperId(data.getLogin());
                 if(RpcResultCode.SUCCESS.equals(talentrankByDeveloperId.getCode())){
-                    githubUser.setTalentRank(new BigDecimal(talentrankByDeveloperId.getData()));
+                    githubUserFinal.setTalentRank(new BigDecimal(talentrankByDeveloperId.getData()));
                 }
             }
-            if(StringUtils.isBlank(githubUser.getNation())){
+            if(StringUtils.isBlank(githubUserFinal.getNation())){
                 RpcResult<NationResponse> nationByDeveloperId = nationService.getNationByDeveloperId(data.getLogin());
                 if(RpcResultCode.SUCCESS.equals(nationByDeveloperId.getCode())){
-                    githubUser.setNation(nationByDeveloperId.getData().getNation());
-                    githubUser.setNationConfidence(new BigDecimal(nationByDeveloperId.getData().getConfidence()));
-                    githubUser.setNationEnglish(nationByDeveloperId.getData().getNationEnglish());
+                    githubUserFinal.setNation(nationByDeveloperId.getData().getNation());
+                    githubUserFinal.setNationConfidence(new BigDecimal(nationByDeveloperId.getData().getConfidence()));
+                    githubUserFinal.setNationEnglish(nationByDeveloperId.getData().getNationEnglish());
                 }
             }
-            githubUserMapper.updateById(githubUser);
+            githubUserMapper.updateById(githubUserFinal);
             log.info("检查用户信息后更新完成,login:{}", login);
         });
         RpcResult<GithubReposResponse> rpcResult = githubRepoService.listUserRepos(data.getLogin());
