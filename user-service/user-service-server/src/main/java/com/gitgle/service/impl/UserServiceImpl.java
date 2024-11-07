@@ -6,6 +6,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -343,7 +344,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
                 return Result.Success(resp);
             }
             // 分也查询用户领域
-            Page<UserDomain> userDomainByDomainId = userDomainService.pageUserDomainByDomainId(domains.stream().map(Domain::getId).collect(Collectors.toList()), page, size);
+            IPage<UserDomain> userDomainByDomainId = userDomainService.pageUserDomainByDomainId(domains.stream().map(Domain::getId).collect(Collectors.toList()), page, size);
             // 遍历查询用户
             for(UserDomain userDomain: userDomainByDomainId.getRecords()){
                 com.gitgle.entity.GithubUser githubUser = githubUserMapper.selectOne(Wrappers.lambdaQuery(com.gitgle.entity.GithubUser.class).eq(com.gitgle.entity.GithubUser::getLogin, userDomain.getLogin()));
