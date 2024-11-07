@@ -7,7 +7,15 @@
 git clone https://github.com/LL1105/backend.git
 ```
 
-2. ### 编译项目
+2. ### 安装运行环境
+2.1 安装JDK
+2.1.1 打开浏览器，访问Oracle官网，找到JDK8版本，选择和电脑匹配的操作系统的jdk版本(Linux/Windows/Macos)进行下载。
+2.1.2双击jdk安装文件，根据向导依次点击下一步即可安装完毕。
+2.2 安装maven
+2.2.1 打开浏览器，访问Maven官网，下载Maven的压缩包文件。
+2.2.2 解压下载的压缩包到指定的文件夹。
+
+3. ### 编译项目
     
 
 ```Bash
@@ -15,7 +23,7 @@ cd backend
 mvn clean install
 ```
 
-3. ### 按顺序启动各个模块
+4. ### 按顺序启动各个模块
     
 
 ```Bash
