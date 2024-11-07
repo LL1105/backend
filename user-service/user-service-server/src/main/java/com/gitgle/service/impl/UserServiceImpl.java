@@ -463,6 +463,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         resp.setGithubUser(GithubUserConvert.convert2GithubUserResp(data, githubUser,
                 userDomainService.getUserDomainByLogin(login).stream().map(UserDomain::getDomain).collect(Collectors.toList())));
         CompletableFuture.runAsync(()->{
+            log.info("检查用户信息是否完整,login:{}", login);
             if(StringUtils.isBlank(githubUser.getAvatar())){
                 githubUser.setAvatar(data.getAvatarUrl());
             }
@@ -481,6 +482,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
                 }
             }
             githubUserMapper.updateById(githubUser);
+            log.info("检查用户信息后更新完成,login:{}", login);
         });
         RpcResult<GithubReposResponse> rpcResult = githubRepoService.listUserRepos(data.getLogin());
         //组装开发者的仓库信息
