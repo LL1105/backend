@@ -65,25 +65,16 @@ sa-token:
     timeout: 10s
 #  check-same-token: true
 
-
-#promethues配置
 management:
-  #  server:
-  #    #管理端口，不配置则使用程序端口
-  #    port: 9002
-  endpoint:
-    metrics:
-      enabled: true
-    prometheus:
-      enabled: true
   endpoints:
     web:
       exposure:
-        include: health,info,env,prometheus,metrics,httptrace,threaddump,heapdump,springmetrics
-  #        include:
+        include: "*"
   metrics:
     export:
       prometheus:
         enabled: true
       tags: ${spring.application.name}
-
+  endpoint:
+    health:
+      show-details: always

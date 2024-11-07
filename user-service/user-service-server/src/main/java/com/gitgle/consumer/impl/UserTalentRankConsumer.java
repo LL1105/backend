@@ -14,6 +14,7 @@ import com.gitgle.entity.GithubUser;
 import com.gitgle.mapper.GithubUserMapper;
 import com.gitgle.result.RpcResult;
 import com.gitgle.service.GithubUserService;
+import com.gitgle.service.UserDomainService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -50,6 +51,9 @@ public class UserTalentRankConsumer implements KafkaConsumer {
 
     @Resource
     RedissonClient redissonClient;
+
+    @Resource
+    private UserDomainService userDomainService;
 
     @Override
     public void consumer(Properties props) {
@@ -119,6 +123,7 @@ public class UserTalentRankConsumer implements KafkaConsumer {
                 UpdateWrapper<GithubUser> updateWrapper = new UpdateWrapper<>();
                 updateWrapper.eq("login", talentRankMessage.getLogin()).set("talent_rank", new BigDecimal(talentRankMessage.getTalentRank()));
                 githubUserMapper.update(null, updateWrapper);
+                userDomainService.updateUserDomainTalentRank(talentRankMessage.getLogin(), talentRankMessage.getTalentRank());
             }
         } catch (Exception e) {
             log.error("Refresh talentRank error: {}", e.getMessage());

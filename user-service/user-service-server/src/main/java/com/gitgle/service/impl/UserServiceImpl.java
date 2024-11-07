@@ -6,6 +6,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.ObjectUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -251,45 +252,46 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
             resp.setToken(tokenInfo.getTokenValue());
 
             //先查github_user表是否存在这个login信息
-            QueryWrapper<com.gitgle.entity.GithubUser> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("login", user.getLogin());
-            com.gitgle.entity.GithubUser selectOne = githubUserMapper.selectOne(queryWrapper);
-            if(selectOne == null) {
-                //新增用户进github_user表
-                com.gitgle.entity.GithubUser githubUser = new com.gitgle.entity.GithubUser();
-                githubUser.setLogin(user.getLogin());
-                githubUserMapper.insert(githubUser);
+            if(!StringUtils.isEmpty(user.getLogin())) {
+                QueryWrapper<com.gitgle.entity.GithubUser> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("login", user.getLogin());
+                com.gitgle.entity.GithubUser selectOne = githubUserMapper.selectOne(queryWrapper);
+                if(selectOne == null) {
+                    //新增用户进github_user表
+                    com.gitgle.entity.GithubUser githubUser = new com.gitgle.entity.GithubUser();
+                    githubUser.setLogin(user.getLogin());
+                    githubUserMapper.insert(githubUser);
+                }
+                //更新 github_user表数据
+                CompletableFuture.runAsync(()->{
+                    RpcResult<GithubUser> userByLogin = githubUserService.getUserByLogin(user.getLogin());
+                    if(userByLogin.getCode().equals(RpcResultCode.FAILED)) {
+                        return;
+                    }
+                    GithubUser data = userByLogin.getData();
+                    QueryWrapper<com.gitgle.entity.GithubUser> githubUserQueryWrapper = new QueryWrapper<>();
+                    githubUserQueryWrapper.eq("login", data.getLogin());
+                    com.gitgle.entity.GithubUser githubUser = githubUserMapper.selectOne(githubUserQueryWrapper);
+                    if(StringUtils.isBlank(githubUser.getAvatar())){
+                        githubUser.setAvatar(data.getAvatarUrl());
+                    }
+                    if(ObjectUtils.isEmpty(githubUser.getTalentRank())){
+                        RpcResult<String> talentrankByDeveloperId = talentRankService.getTalentrankByDeveloperId(data.getLogin());
+                        if(RpcResultCode.SUCCESS.equals(talentrankByDeveloperId.getCode())){
+                            githubUser.setTalentRank(new BigDecimal(talentrankByDeveloperId.getData()));
+                        }
+                    }
+                    if(StringUtils.isBlank(githubUser.getNation())){
+                        RpcResult<NationResponse> nationByDeveloperId = nationService.getNationByDeveloperId(data.getLogin());
+                        if(RpcResultCode.SUCCESS.equals(nationByDeveloperId.getCode())){
+                            githubUser.setNation(nationByDeveloperId.getData().getNation());
+                            githubUser.setNationConfidence(new BigDecimal(nationByDeveloperId.getData().getConfidence()));
+                            githubUser.setNationEnglish(nationByDeveloperId.getData().getNationEnglish());
+                        }
+                    }
+                    githubUserMapper.updateById(githubUser);
+                });
             }
-
-            //更新 github_user表数据
-            CompletableFuture.runAsync(()->{
-                RpcResult<GithubUser> userByLogin = githubUserService.getUserByLogin(user.getLogin());
-                if(userByLogin.getCode().equals(RpcResultCode.FAILED)) {
-                    return;
-                }
-                GithubUser data = userByLogin.getData();
-                QueryWrapper<com.gitgle.entity.GithubUser> githubUserQueryWrapper = new QueryWrapper<>();
-                githubUserQueryWrapper.eq("login", data.getLogin());
-                com.gitgle.entity.GithubUser githubUser = githubUserMapper.selectOne(githubUserQueryWrapper);
-                if(StringUtils.isBlank(githubUser.getAvatar())){
-                    githubUser.setAvatar(data.getAvatarUrl());
-                }
-                if(ObjectUtils.isEmpty(githubUser.getTalentRank())){
-                    RpcResult<String> talentrankByDeveloperId = talentRankService.getTalentrankByDeveloperId(data.getLogin());
-                    if(RpcResultCode.SUCCESS.equals(talentrankByDeveloperId.getCode())){
-                        githubUser.setTalentRank(new BigDecimal(talentrankByDeveloperId.getData()));
-                    }
-                }
-                if(StringUtils.isBlank(githubUser.getNation())){
-                    RpcResult<NationResponse> nationByDeveloperId = nationService.getNationByDeveloperId(data.getLogin());
-                    if(RpcResultCode.SUCCESS.equals(nationByDeveloperId.getCode())){
-                        githubUser.setNation(nationByDeveloperId.getData().getNation());
-                        githubUser.setNationConfidence(new BigDecimal(nationByDeveloperId.getData().getConfidence()));
-                        githubUser.setNationEnglish(nationByDeveloperId.getData().getNationEnglish());
-                    }
-                }
-                githubUserMapper.updateById(githubUser);
-            });
             return Result.Success(resp);
         }
 
@@ -343,7 +345,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
                 return Result.Success(resp);
             }
             // 分也查询用户领域
-            Page<UserDomain> userDomainByDomainId = userDomainService.pageUserDomainByDomainId(domains.stream().map(Domain::getId).collect(Collectors.toList()), page, size);
+            IPage<UserDomain> userDomainByDomainId = userDomainService.pageUserDomainByDomainId(domains.stream().map(Domain::getId).collect(Collectors.toList()), page, size);
             // 遍历查询用户
             for(UserDomain userDomain: userDomainByDomainId.getRecords()){
                 com.gitgle.entity.GithubUser githubUser = githubUserMapper.selectOne(Wrappers.lambdaQuery(com.gitgle.entity.GithubUser.class).eq(com.gitgle.entity.GithubUser::getLogin, userDomain.getLogin()));
@@ -462,6 +464,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
         resp.setGithubUser(GithubUserConvert.convert2GithubUserResp(data, githubUser,
                 userDomainService.getUserDomainByLogin(login).stream().map(UserDomain::getDomain).collect(Collectors.toList())));
         CompletableFuture.runAsync(()->{
+            log.info("检查用户信息是否完整,login:{}", login);
             if(StringUtils.isBlank(githubUser.getAvatar())){
                 githubUser.setAvatar(data.getAvatarUrl());
             }
@@ -480,6 +483,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements co
                 }
             }
             githubUserMapper.updateById(githubUser);
+            log.info("检查用户信息后更新完成,login:{}", login);
         });
         RpcResult<GithubReposResponse> rpcResult = githubRepoService.listUserRepos(data.getLogin());
         //组装开发者的仓库信息
