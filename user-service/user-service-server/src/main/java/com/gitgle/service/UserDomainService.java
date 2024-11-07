@@ -10,4 +10,6 @@ public interface UserDomainService {
     Page<UserDomain> pageUserDomainByDomainId(List<Integer> domainId, Integer page, Integer size);
 
     List<UserDomain> getUserDomainByLogin(String login);
+
+    void updateUserDomainTalentRank(String login, Double talentRank);
 }
