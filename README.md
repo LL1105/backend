@@ -42,3 +42,5 @@ java -jar domain-service/domain-service-server/target/domain-service.jar
 java -jar api-service/target/api-service.jar
 java -jar gateway-service/target/gateway-service.jar
 ```
+
+[架构设计文档](https://github.com/LL1105/Gitgle/blob/master/docs/架构设计文档.pdf)
